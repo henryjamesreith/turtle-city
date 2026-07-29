@@ -32,3 +32,14 @@ npm run dev
 
 Use `npm run build` to create a production build and `npm test` to verify the
 clean map foundation.
+
+## Contributing
+
+If you would like to contribute:
+
+1. Create your own branch and make your changes there. Do not work directly on
+   `main`.
+2. Test your changes before submitting them.
+3. Open a pull request targeting `main`.
+4. Ideally, include a video recording that demonstrates the change you made.
+5. Do not merge the pull request. Wait for Henry to review and approve it.
