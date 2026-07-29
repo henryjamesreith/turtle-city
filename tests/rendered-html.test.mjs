@@ -59,7 +59,7 @@ test("the map has focus interactions without game dependencies", async () => {
   assert.match(map, /event\.key === "Escape"/);
   assert.match(park, /data-testid="central-park-map"/);
   assert.match(park, /South Slopes/);
-  assert.match(park, /Winter Walk/);
+  assert.doesNotMatch(park, /Winter Walk|Wooded paths/);
   assert.match(park, /Snow Crew/);
   assert.match(park, /Frozen Pond/);
   assert.match(park, /South Gate/);
@@ -70,14 +70,17 @@ test("the map has focus interactions without game dependencies", async () => {
   assert.match(park, /event\.deltaY/);
   assert.match(park, /className="turtle-character"/);
   assert.match(park, /data-interaction-zone/);
-  assert.match(park, /data-district-exit/);
+  assert.doesNotMatch(park, /data-district-exit|West Gate|East Gate/);
   assert.match(park, /pathSegments/);
   assert.match(park, /isEditableTarget/);
+  assert.match(park, /event\.key === "Enter"/);
+  assert.match(park, /activeZoneId === "ice-hockey"/);
+  assert.match(park, /activeZoneId === "snow-crew"/);
   assert.doesNotMatch(park, /is-walking|turtle-rig/);
   assert.match(styles, /\.park-zoom-controls/);
   assert.match(styles, /\.park-path-segment/);
   assert.match(styles, /\.activity-threshold/);
-  assert.match(styles, /\.park-side-gate/);
+  assert.doesNotMatch(styles, /\.park-side-gate/);
   assert.match(styles, /turtle-player\.png/);
   assert.doesNotMatch(styles, /turtle-rig|is-walking|@keyframes turtle-walk/);
   assert.ok(turtleCharacter.length > 100_000);
@@ -111,6 +114,9 @@ test("pond hockey has two compact teams and session-only match rules", async () 
   assert.match(hockey, /event\.code === "Space"/);
   assert.match(hockey, /event\.code === "KeyX"/);
   assert.match(hockey, /event\.code === "KeyC"/);
+  assert.match(hockey, /switchControlledPlayer/);
+  assert.match(hockey, /controlledRole/);
+  assert.match(hockey, /context\.lineTo\(57, 12\)/);
   assert.match(hockey, /awardGoal/);
   assert.match(hockey, /requestAnimationFrame/);
   assert.match(hockey, /2 skaters \+ G/);

@@ -47,37 +47,19 @@ const pathSegments = [
     id: "south-arrival",
     kind: "primary",
     left: "50%",
-    top: 2710,
+    top: 1750,
     width: 104,
-    height: 570,
+    height: 450,
     rotate: -2,
   },
   {
     id: "slopes-spine",
     kind: "primary",
     left: "49%",
-    top: 2250,
+    top: 1440,
     width: 100,
-    height: 610,
+    height: 500,
     rotate: 7,
-  },
-  {
-    id: "west-woodland",
-    kind: "secondary",
-    left: "39%",
-    top: 1590,
-    width: 72,
-    height: 760,
-    rotate: -17,
-  },
-  {
-    id: "east-woodland",
-    kind: "secondary",
-    left: "61%",
-    top: 1580,
-    width: 72,
-    height: 770,
-    rotate: 18,
   },
   {
     id: "pond-west",
@@ -110,9 +92,9 @@ const pathSegments = [
     id: "sled-spur",
     kind: "activity",
     left: "61%",
-    top: 2455,
+    top: 1680,
     width: 54,
-    height: 360,
+    height: 280,
     rotate: 64,
   },
   {
@@ -127,8 +109,7 @@ const pathSegments = [
 ] as const;
 
 const pathJunctions = [
-  { id: "south-fork", left: "50%", top: 2670, size: 150 },
-  { id: "woodland-fork", left: "50%", top: 2185, size: 132 },
+  { id: "south-fork", left: "50%", top: 1870, size: 150 },
   { id: "pond-south", left: "50%", top: 1570, size: 142 },
   { id: "pond-north", left: "52%", top: 850, size: 126 },
 ] as const;
@@ -151,26 +132,13 @@ const interactionZones = [
     radius: 190,
   },
   {
-    id: "winter-walk",
-    label: "Winter Walk",
-    detail: "Trail junction",
-    x: 0.5,
-    y: 2110,
-    radius: 170,
-  },
-  {
     id: "sledding",
     label: "South Slopes",
     detail: "Sledding",
     x: 0.65,
-    y: 2860,
+    y: 1980,
     radius: 190,
   },
-] as const;
-
-const sideGates = [
-  { id: "west-gate", side: "west", top: 1670, label: "West Gate" },
-  { id: "east-gate", side: "east", top: 1090, label: "East Gate" },
 ] as const;
 
 type InteractionZoneId = (typeof interactionZones)[number]["id"];
@@ -256,13 +224,22 @@ export function CentralParkMap({
     let initialized = false;
     let animationFrame = 0;
     let previousTime = performance.now();
+    let activeZoneId: InteractionZoneId | null = null;
 
     function handleKeyDown(event: KeyboardEvent) {
       if (isEditableTarget(event.target)) {
         return;
       }
 
-      if (movementKeys.has(event.key)) {
+      if (event.key === "Enter" && !event.repeat) {
+        if (activeZoneId === "ice-hockey") {
+          event.preventDefault();
+          onEnterHockey();
+        } else if (activeZoneId === "snow-crew") {
+          event.preventDefault();
+          onEnterShoveling();
+        }
+      } else if (movementKeys.has(event.key)) {
         event.preventDefault();
         pressed.add(event.key.toLowerCase());
       } else if (event.key === "Shift") {
@@ -363,6 +340,7 @@ export function CentralParkMap({
           .filter(({ zone, distance }) => distance <= zone.radius)
           .sort((a, b) => a.distance - b.distance)[0]?.zone ?? null;
 
+      activeZoneId = closestZone?.id ?? null;
       setNearbyZoneId((current) =>
         current === closestZone?.id ? current : (closestZone?.id ?? null),
       );
@@ -417,7 +395,7 @@ export function CentralParkMap({
       window.removeEventListener("blur", handleBlur);
       viewport?.removeEventListener("wheel", handleWheel);
     };
-  }, [spawn]);
+  }, [onEnterHockey, onEnterShoveling, spawn]);
 
   return (
     <main className="park-camera-stage" data-testid="central-park-map">
@@ -474,11 +452,9 @@ export function CentralParkMap({
 
           <div className="continuous-zone zone-north" aria-hidden="true" />
           <div className="continuous-zone zone-pond" aria-hidden="true" />
-          <div className="continuous-zone zone-woods" aria-hidden="true" />
           <div className="continuous-zone zone-south" aria-hidden="true" />
 
           <div className="park-path-loop pond-path-loop" aria-hidden="true" />
-          <div className="park-path-loop woodland-path-loop" aria-hidden="true" />
 
           {pathSegments.map((path) => (
             <div
@@ -511,19 +487,6 @@ export function CentralParkMap({
             />
           ))}
 
-          {sideGates.map((gate) => (
-            <section
-              key={gate.id}
-              className={`park-side-gate side-gate-${gate.side}`}
-              style={{ top: gate.top }}
-              aria-label={`${gate.label}, future city connection`}
-              data-district-exit={gate.id}
-            >
-              <span>{gate.label}</span>
-              <small>City streets</small>
-            </section>
-          ))}
-
           {trees.map(([left, top, size], index) => (
             <div
               key={`${left}-${top}`}
@@ -552,14 +515,16 @@ export function CentralParkMap({
 
           <div className="footbridge" aria-hidden="true" />
 
-          <section className="woodland-clearing" aria-label="Winter Walk">
-            <p>Winter Walk</p>
-            <span>Wooded paths</span>
-          </section>
-
           <section className="sledding-hills" aria-label="Sledding hills">
-            <div className="sled-hill hill-left" aria-hidden="true" />
-            <div className="sled-hill hill-right" aria-hidden="true" />
+            <div className="sled-hill hill-left" aria-hidden="true">
+              <span className="sled-run run-left" />
+              <span className="sled-rider rider-left" />
+            </div>
+            <div className="sled-hill hill-right" aria-hidden="true">
+              <span className="sled-run run-right" />
+              <span className="sled-rider rider-right" />
+            </div>
+            <div className="sled-fence" aria-hidden="true" />
             <div className="park-place-sign sled-sign">
               <p>South Slopes</p>
               <span>Sledding hills</span>
@@ -587,7 +552,7 @@ export function CentralParkMap({
               style={{
                 left: `${zone.x * 100}%`,
                 top: zone.y,
-                zIndex: zone.y + 35,
+                zIndex: zone.y + 1000,
               }}
               aria-label={`${zone.label}: ${zone.detail} interaction area`}
               data-interaction-zone={zone.id}

@@ -149,11 +149,13 @@ walkable street plane so players feel that they are moving among them.
 Doorways, activities, apartments, and detailed interiors can open as separate
 fixed-camera scenes without interrupting ordinary outdoor exploration.
 
-The first activity is pond hockey at the Frozen Pond. Each side has three
-skaters and one goalie. The initial prototype is a 90-second session-only match:
-one human controls a Lettuce Leafs skater, while the remaining five skaters and
-both goalies use simple local AI. The player moves with WASD or the arrow keys
-and shoots with Space. Scores reset when the activity closes; multiplayer,
+The first activity is pond hockey at the Frozen Pond. Each side has two skaters
+and one goalie. The initial prototype is a 90-second session-only match with six
+turtles total. The human can control any Lettuce Leafs teammate—including the
+goalie—while the remaining turtles use simple local AI. Space cycles the
+controlled teammate, X passes, and C shoots; movement uses WASD or the arrow
+keys. Every turtle carries a hockey stick, and the smaller gameplay scale keeps
+the rink readable. Scores reset when the activity closes; multiplayer,
 matchmaking, rewards, and leaderboards come later.
 
 The second activity is snow shoveling in the Snow Crew maintenance yard. The
@@ -269,9 +271,10 @@ records, purchases/entitlements, and player reports.
   coordinate plane, and scenery is depth-sorted around the player.
 - Camera zoom is smooth, centered on the player, and intentionally constrained
   so players cannot reveal unloaded world sections or lose navigation context.
-- Central Park in winter is the first district. Its first games are four-a-side
-  pond hockey—with three skaters and one goalie per team—and snow shoveling in
-  the maintenance yard. Sledding remains a later activity. Central Park is
+- Central Park in winter is the first district. Its first games are three-a-side
+  pond hockey—with two skaters and one goalie per team—and snow shoveling in the
+  maintenance yard. The hockey player can switch among every teammate,
+  including the goalie. Sledding remains a later activity. Central Park is
   always winter; other districts can have their own permanent or seasonal
   weather.
 - Central Park does not need falling-snow effects; static environmental art is
@@ -313,8 +316,8 @@ records, purchases/entitlements, and player reports.
 
 1. Playtest pond hockey and tune skating speed, puck control, AI pressure,
    goalie behavior, match duration, and rink readability.
-2. Build the Snow Crew maintenance-yard transition and the first snow-shoveling
-   game loop.
+2. Playtest the Snow Crew maintenance-yard shoveling loop and tune its clearing
+   target, shift duration, and snow feedback.
 3. Refine Central Park scenery clusters and landmark proportions around the
    path network.
 4. Add district collision boundaries later, after the first two activities
