@@ -2,44 +2,138 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-async function render() {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
+test("renders the full-screen Turtle City welcome", async () => {
+  const [layout, map, onboarding, auth] = await Promise.all([
+    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/TurtleOnboarding.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/TurtleAuth.tsx", import.meta.url), "utf8"),
+  ]);
 
-  return worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
-    }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
-  );
-}
+  assert.match(layout, /title:\s*"Turtle City"/);
+  assert.match(map, /useState<EntryMode>\("welcome"\)/);
+  assert.match(map, /entryMode !== "game"/);
+  assert.match(onboarding, /data-testid="turtle-welcome"/);
+  assert.match(onboarding, /Create a turtle/);
+  assert.match(onboarding, /Opening Turtle City/);
+  assert.doesNotMatch(onboarding, /Play as|Create another turtle/);
+  assert.match(auth, /data-testid=\{`turtle-\$\{mode\}`\}/);
+  assert.match(auth, /Find your turtle/);
+  assert.match(auth, /Create an account/);
+  assert.doesNotMatch(auth, /Check your email|email-confirmation/);
+});
 
-test("renders the full-screen Turtle City starter apartment", async () => {
-  const response = await render();
-  assert.equal(response.status, 200);
-  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+test("email onboarding saves a turtle and enters Apartment 4B", async () => {
+  const [map, onboarding, persistence, databaseTypes, onboardingMigration, styles] =
+    await Promise.all([
+      readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/TurtleOnboarding.tsx", import.meta.url), "utf8"),
+      readFile(
+        new URL("../lib/persistence/playerPersistence.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../lib/supabase/database.types.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL(
+          "../supabase/migrations/20260729010000_profile_onboarding.sql",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+      readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    ]);
 
-  const html = await response.text();
-  assert.match(html, /<title>Turtle City<\/title>/i);
-  assert.match(html, /data-testid="chelsea-apartment"/);
-  assert.match(html, /Chelsea · Apartment 4B/);
-  assert.match(html, /Your apartment/);
-  assert.match(html, /Starter condition · needs work/);
-  assert.match(html, /City map/);
-  assert.match(html, /Run-down starter apartment in Chelsea/);
-  assert.match(html, /data-upgrade-slot="walls"/);
-  assert.match(html, /data-tier="starter"/);
-  assert.doesNotMatch(html, /data-testid="city-map"/);
-  assert.doesNotMatch(html, /Snow Crew|Pond Hockey/i);
+  assert.match(map, /<TurtleOnboarding/);
+  assert.match(map, /hasCompletedOnboarding/);
+  assert.match(map, /saveTurtleProfile/);
+  assert.match(map, /saveLastLocation\("apartment"\)/);
+  assert.match(map, /setScreen\("apartment"\)/);
+  assert.match(onboarding, /data-testid="turtle-welcome"/);
+  assert.match(onboarding, /data-testid="turtle-creator"/);
+  assert.match(onboarding, /What should we call you\?/);
+  assert.match(onboarding, /Choose your turtle/);
+  assert.match(onboarding, /turtleVariants\.map/);
+  assert.match(onboarding, /Describe your personality/);
+  assert.match(onboarding, /Move to Turtle City/);
+  assert.doesNotMatch(persistence, /signInAnonymously/);
+  assert.match(persistence, /signInWithPassword/);
+  assert.match(persistence, /auth\.signUp/);
+  assert.match(persistence, /onboarding_completed_at/);
+  assert.match(persistence, /personality/);
+  assert.match(databaseTypes, /onboarding_completed_at/);
+  assert.match(onboardingMigration, /add column personality text/);
+  assert.match(onboardingMigration, /add column onboarding_completed_at/);
+  assert.match(styles, /\.onboarding-stage/);
+  assert.match(styles, /\.creator-shell/);
+  assert.match(styles, /data-turtle-variant="marina"/);
+});
+
+test("accounts receive unique turtle tags and can log out safely", async () => {
+  const [
+    map,
+    apartment,
+    district,
+    park,
+    pressureWashing,
+    hockey,
+    shoveling,
+    persistence,
+    databaseTypes,
+    migration,
+    styles,
+  ] = await Promise.all([
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ChelseaApartment.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../app/PressureWashingGame.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../app/HockeyGame.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/SnowShovelingGame.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../lib/persistence/playerPersistence.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL("../lib/supabase/database.types.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../supabase/migrations/20260729020000_unique_turtle_tags.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(map, /Log out/);
+  assert.match(map, /className="map-toolbar"/);
+  assert.match(map, /You can sign back in as/);
+  assert.match(map, /signOutPlayer/);
+  assert.match(map, /setEntryMode\("welcome"\)/);
+  assert.match(persistence, /auth\.signOut\(\{ scope: "local" \}\)/);
+  assert.match(databaseTypes, /turtle_tag/);
+  assert.match(migration, /add column turtle_tag text/);
+  assert.match(migration, /create unique index profiles_turtle_tag_unique_idx/);
+  assert.match(migration, /replace\(new\.user_id::text, '-', ''\)/);
+  assert.match(apartment, /className="turtle-nameplate"/);
+  assert.match(district, /className="turtle-nameplate"/);
+  assert.match(park, /className="turtle-nameplate"/);
+  assert.match(pressureWashing, /className="turtle-nameplate"/);
+  assert.match(hockey, /strokeText\(turtleName/);
+  assert.match(shoveling, /strokeText\(turtleName/);
+  assert.match(styles, /\.turtle-nameplate/);
+  assert.match(styles, /bottom: calc\(100% \+ 5px\)/);
+  assert.match(styles, /\.map-toolbar/);
+  assert.match(styles, /\.map-logout/);
+  assert.match(styles, /\.logout-dialog/);
 });
 
 test("the map has focus interactions without game dependencies", async () => {
@@ -48,7 +142,7 @@ test("the map has focus interactions without game dependencies", async () => {
     readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readFile(new URL("../public/assets/turtle-player.png", import.meta.url)),
+    readFile(new URL("../public/assets/turtles/clover.png", import.meta.url)),
   ]);
 
   assert.match(map, /setSelectedId\(district\.id\)/);
@@ -79,14 +173,15 @@ test("the map has focus interactions without game dependencies", async () => {
   assert.match(styles, /\.park-path-segment/);
   assert.match(styles, /\.activity-threshold/);
   assert.doesNotMatch(styles, /\.park-side-gate/);
-  assert.match(styles, /turtle-player\.png/);
+  assert.match(styles, /assets\/turtles\/clover\.png/);
   assert.doesNotMatch(styles, /turtle-rig|is-walking|@keyframes turtle-walk/);
   assert.ok(turtleCharacter.length > 100_000);
   assert.equal(turtleCharacter.subarray(1, 4).toString("ascii"), "PNG");
   assert.match(styles, /--manhattan-shape:/);
   assert.match(styles, /\.district-fidi[\s\S]*68% 94%[\s\S]*37% 98%/);
   assert.doesNotMatch(styles, /52% 100%/);
-  assert.doesNotMatch(packageJson, /phaser|drizzle|supabase|colyseus/i);
+  assert.match(packageJson, /@supabase\/supabase-js/);
+  assert.doesNotMatch(packageJson, /phaser|drizzle|colyseus/i);
 });
 
 test("Chelsea connects the starter apartment, street, and city map", async () => {
@@ -112,6 +207,10 @@ test("Chelsea connects the starter apartment, street, and city map", async () =>
   assert.match(apartment, /data-testid="chelsea-apartment"/);
   assert.match(apartment, /Apartment 4B/);
   assert.match(apartment, /data-upgrade-slot/);
+  assert.equal(
+    [...apartment.matchAll(/className="turtle-nameplate"/g)].length,
+    1,
+  );
   assert.match(apartment, /data-tier="starter"/);
   assert.match(apartment, /onExitToChelsea/);
   assert.match(apartment, /requestAnimationFrame/);
@@ -119,7 +218,7 @@ test("Chelsea connects the starter apartment, street, and city map", async () =>
   assert.match(styles, /\.chelsea-apartment-building/);
   assert.match(styles, /\.apartment-stage/);
   assert.match(styles, /\.apartment-room/);
-  assert.match(styles, /turtle-player\.png/);
+  assert.match(styles, /assets\/turtles\/clover\.png/);
 });
 
 test("Chelsea pressure washing clears a facade in a session-only shift", async () => {
@@ -152,6 +251,62 @@ test("Chelsea pressure washing clears a facade in a session-only shift", async (
   assert.match(styles, /\.pressure-work-area/);
   assert.match(styles, /\.pressure-start-card/);
   assert.match(styles, /\.chelsea-pressure-marker/);
+});
+
+test("Supabase persistence protects player data and saves stable locations", async () => {
+  const [map, client, persistence, databaseTypes, migration, environment, config] =
+    await Promise.all([
+      readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../lib/supabase/client.ts", import.meta.url), "utf8"),
+      readFile(
+        new URL("../lib/persistence/playerPersistence.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../lib/supabase/database.types.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL(
+          "../supabase/migrations/20260729000000_initial_persistence.sql",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+      readFile(new URL("../.env.example", import.meta.url), "utf8"),
+      readFile(new URL("../supabase/config.toml", import.meta.url), "utf8"),
+    ]);
+
+  assert.match(map, /loadPlayerSnapshot/);
+  assert.match(map, /saveLastLocation/);
+  assert.match(map, /isPersistedScreen/);
+  assert.match(client, /NEXT_PUBLIC_SUPABASE_URL/);
+  assert.match(client, /NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/);
+  assert.doesNotMatch(client, /SECRET|SERVICE_ROLE/);
+  assert.doesNotMatch(persistence, /signInAnonymously/);
+  assert.match(persistence, /signInWithPassword/);
+  assert.match(persistence, /auth\.signUp/);
+  assert.match(persistence, /PersistedLocation/);
+  assert.match(persistence, /saveTurtleProfile/);
+  assert.match(databaseTypes, /activity_progress/);
+  assert.match(databaseTypes, /inventory_items/);
+  assert.match(migration, /create table public\.profiles/);
+  assert.match(migration, /create table public\.player_states/);
+  assert.match(migration, /create table public\.apartments/);
+  assert.match(migration, /create table public\.wallets/);
+  assert.match(migration, /create table public\.inventory_items/);
+  assert.match(migration, /enable row level security/);
+  assert.match(migration, /auth\.uid\(\)/);
+  assert.match(migration, /grant select, update on public\.player_states/);
+  assert.match(migration, /grant select on public\.wallets/);
+  assert.doesNotMatch(migration, /grant .*update on public\.wallets/);
+  assert.doesNotMatch(migration, /grant .*update on public\.inventory_items/);
+  assert.match(environment, /NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/);
+  assert.doesNotMatch(environment, /SECRET|SERVICE_ROLE/);
+  assert.match(config, /enable_anonymous_sign_ins = false/);
+  assert.match(config, /enable_confirmations = false/);
+  assert.doesNotMatch(persistence, /playerSessionPromise/);
+  assert.match(persistence, /Your session has expired\. Sign in again\./);
 });
 
 test("pond hockey has two compact teams and session-only match rules", async () => {
@@ -207,7 +362,7 @@ test("snow shoveling clears the Snow Crew paths in a session-only shift", async 
   assert.match(shoveling, /collectSnow/);
   assert.match(shoveling, /dumpShovel/);
   assert.match(shoveling, /refillSnowAt/);
-  assert.match(shoveling, /turtle-player\.png/);
+  assert.match(shoveling, /turtleImageSrc/);
   assert.match(shoveling, /requestAnimationFrame/);
   assert.match(shoveling, /WASD/);
   assert.match(styles, /\.shoveling-stage/);

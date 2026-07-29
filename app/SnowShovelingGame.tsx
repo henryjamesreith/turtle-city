@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 type SnowShovelingGameProps = {
   onExit: () => void;
+  turtleImage: string;
+  turtleName: string;
 };
 
 type ShiftStatus = "ready" | "playing" | "finished";
@@ -336,6 +338,7 @@ function drawTurtle(
   context: CanvasRenderingContext2D,
   state: ShiftState,
   turtleImage: HTMLImageElement,
+  turtleName: string,
 ) {
   const bob = state.status === "playing" ? Math.sin(state.stride) * 2 : 0;
   const facingLeft = state.facingX < -0.1;
@@ -354,6 +357,18 @@ function drawTurtle(
     context.drawImage(turtleImage, -47, -91, 94, 149);
     context.restore();
   }
+
+  context.save();
+  context.font = '800 13px "Avenir Next", Avenir, sans-serif';
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.lineJoin = "round";
+  context.lineWidth = 5;
+  context.strokeStyle = "rgb(248 242 223 / 96%)";
+  context.strokeText(turtleName, state.x, state.y - 146);
+  context.fillStyle = "#153530";
+  context.fillText(turtleName, state.x, state.y - 146);
+  context.restore();
 }
 
 function shovelCenter(state: ShiftState) {
@@ -404,7 +419,11 @@ function dumpShovel(state: ShiftState, time: number) {
   state.shovelLoad = 0;
 }
 
-export function SnowShovelingGame({ onExit }: SnowShovelingGameProps) {
+export function SnowShovelingGame({
+  onExit,
+  turtleImage: turtleImageSrc,
+  turtleName,
+}: SnowShovelingGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<ShiftState>(createShiftState());
   const [hud, setHud] = useState<ShiftHud>({
@@ -431,7 +450,7 @@ export function SnowShovelingGame({ onExit }: SnowShovelingGameProps) {
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
     const turtleImage = new Image();
-    turtleImage.src = "/assets/turtle-player.png";
+    turtleImage.src = turtleImageSrc;
     const pressed = new Set<string>();
     let animationFrame = 0;
     let previousTime = performance.now();
@@ -604,7 +623,7 @@ export function SnowShovelingGame({ onExit }: SnowShovelingGameProps) {
       }
 
       drawYard(context, state);
-      drawTurtle(context, state, turtleImage);
+      drawTurtle(context, state, turtleImage, turtleName);
       animationFrame = requestAnimationFrame(update);
     }
 
@@ -619,7 +638,7 @@ export function SnowShovelingGame({ onExit }: SnowShovelingGameProps) {
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", handleBlur);
     };
-  }, []);
+  }, [turtleImageSrc, turtleName]);
 
   const completed = hud.clearedPercent >= CLEAR_TARGET;
 

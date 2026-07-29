@@ -7,6 +7,7 @@ type ChelseaDistrictProps = {
   onEnterApartment: () => void;
   onEnterPressureWashing: () => void;
   onOpenMap: () => void;
+  turtleName: string;
 };
 
 const movementKeys = new Set([
@@ -49,6 +50,7 @@ export function ChelseaDistrict({
   onEnterApartment,
   onEnterPressureWashing,
   onOpenMap,
+  turtleName,
 }: ChelseaDistrictProps) {
   const worldRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
@@ -317,7 +319,8 @@ export function ChelseaDistrict({
             aria-label="Turtle City player character"
             data-facing="left"
           >
-            <span />
+            <span className="turtle-sprite" aria-hidden="true" />
+            <span className="turtle-nameplate">{turtleName}</span>
           </div>
         </div>
       </section>

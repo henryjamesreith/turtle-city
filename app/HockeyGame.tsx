@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 type HockeyGameProps = {
   onExit: () => void;
+  turtleImage: string;
+  turtleName: string;
 };
 
 type Team = "home" | "away";
@@ -402,6 +404,7 @@ function drawPlayer(
   context: CanvasRenderingContext2D,
   player: HockeyPlayer,
   turtleImage: HTMLImageElement,
+  turtleName: string,
 ) {
   const color = player.team === "home" ? "#477f76" : "#d7835f";
   const lightColor = player.team === "home" ? "#b8d7c5" : "#f1b494";
@@ -442,6 +445,19 @@ function drawPlayer(
     context.stroke();
   }
   context.restore();
+
+  if (player.controlled && player.team === "home") {
+    const nameY = player.role === "goalie" ? -73 : -67;
+    context.font = '800 11px "Avenir Next", Avenir, sans-serif';
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.lineJoin = "round";
+    context.lineWidth = 4;
+    context.strokeStyle = "rgb(248 242 223 / 96%)";
+    context.strokeText(turtleName, 0, nameY);
+    context.fillStyle = "#153530";
+    context.fillText(turtleName, 0, nameY);
+  }
 
   context.save();
   context.rotate(Math.atan2(player.facingY, player.facingX));
@@ -509,7 +525,11 @@ function formatTime(time: number) {
   return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
-export function HockeyGame({ onExit }: HockeyGameProps) {
+export function HockeyGame({
+  onExit,
+  turtleImage: turtleImageSrc,
+  turtleName,
+}: HockeyGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<MatchState>(createMatchState());
   const [hud, setHud] = useState<HudState>({
@@ -555,7 +575,7 @@ export function HockeyGame({ onExit }: HockeyGameProps) {
 
     const activeContext: CanvasRenderingContext2D = context;
     const turtleImage = new Image();
-    turtleImage.src = "/assets/turtle-player.png";
+    turtleImage.src = turtleImageSrc;
     const pressed = new Set<string>();
     let animationFrame = 0;
     let previousTime = performance.now();
@@ -973,7 +993,7 @@ export function HockeyGame({ onExit }: HockeyGameProps) {
         (first, second) => first.y - second.y,
       );
       for (const player of playersByDepth) {
-        drawPlayer(activeContext, player, turtleImage);
+        drawPlayer(activeContext, player, turtleImage, turtleName);
       }
       drawPuck(activeContext, game.puck);
     }
@@ -1002,7 +1022,7 @@ export function HockeyGame({ onExit }: HockeyGameProps) {
       window.removeEventListener("blur", clearInput);
       document.removeEventListener("visibilitychange", clearInput);
     };
-  }, []);
+  }, [turtleImageSrc, turtleName]);
 
   const result =
     hud.home === hud.away

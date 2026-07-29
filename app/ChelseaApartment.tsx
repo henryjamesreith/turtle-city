@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 type ChelseaApartmentProps = {
   onExitToChelsea: () => void;
   onOpenMap: () => void;
+  turtleName: string;
 };
 
 const movementKeys = new Set([
@@ -29,6 +30,7 @@ function clamp(value: number, minimum: number, maximum: number) {
 export function ChelseaApartment({
   onExitToChelsea,
   onOpenMap,
+  turtleName,
 }: ChelseaApartmentProps) {
   const roomRef = useRef<HTMLElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
@@ -252,9 +254,7 @@ export function ChelseaApartment({
           data-upgrade-slot="furniture"
           data-tier="starter"
           aria-hidden="true"
-        >
-          <span />
-        </div>
+        />
         <div className="apartment-boxes" data-upgrade-slot="storage" data-tier="starter" aria-hidden="true">
           <span />
           <span />
@@ -282,7 +282,8 @@ export function ChelseaApartment({
           aria-label="Turtle City player character in their apartment"
           data-facing="left"
         >
-          <span />
+          <span className="turtle-sprite" aria-hidden="true" />
+          <span className="turtle-nameplate">{turtleName}</span>
         </div>
       </section>
 

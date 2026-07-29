@@ -1,12 +1,30 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { CentralParkMap } from "./CentralParkMap";
 import { ChelseaApartment } from "./ChelseaApartment";
 import { ChelseaDistrict } from "./ChelseaDistrict";
 import { HockeyGame } from "./HockeyGame";
 import { PressureWashingGame } from "./PressureWashingGame";
 import { SnowShovelingGame } from "./SnowShovelingGame";
+import { TurtleAuth } from "./TurtleAuth";
+import { TurtleOnboarding } from "./TurtleOnboarding";
+import {
+  defaultTurtleAppearance,
+  getPersistedLocation,
+  getTurtleAppearance,
+  hasCompletedOnboarding,
+  loadPlayerSnapshot,
+  saveLastLocation,
+  saveTurtleProfile,
+  signInPlayer,
+  signOutPlayer,
+  signUpPlayer,
+  type PlayerSnapshot,
+  type PersistedLocation,
+  type TurtleAppearance,
+} from "@/lib/persistence/playerPersistence";
+import { getTurtleImage } from "@/lib/turtles";
 
 type District = {
   id:
@@ -33,6 +51,7 @@ type Screen =
 type MapReturn = "apartment" | "chelsea" | "central-park";
 type ParkSpawn = "south-gate" | "frozen-pond" | "snow-crew";
 type ChelseaSpawn = "apartment" | "pressure-washing";
+type EntryMode = "auth" | "creator" | "game" | "welcome";
 
 const districts: District[] = [
   {
@@ -79,8 +98,34 @@ const districts: District[] = [
   },
 ];
 
+function isPersistedScreen(screen: Screen): screen is PersistedLocation {
+  return (
+    screen === "apartment" ||
+    screen === "chelsea" ||
+    screen === "central-park"
+  );
+}
+
+function applyTurtleAppearance(appearance: TurtleAppearance) {
+  document.documentElement.dataset.turtleVariant = appearance.variant;
+}
+
 export function CityMap() {
   const [screen, setScreen] = useState<Screen>("apartment");
+  const [entryMode, setEntryMode] = useState<EntryMode>("welcome");
+  const [persistenceReady, setPersistenceReady] = useState(false);
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [hasPlayerSession, setHasPlayerSession] = useState(false);
+  const [playerIsAnonymous, setPlayerIsAnonymous] = useState(false);
+  const [returningPlayer, setReturningPlayer] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
+  const [turtleName, setTurtleName] = useState("");
+  const [turtlePersonality, setTurtlePersonality] = useState("");
+  const [turtleAppearance, setTurtleAppearance] =
+    useState<TurtleAppearance>(defaultTurtleAppearance);
   const [mapReturn, setMapReturn] = useState<MapReturn | null>(null);
   const [parkSpawn, setParkSpawn] = useState<ParkSpawn>("south-gate");
   const [chelseaSpawn, setChelseaSpawn] =
@@ -104,8 +149,100 @@ export function CityMap() {
     setScreen(destination);
   }
 
+  const applyPlayerSnapshot = useCallback((snapshot: PlayerSnapshot) => {
+    const appearance = getTurtleAppearance(snapshot.profile);
+    const hasTurtle = hasCompletedOnboarding(snapshot);
+
+    setScreen(getPersistedLocation(snapshot));
+    setTurtleAppearance(appearance);
+    setTurtleName(snapshot.profile.turtle_name ?? "");
+    setTurtlePersonality(snapshot.profile.personality ?? "");
+    setReturningPlayer(hasTurtle);
+    setHasPlayerSession(true);
+    setPlayerIsAnonymous(snapshot.isAnonymous);
+    applyTurtleAppearance(appearance);
+
+    return hasTurtle;
+  }, []);
+
+  function clearLocalPlayer() {
+    setReturningPlayer(false);
+    setHasPlayerSession(false);
+    setPlayerIsAnonymous(false);
+    setTurtleName("");
+    setTurtlePersonality("");
+    setTurtleAppearance(defaultTurtleAppearance);
+    applyTurtleAppearance(defaultTurtleAppearance);
+    setMapReturn(null);
+    setSelectedId(null);
+    setScreen("apartment");
+  }
+
+  async function logOutCurrentPlayer() {
+    setLogoutLoading(true);
+    setLogoutError("");
+
+    try {
+      await signOutPlayer();
+      clearLocalPlayer();
+      setShowLogoutConfirm(false);
+      setEntryMode("welcome");
+    } catch (error) {
+      console.warn("Turtle City could not log out.", error);
+      setLogoutError("We could not log out. Please try again.");
+    } finally {
+      setLogoutLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void loadPlayerSnapshot()
+      .then((snapshot) => {
+        if (!cancelled && snapshot) {
+          applyPlayerSnapshot(snapshot);
+        }
+      })
+      .catch((error) => {
+        console.warn("Turtle City persistence is unavailable.", error);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setPersistenceReady(true);
+          setSessionLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyPlayerSnapshot]);
+
+  useEffect(() => {
+    if (
+      !persistenceReady ||
+      entryMode !== "game" ||
+      !isPersistedScreen(screen)
+    ) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      void saveLastLocation(screen).catch((error) => {
+        console.warn("Turtle City could not save the current location.", error);
+      });
+    }, 350);
+
+    return () => window.clearTimeout(timeout);
+  }, [entryMode, persistenceReady, screen]);
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      if (entryMode !== "game") {
+        return;
+      }
+
       if (event.key === "Escape") {
         if (screen === "hockey" || screen === "snow-shoveling") {
           setParkSpawn(screen === "hockey" ? "frozen-pond" : "snow-crew");
@@ -136,7 +273,7 @@ export function CityMap() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [mapReturn, screen, selectedId]);
+  }, [entryMode, mapReturn, screen, selectedId]);
 
   const mapStyle = {
     "--focus-x": selectedDistrict?.focusX ?? "0vw",
@@ -144,9 +281,96 @@ export function CityMap() {
     "--focus-scale": selectedDistrict ? "1.62" : "1",
   } as CSSProperties;
 
+  if (entryMode === "auth") {
+    return (
+      <TurtleAuth
+        key={authMode}
+        mode={authMode}
+        onBack={() => setEntryMode("welcome")}
+        onSwitchMode={() =>
+          setAuthMode((current) =>
+            current === "sign-in" ? "sign-up" : "sign-in",
+          )
+        }
+        onSubmit={async (credentials) => {
+          if (authMode === "sign-in") {
+            await signInPlayer(credentials);
+            const snapshot = await loadPlayerSnapshot();
+
+            if (!snapshot) {
+              throw new Error("We could not load this turtle.");
+            }
+
+            const hasTurtle = applyPlayerSnapshot(snapshot);
+            setEntryMode(hasTurtle ? "game" : "creator");
+            return;
+          }
+
+          if (hasPlayerSession) {
+            await signOutPlayer();
+            clearLocalPlayer();
+          }
+
+          await signUpPlayer(credentials);
+
+          const snapshot = await loadPlayerSnapshot();
+          if (!snapshot) {
+            throw new Error("We could not prepare your new turtle.");
+          }
+
+          applyPlayerSnapshot(snapshot);
+          setEntryMode("creator");
+        }}
+      />
+    );
+  }
+
+  if (entryMode !== "game") {
+    return (
+      <TurtleOnboarding
+        key={`${entryMode}-${turtleName}-${turtleAppearance.variant}`}
+        mode={entryMode}
+        sessionLoading={sessionLoading}
+        initialName={returningPlayer ? turtleName : ""}
+        initialPersonality={returningPlayer ? turtlePersonality : ""}
+        initialAppearance={turtleAppearance}
+        onBack={() => setEntryMode("welcome")}
+        onPlay={() => {
+          if (returningPlayer) {
+            setEntryMode("game");
+          } else if (hasPlayerSession && !playerIsAnonymous) {
+            setEntryMode("creator");
+          } else {
+            setAuthMode("sign-in");
+            setEntryMode("auth");
+          }
+        }}
+        onCreate={() => {
+          setAuthMode("sign-up");
+          setEntryMode("auth");
+        }}
+        onSave={async (input) => {
+          await saveTurtleProfile(input);
+          await saveLastLocation("apartment");
+          setTurtleName(input.turtleName);
+          setTurtlePersonality(input.personality);
+          setTurtleAppearance(input.appearance);
+          setReturningPlayer(true);
+          setHasPlayerSession(true);
+          setPlayerIsAnonymous(false);
+          applyTurtleAppearance(input.appearance);
+          setScreen("apartment");
+          setEntryMode("game");
+        }}
+      />
+    );
+  }
+
   if (screen === "hockey") {
     return (
       <HockeyGame
+        turtleName={turtleName}
+        turtleImage={getTurtleImage(turtleAppearance.variant)}
         onExit={() => {
           setParkSpawn("frozen-pond");
           setScreen("central-park");
@@ -158,6 +382,8 @@ export function CityMap() {
   if (screen === "snow-shoveling") {
     return (
       <SnowShovelingGame
+        turtleName={turtleName}
+        turtleImage={getTurtleImage(turtleAppearance.variant)}
         onExit={() => {
           setParkSpawn("snow-crew");
           setScreen("central-park");
@@ -169,6 +395,7 @@ export function CityMap() {
   if (screen === "pressure-washing") {
     return (
       <PressureWashingGame
+        turtleName={turtleName}
         onExit={() => {
           setChelseaSpawn("pressure-washing");
           setScreen("chelsea");
@@ -180,6 +407,7 @@ export function CityMap() {
   if (screen === "apartment") {
     return (
       <ChelseaApartment
+        turtleName={turtleName}
         onExitToChelsea={() => {
           setChelseaSpawn("apartment");
           setScreen("chelsea");
@@ -192,6 +420,7 @@ export function CityMap() {
   if (screen === "chelsea") {
     return (
       <ChelseaDistrict
+        turtleName={turtleName}
         spawn={chelseaSpawn}
         onEnterApartment={() => setScreen("apartment")}
         onEnterPressureWashing={() => setScreen("pressure-washing")}
@@ -203,6 +432,7 @@ export function CityMap() {
   if (screen === "central-park") {
     return (
       <CentralParkMap
+        turtleName={turtleName}
         spawn={parkSpawn}
         onReturnToCity={() => openWorldMap("central-park")}
         onEnterHockey={() => {
@@ -303,22 +533,22 @@ export function CityMap() {
         Select a district
       </div>
 
-      {mapReturn && !selectedDistrict ? (
-        <button
-          type="button"
-          className="map-close"
-          onClick={() => {
-            setScreen(mapReturn);
-            setMapReturn(null);
-          }}
-        >
-          <span aria-hidden="true">←</span>
-          Back to where you were
-        </button>
-      ) : null}
+      <div className="map-toolbar">
+        {mapReturn && !selectedDistrict ? (
+          <button
+            type="button"
+            className="map-close"
+            onClick={() => {
+              setScreen(mapReturn);
+              setMapReturn(null);
+            }}
+          >
+            <span aria-hidden="true">←</span>
+            Back to where you were
+          </button>
+        ) : null}
 
-      {selectedDistrict ? (
-        <>
+        {selectedDistrict ? (
           <button
             type="button"
             className="city-return"
@@ -327,7 +557,23 @@ export function CityMap() {
             <span aria-hidden="true">←</span>
             City map
           </button>
+        ) : null}
 
+        <button
+          type="button"
+          className="map-logout"
+          onClick={() => {
+            setLogoutError("");
+            setShowLogoutConfirm(true);
+          }}
+        >
+          <span aria-hidden="true">↻</span>
+          Log out
+        </button>
+      </div>
+
+      {selectedDistrict ? (
+        <>
           <section className="district-caption" aria-live="polite">
             <p>District overview</p>
             <h2>{selectedDistrict.name}</h2>
@@ -349,6 +595,42 @@ export function CityMap() {
         <span />
         <small>MANHATTAN · NOT TO SCALE</small>
       </div>
+
+      {showLogoutConfirm ? (
+        <section
+          className="logout-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logout-title"
+        >
+          <p>Leaving Turtle City?</p>
+          <h2 id="logout-title">Log out</h2>
+          <span>
+            {playerIsAnonymous
+              ? `${turtleName} is not connected to an email account. If you log out, this turtle cannot be recovered.`
+              : `You can sign back in as ${turtleName} anytime with your email and password.`}
+          </span>
+          {logoutError ? (
+            <strong role="alert">{logoutError}</strong>
+          ) : null}
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowLogoutConfirm(false)}
+              disabled={logoutLoading}
+            >
+              Keep playing
+            </button>
+            <button
+              type="button"
+              onClick={() => void logOutCurrentPlayer()}
+              disabled={logoutLoading}
+            >
+              {logoutLoading ? "Logging out…" : "Log out"}
+            </button>
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }

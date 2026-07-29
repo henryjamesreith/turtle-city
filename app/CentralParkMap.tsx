@@ -7,6 +7,7 @@ type CentralParkMapProps = {
   onEnterHockey: () => void;
   onEnterShoveling: () => void;
   spawn?: "south-gate" | "frozen-pond" | "snow-crew";
+  turtleName: string;
 };
 
 const trees = [
@@ -200,6 +201,7 @@ export function CentralParkMap({
   onEnterHockey,
   onEnterShoveling,
   spawn = "south-gate",
+  turtleName,
 }: CentralParkMapProps) {
   const viewportRef = useRef<HTMLElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
@@ -618,6 +620,7 @@ export function CentralParkMap({
             data-facing="right"
           >
             <span className="turtle-character" aria-hidden="true" />
+            <span className="turtle-nameplate">{turtleName}</span>
           </div>
         </div>
       </section>

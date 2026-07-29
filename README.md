@@ -1,23 +1,8 @@
 # Turtle City
 
-Turtle City is a map-first, New York-inspired social world inhabited by
-turtles. The project is being developed from the bottom up:
-
-1. city map;
-2. connected district layouts;
-3. character design;
-4. exploration;
-5. activities; and
-6. multiplayer and persistence.
-
-The application currently contains the first full-screen city-map artifact:
-
-- a simplified Manhattan overview;
-- the six initial districts in their broad geographic relationships;
-- muted expansion areas for later neighborhoods; and
-- a click-to-focus transition for each initial district.
-
-Characters, movement, activities, multiplayer, and persistence remain deferred.
+Turtle City is a New York-inspired social world inhabited by turtles. The
+current prototype includes the city map, explorable Central Park and Chelsea
+districts, Apartment 4B, pond hockey, snow shoveling, and pressure washing.
 
 See [PROJECT_PLAN.md](./PROJECT_PLAN.md) for the current product documentation.
 
@@ -30,8 +15,39 @@ npm install
 npm run dev
 ```
 
-Use `npm run build` to create a production build and `npm test` to verify the
-clean map foundation.
+Use `npm run build` to create a production build.
+
+## Supabase persistence
+
+Supabase configuration is required for account creation, login, and saved
+player data.
+
+1. Create a Supabase project.
+2. In Authentication settings, keep the Email provider enabled and turn off
+   **Confirm email**. Turtle City creates the account and signs the player in
+   immediately.
+3. Copy `.env.example` to `.env.local` and enter the project URL and
+   **publishable** key. Never put a secret or service-role key in a
+   `NEXT_PUBLIC_` variable.
+4. Link the repository to the project:
+
+   ```bash
+   npm run supabase:link -- --project-ref YOUR_PROJECT_REF
+   ```
+
+5. Apply the versioned database migration:
+
+   ```bash
+   npm run supabase:push
+   ```
+
+The migration creates player profiles, saved location, apartments, wallets,
+catalog items, inventory, and activity progress. Row-level security limits each
+player to their own records. The browser can update only the turtle profile and
+last location; currency, inventory, upgrades, and rewards require trusted
+server logic.
+
+Configure the production Site URL and redirect URLs before deploying.
 
 ## Contributing
 

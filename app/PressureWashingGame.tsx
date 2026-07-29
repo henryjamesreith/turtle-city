@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 type PressureWashingGameProps = {
   onExit: () => void;
+  turtleName: string;
 };
 
 type ShiftStatus = "ready" | "playing" | "finished";
@@ -360,7 +361,10 @@ function washAtAim(state: WashState) {
   }
 }
 
-export function PressureWashingGame({ onExit }: PressureWashingGameProps) {
+export function PressureWashingGame({
+  onExit,
+  turtleName,
+}: PressureWashingGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<WashState>(createWashState());
   const [hud, setHud] = useState<WashHud>({
@@ -567,8 +571,13 @@ export function PressureWashingGame({ onExit }: PressureWashingGameProps) {
           height={WALL_HEIGHT}
           aria-label="Pressure wash the dirty Lettuce and Company facade"
         />
-        <div className="pressure-worker" aria-hidden="true">
-          <span />
+        <div
+          className="pressure-worker"
+          role="img"
+          aria-label={`${turtleName} pressure washing`}
+        >
+          <span className="turtle-sprite" aria-hidden="true" />
+          <span className="turtle-nameplate">{turtleName}</span>
         </div>
         <div className="pressure-machine" aria-hidden="true">
           <span />
