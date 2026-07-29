@@ -430,9 +430,37 @@ export function CentralParkMap({
         </button>
       </div>
 
+      <details className="park-control-guide">
+        <summary>
+          <span className="park-control-icon" aria-hidden="true">⌨</span>
+          <span className="park-control-label">Controls</span>
+        </summary>
+        <div className="park-control-card">
+          <p className="park-control-heading">How to play</p>
+          <div className="park-control-row">
+            <div className="park-direction-keys" aria-hidden="true">
+              <kbd>↑</kbd>
+              <kbd>←</kbd>
+              <kbd>↓</kbd>
+              <kbd>→</kbd>
+            </div>
+            <span><strong>Move</strong><small>Arrow keys or WASD</small></span>
+          </div>
+          <div className="park-control-row">
+            <kbd className="park-wide-key">Shift</kbd>
+            <span><strong>Run</strong><small>Hold while moving</small></span>
+          </div>
+          <div className="park-control-row">
+            <kbd className="park-wide-key">Enter</kbd>
+            <span><strong>Play</strong><small>Start a nearby activity</small></span>
+          </div>
+        </div>
+      </details>
+
       <p className="sr-only">
         Move the turtle with the arrow keys or W, A, S, and D. Hold Shift to
-        run. Zoom with the mouse wheel or the zoom controls.
+        run. Press Enter to start a nearby activity. Zoom with the mouse wheel
+        or the zoom controls.
       </p>
 
       <section
