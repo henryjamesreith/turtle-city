@@ -76,12 +76,12 @@ districts without requiring every intervening street to be built.
 
 | District | Landmark or identity | Candidate activities |
 | --- | --- | --- |
-| FiDi | One World Trade-inspired skyline | Street cleanup, deliveries |
-| Chelsea | West-side blocks, starter apartment building, Flatiron-inspired landmark later | Pressure washing, shopping |
+| FiDi | One World Trade-inspired skyline and busy commercial streets | Delivery-driver routes, logistics tycoon |
+| Chelsea | West-side blocks, starter apartment building, Flatiron-inspired landmark later | Greg’s Papaya-style cooking game, doorman elevator packing, shopping |
 | West Village | Jazz cellar, West Side waterfront | Music activity, biking |
 | Central Park | Winter park, pond-hockey rink, and maintenance yard | Pond hockey, snow shoveling, sledding later |
-| Midtown | Times Square and Empire State-inspired skyline | Social hub, cleanup |
-| East Village / LES | East River park construction | Excavator, trash pickup |
+| Midtown | Times Square and Empire State-inspired skyline | Falling-object dodge game, trash pickup, social hub |
+| East Village / LES | East River park construction | Excavator |
 
 Later expansion can add the Upper West Side, Upper East Side, Harlem,
 Williamsburg, Downtown Brooklyn, Brooklyn Heights, Cobble Hill, Park Slope, and
@@ -182,11 +182,45 @@ choices, charge currency, or offer real upgrades.
 
 Leaving Apartment 4B opens one continuous Chelsea street section. The player
 can walk the block, see fictional turtle businesses, re-enter West 22 through
-its street door, or open the world map. A lobby is intentionally omitted from
+its street door, or open the city map. A lobby is intentionally omitted from
 this first slice; it should be added only if the direct apartment-to-street
-transition feels abrupt in playtesting. Opening the world map remembers the
+transition feels abrupt in playtesting. Opening the city map remembers the
 current scene so closing it returns the player to the apartment, Chelsea, or
 Central Park rather than treating the map as the default home screen.
+
+Chelsea’s featured activity is a fast, cooperative cooking game set in a
+fictional, turtle-themed hot-dog-and-fruit-drink shop inspired by the energy of
+Greg’s Papaya. Players take orders, cook and assemble food, pour drinks, and
+serve customers before their patience runs out. The kitchen should create the
+same readable coordination pressure as games such as Overcooked without copying
+their characters, layouts, art, or exact mechanics. The first version can use
+local AI coworkers or a solo-friendly station layout; multiplayer coordination
+comes later. Results are session-only, and exiting returns the turtle beside
+the Chelsea storefront.
+
+Chelsea’s second activity is a doorman shift at a busy apartment building.
+Residents and delivery workers continuously arrive and drop off bags, packages,
+and other items. The player must sort the incoming load and pack it efficiently
+into the elevator before it departs, balancing limited floor space, item shapes,
+destinations, and resident patience. Later rounds can introduce fragile items,
+priority deliveries, multiple floors, awkward furniture, and rush periods. The
+first version should focus on a readable, tactile packing puzzle rather than a
+realistic building-management simulation.
+
+Midtown has two complementary job concepts. The first places the turtle below
+an Empire State-inspired tower, dodging coins and other funny falling street
+items while collecting safe bonuses and moving through increasingly difficult
+drop patterns. Clear shadows or warning markers must telegraph every falling
+object so success depends on movement rather than surprise. The second is the
+city’s trash-pickup job, using a short street route through busy Midtown blocks.
+Trash pickup belongs in Midtown rather than the East Village / LES.
+
+FiDi’s activity set combines delivery driving with light tycoon progression.
+Players begin by making timed deliveries through the financial district, learn
+efficient routes, and eventually manage a small delivery operation by choosing
+jobs, upgrading capacity, and dispatching drivers. The first playable slice
+should prove that deliveries and route choice are fun before adding persistent
+business upgrades, passive income, or a larger management economy.
 
 ## Technical direction
 
@@ -260,7 +294,10 @@ records, purchases/entitlements, and player reports.
    expression, and gameplay size as a separate visual-design phase.
 4. **Exploration:** add one character, collision boundaries, and basic
    navigation through the continuous Central Park environment.
-5. **Activities:** build pond hockey first, snow shoveling second, and sledding
+5. **Activities:** build pond hockey first and snow shoveling second. Then
+   prototype Chelsea’s cooking and doorman/elevator-packing loops, Midtown’s
+   falling-object dodge game and trash-pickup route, and FiDi deliveries. Add
+   FiDi’s tycoon layer only after the delivery loop works; sledding remains
    later.
 6. **Home vertical slice:** build the shabby Chelsea starter apartment, its
    apartment-building entrance, and one explorable Chelsea block.
@@ -304,6 +341,17 @@ records, purchases/entitlements, and player reports.
   weather.
 - Central Park does not need falling-snow effects; static environmental art is
   enough to communicate winter.
+- Chelsea’s featured activity is a Greg’s Papaya-style cooking game in an
+  original fictional restaurant, built around taking orders, preparing food
+  and drinks, and serving customers under time pressure.
+- Chelsea also has a doorman activity in which residents and delivery workers
+  drop off bags and packages that the player must pack efficiently into a
+  departing elevator.
+- Midtown contains the Empire State-inspired falling-object dodge game and the
+  trash-pickup job. Trash pickup is not an East Village / LES activity.
+- FiDi is the delivery and tycoon district. Delivery driving is the initial
+  playable loop; business-management progression comes after that loop is
+  proven.
 - The first turtle direction is friendly, compact, and highly readable at
   gameplay scale. It currently uses one static three-quarter character sprite;
   walking animation, clothing attachment layers, and additional directional
@@ -341,9 +389,18 @@ records, purchases/entitlements, and player reports.
 
 1. Playtest the Apartment 4B → Chelsea street → Apartment 4B loop and decide
    whether a lobby would improve the transition.
-2. Refine the first Chelsea block’s depth, storefront scale, sidewalk, and
+2. Define the smallest Chelsea cooking prototype: menu size, kitchen stations,
+   order timer, solo assistance, scoring, and the restaurant’s original name
+   and visual identity.
+3. Define the doorman prototype’s elevator grid, item shapes, arrival queue,
+   departure timer, scoring, and rules for floors and priority deliveries.
+4. Prototype Midtown’s falling-item readability using warning shadows, dodge
+   timing, safe lanes, and a small set of coins and other falling objects.
+5. Define the first FiDi delivery route and keep its tycoon progression on
+   paper until the driving and route-choice loop is fun.
+6. Refine the first Chelsea block’s depth, storefront scale, sidewalk, and
    apartment-building entrance before extending the district.
-3. Choose one apartment upgrade slot to prototype visually without adding
+7. Choose one apartment upgrade slot to prototype visually without adding
    currency, saving, or a store.
-4. Continue tuning pond hockey and snow shoveling independently; collision
+8. Continue tuning pond hockey and snow shoveling independently; collision
    boundaries remain deferred.

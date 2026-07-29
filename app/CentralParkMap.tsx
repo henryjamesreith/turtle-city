@@ -410,7 +410,7 @@ export function CentralParkMap({
         onClick={onReturnToCity}
       >
         <span aria-hidden="true">←</span>
-        World map
+        City map
       </button>
 
       <div className="park-zoom-controls" role="group" aria-label="Camera zoom">

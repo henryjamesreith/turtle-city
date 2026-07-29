@@ -157,7 +157,7 @@ export function ChelseaApartment({
       </header>
 
       <button type="button" className="apartment-map-button" onClick={onOpenMap}>
-        World map
+        City map
       </button>
 
       <p className="sr-only">

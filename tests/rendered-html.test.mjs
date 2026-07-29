@@ -34,7 +34,7 @@ test("renders the full-screen Turtle City starter apartment", async () => {
   assert.match(html, /Chelsea · Apartment 4B/);
   assert.match(html, /Your apartment/);
   assert.match(html, /Starter condition · needs work/);
-  assert.match(html, /World map/);
+  assert.match(html, /City map/);
   assert.match(html, /Run-down starter apartment in Chelsea/);
   assert.match(html, /data-upgrade-slot="walls"/);
   assert.match(html, /data-tier="starter"/);
@@ -89,7 +89,7 @@ test("the map has focus interactions without game dependencies", async () => {
   assert.doesNotMatch(packageJson, /phaser|drizzle|supabase|colyseus/i);
 });
 
-test("Chelsea connects the starter apartment, street, and world map", async () => {
+test("Chelsea connects the starter apartment, street, and city map", async () => {
   const [map, district, apartment, styles] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
@@ -105,6 +105,9 @@ test("Chelsea connects the starter apartment, street, and world map", async () =
   assert.match(district, /data-testid="chelsea-district"/);
   assert.match(district, /West 22 Apartments/);
   assert.match(district, /onEnterApartment/);
+  assert.match(district, /onEnterPressureWashing/);
+  assert.match(district, /chelsea-pressure-marker/);
+  assert.match(district, /spawn === "pressure-washing"/);
   assert.match(district, /requestAnimationFrame/);
   assert.match(apartment, /data-testid="chelsea-apartment"/);
   assert.match(apartment, /Apartment 4B/);
@@ -117,6 +120,38 @@ test("Chelsea connects the starter apartment, street, and world map", async () =
   assert.match(styles, /\.apartment-stage/);
   assert.match(styles, /\.apartment-room/);
   assert.match(styles, /turtle-player\.png/);
+});
+
+test("Chelsea pressure washing clears a facade in a session-only shift", async () => {
+  const [map, district, pressureWashing, styles] = await Promise.all([
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../app/PressureWashingGame.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(map, /import \{ PressureWashingGame \}/);
+  assert.match(map, /screen === "pressure-washing"/);
+  assert.match(map, /setChelseaSpawn\("pressure-washing"\)/);
+  assert.match(map, /<PressureWashingGame/);
+  assert.match(district, /Chelsea Wash Crew/);
+  assert.match(district, /Pressure wash Lettuce/);
+  assert.match(pressureWashing, /data-testid="pressure-washing-game"/);
+  assert.match(pressureWashing, /const SHIFT_LENGTH = 75/);
+  assert.match(pressureWashing, /const CLEAN_TARGET = 85/);
+  assert.match(pressureWashing, /const SPRAY_RADIUS = 68/);
+  assert.match(pressureWashing, /washAtAim/);
+  assert.match(pressureWashing, /pointerdown/);
+  assert.match(pressureWashing, /event\.code === "Space"/);
+  assert.match(pressureWashing, /requestAnimationFrame/);
+  assert.match(pressureWashing, /<canvas/);
+  assert.match(styles, /\.pressure-stage/);
+  assert.match(styles, /\.pressure-work-area/);
+  assert.match(styles, /\.pressure-start-card/);
+  assert.match(styles, /\.chelsea-pressure-marker/);
 });
 
 test("pond hockey has two compact teams and session-only match rules", async () => {

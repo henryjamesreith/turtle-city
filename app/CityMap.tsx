@@ -5,6 +5,7 @@ import { CentralParkMap } from "./CentralParkMap";
 import { ChelseaApartment } from "./ChelseaApartment";
 import { ChelseaDistrict } from "./ChelseaDistrict";
 import { HockeyGame } from "./HockeyGame";
+import { PressureWashingGame } from "./PressureWashingGame";
 import { SnowShovelingGame } from "./SnowShovelingGame";
 
 type District = {
@@ -27,9 +28,11 @@ type Screen =
   | "city"
   | "central-park"
   | "hockey"
+  | "pressure-washing"
   | "snow-shoveling";
 type MapReturn = "apartment" | "chelsea" | "central-park";
 type ParkSpawn = "south-gate" | "frozen-pond" | "snow-crew";
+type ChelseaSpawn = "apartment" | "pressure-washing";
 
 const districts: District[] = [
   {
@@ -80,6 +83,8 @@ export function CityMap() {
   const [screen, setScreen] = useState<Screen>("apartment");
   const [mapReturn, setMapReturn] = useState<MapReturn | null>(null);
   const [parkSpawn, setParkSpawn] = useState<ParkSpawn>("south-gate");
+  const [chelseaSpawn, setChelseaSpawn] =
+    useState<ChelseaSpawn>("apartment");
   const [selectedId, setSelectedId] = useState<District["id"] | null>(null);
   const selectedDistrict =
     districts.find((district) => district.id === selectedId) ?? null;
@@ -93,6 +98,9 @@ export function CityMap() {
   function travelTo(destination: "chelsea" | "central-park") {
     setMapReturn(null);
     setSelectedId(null);
+    if (destination === "chelsea") {
+      setChelseaSpawn("apartment");
+    }
     setScreen(destination);
   }
 
@@ -102,6 +110,9 @@ export function CityMap() {
         if (screen === "hockey" || screen === "snow-shoveling") {
           setParkSpawn(screen === "hockey" ? "frozen-pond" : "snow-crew");
           setScreen("central-park");
+        } else if (screen === "pressure-washing") {
+          setChelseaSpawn("pressure-washing");
+          setScreen("chelsea");
         } else if (screen === "central-park") {
           setMapReturn("central-park");
           setSelectedId(null);
@@ -155,10 +166,24 @@ export function CityMap() {
     );
   }
 
+  if (screen === "pressure-washing") {
+    return (
+      <PressureWashingGame
+        onExit={() => {
+          setChelseaSpawn("pressure-washing");
+          setScreen("chelsea");
+        }}
+      />
+    );
+  }
+
   if (screen === "apartment") {
     return (
       <ChelseaApartment
-        onExitToChelsea={() => setScreen("chelsea")}
+        onExitToChelsea={() => {
+          setChelseaSpawn("apartment");
+          setScreen("chelsea");
+        }}
         onOpenMap={() => openWorldMap("apartment")}
       />
     );
@@ -167,7 +192,9 @@ export function CityMap() {
   if (screen === "chelsea") {
     return (
       <ChelseaDistrict
+        spawn={chelseaSpawn}
         onEnterApartment={() => setScreen("apartment")}
+        onEnterPressureWashing={() => setScreen("pressure-washing")}
         onOpenMap={() => openWorldMap("chelsea")}
       />
     );
@@ -197,7 +224,7 @@ export function CityMap() {
     >
       <header className="map-wordmark">
         <p>Turtle City</p>
-        <h1>World Map</h1>
+        <h1>Map</h1>
       </header>
 
       <div className="water-label hudson-label" aria-hidden="true">
@@ -214,7 +241,7 @@ export function CityMap() {
         <span>QUEENS</span>
       </div>
       <div className="context-land context-brooklyn" aria-hidden="true">
-        <span>BROOKLYN · LATER</span>
+        <span>BROOKLYN</span>
       </div>
 
       <section className="map-world" style={mapStyle} aria-label="Manhattan map">
@@ -222,7 +249,6 @@ export function CityMap() {
         <div className="manhattan-island">
           <div className="future-zone future-inwood">
             <span>UPTOWN</span>
-            <small>Later</small>
           </div>
           <div className="future-zone future-harlem">
             <span>HARLEM</span>
@@ -268,9 +294,6 @@ export function CityMap() {
           </div>
           <div className="future-zone future-tribeca">
             <span>TRIBECA</span>
-          </div>
-          <div className="future-zone future-civic">
-            <span>CIVIC</span>
           </div>
         </div>
       </section>

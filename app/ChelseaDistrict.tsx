@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 type ChelseaDistrictProps = {
+  spawn: "apartment" | "pressure-washing";
   onEnterApartment: () => void;
+  onEnterPressureWashing: () => void;
   onOpenMap: () => void;
 };
 
@@ -43,12 +45,15 @@ function cameraOffset(
 }
 
 export function ChelseaDistrict({
+  spawn,
   onEnterApartment,
+  onEnterPressureWashing,
   onOpenMap,
 }: ChelseaDistrictProps) {
   const worldRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
   const [nearBuilding, setNearBuilding] = useState(false);
+  const [nearPressureWashing, setNearPressureWashing] = useState(false);
 
   useEffect(() => {
     const pressed = new Set<string>();
@@ -56,6 +61,7 @@ export function ChelseaDistrict({
     const camera = { x: 0, y: 0 };
     let initialized = false;
     let nearEntrance = false;
+    let nearWashCrew = false;
     let previousTime = performance.now();
     let animationFrame = 0;
 
@@ -70,7 +76,10 @@ export function ChelseaDistrict({
         return;
       }
 
-      if (event.key === "Enter" && nearEntrance && !event.repeat) {
+      if (event.key === "Enter" && nearWashCrew && !event.repeat) {
+        event.preventDefault();
+        onEnterPressureWashing();
+      } else if (event.key === "Enter" && nearEntrance && !event.repeat) {
         event.preventDefault();
         onEnterApartment();
       } else if (movementKeys.has(event.key)) {
@@ -102,7 +111,10 @@ export function ChelseaDistrict({
       const worldHeight = world.offsetHeight;
 
       if (!initialized) {
-        position.x = worldWidth * 0.5 + 210;
+        position.x =
+          spawn === "pressure-washing"
+            ? worldWidth * 0.2 + 140
+            : worldWidth * 0.5 + 210;
         position.y = worldHeight * 0.72;
         camera.x = cameraOffset(window.innerWidth, worldWidth, position.x);
         camera.y = cameraOffset(window.innerHeight, worldHeight, position.y);
@@ -133,11 +145,26 @@ export function ChelseaDistrict({
 
       const entranceX = worldWidth * 0.5;
       const entranceY = worldHeight * 0.68;
-      const isNear =
+      const pressureEntranceX = worldWidth * 0.2;
+      const pressureEntranceY = worldHeight * 0.68;
+      const isNearApartment =
         Math.hypot(position.x - entranceX, position.y - entranceY) < 175;
+      const isNearPressureWashing =
+        Math.hypot(
+          position.x - pressureEntranceX,
+          position.y - pressureEntranceY,
+        ) < 175;
 
-      nearEntrance = isNear;
-      setNearBuilding((current) => (current === isNear ? current : isNear));
+      nearEntrance = isNearApartment;
+      nearWashCrew = isNearPressureWashing;
+      setNearBuilding((current) =>
+        current === isNearApartment ? current : isNearApartment,
+      );
+      setNearPressureWashing((current) =>
+        current === isNearPressureWashing
+          ? current
+          : isNearPressureWashing,
+      );
 
       const targetX = cameraOffset(window.innerWidth, worldWidth, position.x);
       const targetY = cameraOffset(window.innerHeight, worldHeight, position.y);
@@ -169,7 +196,7 @@ export function ChelseaDistrict({
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", clearInput);
     };
-  }, [onEnterApartment]);
+  }, [onEnterApartment, onEnterPressureWashing, spawn]);
 
   return (
     <main className="chelsea-stage" data-testid="chelsea-district">
@@ -179,22 +206,39 @@ export function ChelseaDistrict({
       </header>
 
       <button type="button" className="chelsea-map-button" onClick={onOpenMap}>
-        World map
+        City map
       </button>
 
       <p className="sr-only">
         Move with the arrow keys or W, A, S, and D. Hold Shift to run. Press
-        Enter near the apartment building to go home.
+        Enter near the apartment building to go home or near the Wash Crew
+        entrance to pressure wash the neighboring facade.
       </p>
 
       <section className="chelsea-viewport" aria-label="Chelsea street">
         <div className="chelsea-world" ref={worldRef}>
           <div className="chelsea-skyline" aria-hidden="true" />
 
-          <section className="chelsea-building chelsea-building-west" aria-hidden="true">
+          <section
+            className="chelsea-building chelsea-building-west"
+            aria-label="Lettuce and Company pressure-washing job"
+          >
             <div className="chelsea-building-sign">LETTUCE &amp; CO.</div>
-            <div className="chelsea-store-window" />
-            <div className="chelsea-store-awning" />
+            <div className="chelsea-store-window" aria-hidden="true" />
+            <div className="chelsea-store-awning" aria-hidden="true" />
+            <div className="chelsea-wash-grime" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
+            <button
+              type="button"
+              className="chelsea-pressure-marker"
+              onClick={onEnterPressureWashing}
+            >
+              <strong>Wash Crew</strong>
+              <small>Pressure-washing job</small>
+            </button>
           </section>
 
           <section
@@ -234,11 +278,17 @@ export function ChelseaDistrict({
           </section>
 
           <div className="chelsea-sidewalk" aria-hidden="true">
-            <span className="chelsea-tree street-tree-one" />
-            <span className="chelsea-tree street-tree-two" />
             <span className="chelsea-hydrant" />
             <span className="chelsea-trash-bags" />
           </div>
+          <span
+            className="chelsea-tree street-tree-one"
+            aria-hidden="true"
+          />
+          <span
+            className="chelsea-tree street-tree-two"
+            aria-hidden="true"
+          />
           <div className="chelsea-curb" aria-hidden="true" />
           <div className="chelsea-road" aria-hidden="true">
             <span className="chelsea-parked-car" />
@@ -246,6 +296,15 @@ export function ChelseaDistrict({
 
           <div
             className={`chelsea-door-zone${nearBuilding ? " is-nearby" : ""}`}
+            aria-hidden="true"
+          >
+            <span />
+          </div>
+
+          <div
+            className={`chelsea-pressure-zone${
+              nearPressureWashing ? " is-nearby" : ""
+            }`}
             aria-hidden="true"
           >
             <span />
@@ -263,7 +322,17 @@ export function ChelseaDistrict({
         </div>
       </section>
 
-      {nearBuilding ? (
+      {nearPressureWashing ? (
+        <aside className="chelsea-enter-prompt" aria-live="polite">
+          <div>
+            <strong>Chelsea Wash Crew</strong>
+            <small>Pressure wash Lettuce &amp; Co.</small>
+          </div>
+          <button type="button" onClick={onEnterPressureWashing}>
+            Start job
+          </button>
+        </aside>
+      ) : nearBuilding ? (
         <aside className="chelsea-enter-prompt" aria-live="polite">
           <div>
             <strong>West 22 Apartments</strong>
