@@ -553,6 +553,7 @@ export function HockeyGame({ onExit }: HockeyGameProps) {
       return;
     }
 
+    const activeContext: CanvasRenderingContext2D = context;
     const turtleImage = new Image();
     turtleImage.src = "/assets/turtle-player.png";
     const pressed = new Set<string>();
@@ -962,19 +963,19 @@ export function HockeyGame({ onExit }: HockeyGameProps) {
       const offsetX = (pixelWidth - RINK_WIDTH * scale) / 2;
       const offsetY = (pixelHeight - RINK_HEIGHT * scale) / 2;
 
-      context.setTransform(1, 0, 0, 1, 0, 0);
-      context.clearRect(0, 0, pixelWidth, pixelHeight);
-      context.setTransform(scale, 0, 0, scale, offsetX, offsetY);
+      activeContext.setTransform(1, 0, 0, 1, 0, 0);
+      activeContext.clearRect(0, 0, pixelWidth, pixelHeight);
+      activeContext.setTransform(scale, 0, 0, scale, offsetX, offsetY);
 
-      drawRink(context);
+      drawRink(activeContext);
 
       const playersByDepth = [...game.players].sort(
         (first, second) => first.y - second.y,
       );
       for (const player of playersByDepth) {
-        drawPlayer(context, player, turtleImage);
+        drawPlayer(activeContext, player, turtleImage);
       }
-      drawPuck(context, game.puck);
+      drawPuck(activeContext, game.puck);
     }
 
     function animate(time: number) {
