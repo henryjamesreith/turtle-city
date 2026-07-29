@@ -1,19 +1,25 @@
 # Turtle City
 
-An early desktop-browser prototype for a New York-inspired social game where
-small turtles explore illustrated 2.5D neighborhood rooms and enter separate
-activities.
+Turtle City is a map-first, New York-inspired social world inhabited by
+turtles. The project is being developed from the bottom up:
 
-The current playable is set in an always-winter Central Park. It includes:
+1. city map;
+2. connected district layouts;
+3. character design;
+4. exploration;
+5. activities; and
+6. multiplayer and persistence.
 
-- a fixed-camera explorable room;
-- WASD and arrow-key movement;
-- a slippery skating surface;
-- fictional park details and a transit entrance;
-- an enterable Snow Crew shoveling activity; and
-- session-only activity feedback with no accounts, database, or progression.
+The application currently contains the first full-screen city-map artifact:
 
-See [PROJECT_PLAN.md](./PROJECT_PLAN.md) for the product and technical direction.
+- a simplified Manhattan overview;
+- the six initial districts in their broad geographic relationships;
+- muted expansion areas for later neighborhoods; and
+- a click-to-focus transition for each initial district.
+
+Characters, movement, activities, multiplayer, and persistence remain deferred.
+
+See [PROJECT_PLAN.md](./PROJECT_PLAN.md) for the current product documentation.
 
 ## Run locally
 
@@ -25,15 +31,4 @@ npm run dev
 ```
 
 Use `npm run build` to create a production build and `npm test` to verify the
-rendered game shell and first-playable structure.
-
-## Current structure
-
-- `app/` contains the web shell and game loader.
-- `game/` contains the Phaser scenes and prototype game logic.
-- `public/` contains share and static assets.
-- `PROJECT_PLAN.md` is the living founding brief.
-- `.openai/hosting.json` contains Sites hosting bindings.
-
-Persistent profiles, chat, multiplayer rooms, rewards, and the database are
-deliberately deferred until the exploration/activity loop has been tested.
+clean map foundation.

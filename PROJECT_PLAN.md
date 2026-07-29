@@ -1,7 +1,5 @@
 # Turtle City — Founding Product Plan
 
-Status: Working brief for product discovery and the first playable
-
 ## Product
 
 Turtle City is a browser-based, multiplayer social game in which players are
@@ -26,22 +24,29 @@ fantasy habitat.
 ### Experience principles
 
 - Make the city recognizable without reproducing Manhattan at literal scale.
-- Let a new player become a turtle and start moving in under two minutes.
+- Present the game itself full-screen, without a surrounding website frame or
+  persistent control instructions.
+- Let players see the whole city, zoom into a district, and then explore that
+  district beyond a single static room.
 - Favor short, tactile activities that are satisfying to repeat.
 - Make social interaction safe and useful from the first public test.
-- Use illustrated 2.5D rooms with strong compositions instead of literal-scale
-  city blocks or expensive real-time 3D.
+- Keep the generally successful illustrated palette and 2.5D city style, while
+  redesigning the turtles separately.
+- Prefer clarity over ambient decoration. Weather should be communicated by the
+  environment; falling snow and similar effects are unnecessary by default.
 - Sell expression and personalization, never power or access to fair play.
-- Build one delightful neighborhood before attempting an entire city.
+- Design the city structure first, then one district, then characters, and only
+  then activities and game systems.
 
 ## Core loop
 
-1. Explore a neighborhood and meet players or characters.
-2. Discover an activity entrance, point of interest, or destination.
-3. Enter a self-contained activity and play it for two to five minutes.
-4. Return to the neighborhood and continue exploring.
-5. Later, earn Shells or collectibles and customize the turtle or apartment.
-6. Travel, meet other turtles, and choose the next activity.
+1. Start in the player’s apartment or the last location they occupied.
+2. Explore the current area and meet players or characters.
+3. Open the city map when choosing another district or destination.
+4. Discover an activity entrance, point of interest, or destination.
+5. Enter a self-contained activity and play it for two to five minutes.
+6. Return to the neighborhood and continue exploring.
+7. Later, earn Shells or collectibles and customize the turtle or apartment.
 
 **Economy:** Shells are earned through play and pay for normal cosmetics and
 furniture. Real-money items can be introduced later as direct, clearly priced
@@ -53,19 +58,28 @@ feedback, but closing the game resets it.
 
 ## World
 
-The map should use the long north-south shape and broad relationships of
-Manhattan while compressing each district into a small set of memorable,
-illustrated 2.5D rooms. Rooms use a fixed or tightly controlled camera,
-foreground/background layering, depth sorting, and simple walkable areas to
-create dimensionality without building a true 3D world. A transit map connects
-districts; the player does not need to walk every street between them.
+The world has two connected navigation levels:
+
+1. **City map:** a full-city overview using Manhattan’s long north-south shape
+   and broad neighborhood relationships. The map is not the default starting
+   screen; players open it from their apartment or current location, then pan,
+   zoom, and select a district.
+2. **District exploration:** zooming into a district reveals one continuous,
+   scrollable environment. The camera follows the player as they move through
+   paths, streets, landmarks, and activity entrances. The environment can be
+   authored in connected sections and loaded in chunks, but those seams should
+   not feel like separate social rooms.
+
+Interiors, apartments, transit vehicles, and self-contained activities may
+still use separate fixed-camera scenes. A transit layer connects distant
+districts without requiring every intervening street to be built.
 
 | District | Landmark or identity | Candidate activities |
 | --- | --- | --- |
 | FiDi | One World Trade-inspired skyline | Street cleanup, deliveries |
 | Chelsea | Flatiron-inspired building | Pressure washing, shopping |
 | West Village | Jazz cellar, West Side waterfront | Music activity, biking |
-| Central Park | Winter park, rink, and sledding hill | Ice skating, sledding, snow shoveling |
+| Central Park | Winter park, pond-hockey rink, and maintenance yard | Pond hockey, snow shoveling, sledding later |
 | Midtown | Times Square and Empire State-inspired skyline | Social hub, cleanup |
 | East Village / LES | East River park construction | Excavator, trash pickup |
 
@@ -77,38 +91,81 @@ Real landmarks can guide shape and atmosphere, but the shipped world should use
 stylized art and mostly fictional businesses. Names and likenesses should be
 reviewed before commercial release, especially for privately owned venues.
 
-## Recommended first playable
+## World prototype
 
-Start in **Central Park in winter**. It is immediately recognizable, visually
-contained, and supports three activities that feel different while sharing the
-same snow-and-ice art set. The district can eventually contain a rink/plaza
-room, a sledding hill, a snowy path, a food kiosk, and a subway entrance.
+The first prototype contains the **full-screen city map**. It establishes:
 
-The first playable should include:
+- Manhattan’s overall silhouette and the relative location of the initial
+  districts.
+- A clear visual identity for each district using original, non-infringing city
+  cues.
+- A city overview and a district-focused zoom state.
+- Minimal interface chrome so the map feels like the game, not a game embedded
+  inside a webpage.
+- A visual path for later expansion into other Manhattan and Brooklyn
+  neighborhoods.
 
-- One polished 2.5D rink/plaza room with movement, walkable boundaries,
-  foreground occlusion, depth sorting, and 12–20 players per instance.
-- A turtle creator with a small set of colors, shells, and accessories.
-- Guest preview for movement, plus email magic-link and Google sign-in for
-  saved progress and public chat.
-- Keyboard movement using WASD or arrow keys.
-- One simple, polished job: clearing snow from marked sections of a path.
-- A skating mode with different acceleration, turning, and stopping on the
-  rink. Treat sledding as the next activity after these systems are stable.
-- Clearly marked activity entrances that move the player from the explorable
-  room into a self-contained game, then return them to the room afterward.
-- Session-only activity completion feedback with no leaderboard, progression,
-  inventory, or database writes.
-- A subway map with the current stop and visible “coming soon” destinations.
-- Open text chat for authenticated players, plus emotes.
-- Player mute/block/report, automated filtering, rate limits, moderation logs,
-  an admin review queue, analytics, and crash reporting.
+Selecting Central Park opens a continuous camera prototype. The first
+north-to-south route is:
 
-The Central Park district is complete for private alpha when skating, shoveling,
-and sledding all work. Midtown should be the second district. Connecting it by
-subway proves the multi-district and transit model before more of Manhattan is
-built. Buses and Citi Bikes can initially be alternate travel animations over
-the same destination system rather than three separate simulations.
+- **South Gate:** the initial transit edge and subway entrance.
+- **South Slopes:** the starting sledding area.
+- **Wooded paths:** the connective landscape through the center of the park.
+- **Frozen Pond:** a larger northern destination for pond hockey.
+- **Winter Walk and Snow Crew:** further exploration and a future shoveling
+  activity.
+
+The first player-character direction is an original, friendly upright turtle
+with a large readable head, compact body, olive-green skin, warm yellow belly,
+and brick-red shell. The current prototype uses one complete neutral character
+sprite, mirrored for leftward travel. It intentionally has no walking animation
+or separated body-part rig. Until collision boundaries are implemented, the
+player is intentionally drawn above environment artwork so large landmarks
+cannot hide it. Character animation and true foreground/background depth
+sorting will be reconsidered only after the static character direction,
+gameplay proportions, and collision geometry are approved.
+
+Environment art uses an angled three-quarter perspective while movement and
+collision coordinates remain top-down internally. The player can smoothly zoom
+the camera within a limited range without changing the underlying world scale.
+Districts use a consistent navigation grammar: a clear primary route connects
+major destinations, smaller branches lead to activity entrances, and perimeter
+gates connect to transit or neighboring streets. An activity’s interaction
+zone is a small, intentional threshold beside its destination—not the entire
+pond, hill, building, or landmark.
+
+Central Park’s primary promenade runs north from South Gate, branches through
+the South Slopes and woodland, loops around the Frozen Pond, and continues to
+the north end. Secondary paths provide alternate short routes, while activity
+spurs terminate at sledding, hockey, and Snow Crew entrances. West and east
+gates visibly cross the sidewalk and avenue so the park feels embedded in the
+city rather than sealed off from it.
+
+Future city districts should use the same continuous camera and world-coordinate
+model. Park paths become sidewalks and crosswalks; landscape masses become
+building footprints; activity thresholds become storefront doors, stoops,
+subway stairs, and lobby entrances. Buildings line the back edge of the
+walkable street plane so players feel that they are moving among them.
+Doorways, activities, apartments, and detailed interiors can open as separate
+fixed-camera scenes without interrupting ordinary outdoor exploration.
+
+The first activity is pond hockey at the Frozen Pond. Each side has three
+skaters and one goalie. The initial prototype is a 90-second session-only match:
+one human controls a Lettuce Leafs skater, while the remaining five skaters and
+both goalies use simple local AI. The player moves with WASD or the arrow keys
+and shoots with Space. Scores reset when the activity closes; multiplayer,
+matchmaking, rewards, and leaderboards come later.
+
+The second activity is snow shoveling in the Snow Crew maintenance yard. The
+initial prototype is a 75-second session-only shift: the player moves with WASD
+or the arrow keys and holds Space to push the shovel, clearing at least 82% of
+the marked paths. Cleared snow becomes visible snowbanks at the route edges.
+Results reset when the activity closes, and returning places the player beside
+the Snow Crew entrance.
+Sledding remains a later Central Park activity. Do not add multiplayer,
+accounts, progression, chat, snow particles, or permanent explanatory HUD
+elements yet. Central Park remains permanently winter, expressed through the
+environment rather than an ambient particle effect.
 
 ## Technical direction
 
@@ -140,6 +197,11 @@ wrapper such as Capacitor and a desktop-store wrapper such as Tauri or Electron.
 Touch controls, app-store identity, and store payments would still require
 dedicated later work.
 
+The technical stack remains suitable, but backend services should not drive the
+current work. Next.js/React can present the map and Phaser can later power
+district navigation. Colyseus, Supabase, authentication, chat, and persistence
+wait until the map, district structure, and character direction are proven.
+
 ### Important boundaries
 
 - The browser sends player intent; the Colyseus server decides valid movement,
@@ -169,26 +231,20 @@ records, purchases/entitlements, and player reports.
 
 ## Delivery sequence
 
-1. **Discovery and feel:** decide controls, exact age policy, room composition,
-   and art direction; build a gray-box Central Park movement test before
-   producing final world art.
-2. **Foundation:** monorepo, deployment environments, authentication, shared
-   protocol, database migrations, logging, open-chat safety systems, and a basic
-   admin view.
-3. **Vertical slice:** Central Park rink/plaza, keyboard exploration, enterable
-   snow-shoveling activity, skating, open chat, and transit-map shell. Activity
-   results are session-only.
-4. **Private alpha:** improve onboarding and performance from playtests; add
-   sledding, apartments, inventory, and a small Midtown room connected by
-   subway.
-5. **Public test:** friends, stronger moderation tools, more catalog content,
-   events, and economy balancing.
-6. **Commercial release:** real-money checkout only after retention and safety
-   are healthy; then expand activities and districts one at a time.
-
-Large-scale Manhattan, player trading, user-generated content, native mobile
-apps, real-money purchases, and elaborate vehicle simulations are intentionally
-outside the first playable.
+1. **City map:** design and approve the full-screen city overview and district
+   zoom behavior.
+2. **District structure:** build Central Park as a continuous explorable
+   environment and establish the camera behavior, scale, and major landmarks.
+3. **Character design:** refine the first turtle silhouette, proportions,
+   expression, and gameplay size as a separate visual-design phase.
+4. **Exploration:** add one character, collision boundaries, and basic
+   navigation through the continuous Central Park environment.
+5. **Activities:** build pond hockey first, snow shoveling second, and sledding
+   later.
+6. **Social foundation:** add multiplayer, identity, chat safety, and transit
+   between districts.
+7. **Persistence and business:** only then add apartments, inventory,
+   progression, analytics, and monetization.
 
 ## Confirmed decisions
 
@@ -196,20 +252,43 @@ outside the first playable.
   dwellers and parents, but players of any age may join.
 - The first supported platform is desktop web, with clean boundaries that make
   later mobile and desktop-store packaging possible.
-- The world is made from illustrated 2.5D rooms.
-- Turtles move with standard desktop controls: WASD or arrow keys.
-- Each room uses a fixed camera composition.
-- Central Park in winter is the first district, featuring skating, sledding, and
-  snow shoveling. Central Park is always winter; other districts can have their
-  own permanent or seasonal weather.
+- The game view is full-screen, without the prototype’s outer page frame,
+  footer, persistent control legend, or large explanatory overlays.
+- Players can view the complete map, zoom into a district, and explore multiple
+  connected areas within that district.
+- A session starts in the player’s apartment or saved last location. The city
+  map is opened on demand as a travel/navigation view and can be closed to
+  return to the current location.
+- District areas use an illustrated 2.5D style, but the player is not confined
+  to one fixed room for an entire district.
+- Outdoor districts use a continuous, softly following camera. Separate
+  fixed-camera scenes remain appropriate for interiors, apartments, transit,
+  and activities.
+- Outdoor environments use a 2.5D three-quarter perspective rather than a
+  literal overhead view. Movement and collision remain on a simple top-down
+  coordinate plane, and scenery is depth-sorted around the player.
+- Camera zoom is smooth, centered on the player, and intentionally constrained
+  so players cannot reveal unloaded world sections or lose navigation context.
+- Central Park in winter is the first district. Its first games are four-a-side
+  pond hockey—with three skaters and one goalie per team—and snow shoveling in
+  the maintenance yard. Sledding remains a later activity. Central Park is
+  always winter; other districts can have their own permanent or seasonal
+  weather.
+- Central Park does not need falling-snow effects; static environmental art is
+  enough to communicate winter.
+- The first turtle direction is friendly, compact, and highly readable at
+  gameplay scale. It currently uses one static three-quarter character sprite;
+  walking animation, clothing attachment layers, and additional directional
+  views come later.
 - Authenticated players can use open text chat.
 - The setting directly parodies New York through a mostly normal city inhabited
   by turtles, with turtle-themed stores, food, dialogue, and visual jokes.
 - The city uses original art, fictional businesses, generic city infrastructure,
   and recognizable geographic cues without reproducing protected logos,
   characters, private brands, or distinctive commercial designs.
-- Players explore neighborhood rooms and enter activities as separate games.
-  Activity results and progression are not persisted in the first version.
+- Players explore continuous outdoor districts and enter interiors or
+  activities as separate scenes. Activity results and progression are not
+  persisted in the first version.
 - Monetization is deferred until the core game and retention are proven.
 
 ## Remaining decisions
@@ -224,26 +303,19 @@ outside the first playable.
 3. **Initial identity:** Decide whether the first private test uses temporary
    guest names or requires email/Google sign-in. Public chat should require an
    authenticated identity even when exploration does not.
+4. **World loading:** Decide how large a district can be before its illustrated
+   sections need to be loaded and unloaded in chunks.
+5. **Initial map extent:** Decide whether the first overview shows Manhattan
+   only or also includes simplified, locked silhouettes for future Brooklyn
+   districts.
 
 ## Immediate next steps
 
-1. Define an all-ages safety and privacy policy before inviting the public. This
-   does not block a local or tightly controlled prototype.
-2. Make a one-page first-playable specification defining the rink/plaza room,
-   its exits, walkable zones, player count, shoveling loop, and skating feel.
-3. Create a rough visual concept for the room and turtle, including front,
-   back, side, walking, and skating views. Keep it sketch-level until movement
-   works.
-4. Scaffold the monorepo and a local Next.js + Phaser game route, with shared
-   TypeScript packages but no database or store yet.
-5. Build a gray-box prototype in which one turtle moves with WASD or arrow keys,
-   passes behind and in front of scenery, transitions onto the ice, and enters
-   and exits the shoveling activity.
-6. Add Colyseus and confirm that two browser windows can join the same room and
-   see smooth, server-validated movement.
-7. Add Supabase authentication and the minimum open-chat safety set: filtered
-   display names, filtering, rate limits, mute/block/report, retention, and an
-   admin review screen.
-8. Add session-only completion feedback to the shoveling activity, then add the
-   skating challenge. Only after that loop feels good should production art,
-   persistence, apartments, inventory, and sledding expand the slice.
+1. Playtest pond hockey and tune skating speed, puck control, AI pressure,
+   goalie behavior, match duration, and rink readability.
+2. Build the Snow Crew maintenance-yard transition and the first snow-shoveling
+   game loop.
+3. Refine Central Park scenery clusters and landmark proportions around the
+   path network.
+4. Add district collision boundaries later, after the first two activities
+   establish the desired game feel.

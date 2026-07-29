@@ -1,5 +1,5 @@
-import { TurtleCityGame } from "./TurtleCityGame";
+import { CityMap } from "./CityMap";
 
 export default function Home() {
-  return <TurtleCityGame />;
+  return <CityMap />;
 }
