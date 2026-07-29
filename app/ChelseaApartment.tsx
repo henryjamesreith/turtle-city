@@ -198,7 +198,6 @@ export function ChelseaApartment({
           onClick={onExitToChelsea}
         >
           <span>4B</span>
-          <small>Hallway</small>
         </button>
 
         <div
