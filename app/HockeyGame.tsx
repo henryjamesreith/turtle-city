@@ -546,7 +546,8 @@ export function HockeyGame({ onExit }: HockeyGameProps) {
       return;
     }
 
-    const context = canvas.getContext("2d");
+    const activeCanvas: HTMLCanvasElement = canvas;
+    const context = activeCanvas.getContext("2d");
 
     if (!context) {
       return;
@@ -561,8 +562,14 @@ export function HockeyGame({ onExit }: HockeyGameProps) {
 
     function resizeCanvas() {
       const density = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.max(1, Math.floor(canvas.clientWidth * density));
-      canvas.height = Math.max(1, Math.floor(canvas.clientHeight * density));
+      activeCanvas.width = Math.max(
+        1,
+        Math.floor(activeCanvas.clientWidth * density),
+      );
+      activeCanvas.height = Math.max(
+        1,
+        Math.floor(activeCanvas.clientHeight * density),
+      );
     }
 
     function handleKeyDown(event: KeyboardEvent) {
@@ -946,8 +953,8 @@ export function HockeyGame({ onExit }: HockeyGameProps) {
     }
 
     function drawGame(game: MatchState) {
-      const pixelWidth = canvas.width;
-      const pixelHeight = canvas.height;
+      const pixelWidth = activeCanvas.width;
+      const pixelHeight = activeCanvas.height;
       const scale = Math.min(
         pixelWidth / RINK_WIDTH,
         pixelHeight / RINK_HEIGHT,
