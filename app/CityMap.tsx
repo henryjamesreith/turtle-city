@@ -2,6 +2,8 @@
 
 import { useEffect, useState, type CSSProperties } from "react";
 import { CentralParkMap } from "./CentralParkMap";
+import { ChelseaApartment } from "./ChelseaApartment";
+import { ChelseaDistrict } from "./ChelseaDistrict";
 import { HockeyGame } from "./HockeyGame";
 import { SnowShovelingGame } from "./SnowShovelingGame";
 
@@ -19,7 +21,14 @@ type District = {
   focusY: string;
 };
 
-type Screen = "city" | "central-park" | "hockey" | "snow-shoveling";
+type Screen =
+  | "apartment"
+  | "chelsea"
+  | "city"
+  | "central-park"
+  | "hockey"
+  | "snow-shoveling";
+type MapReturn = "apartment" | "chelsea" | "central-park";
 type ParkSpawn = "south-gate" | "frozen-pond" | "snow-crew";
 
 const districts: District[] = [
@@ -68,11 +77,24 @@ const districts: District[] = [
 ];
 
 export function CityMap() {
-  const [screen, setScreen] = useState<Screen>("city");
+  const [screen, setScreen] = useState<Screen>("apartment");
+  const [mapReturn, setMapReturn] = useState<MapReturn | null>(null);
   const [parkSpawn, setParkSpawn] = useState<ParkSpawn>("south-gate");
   const [selectedId, setSelectedId] = useState<District["id"] | null>(null);
   const selectedDistrict =
     districts.find((district) => district.id === selectedId) ?? null;
+
+  function openWorldMap(returnTo: MapReturn) {
+    setMapReturn(returnTo);
+    setSelectedId(null);
+    setScreen("city");
+  }
+
+  function travelTo(destination: "chelsea" | "central-park") {
+    setMapReturn(null);
+    setSelectedId(null);
+    setScreen(destination);
+  }
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -81,7 +103,20 @@ export function CityMap() {
           setParkSpawn(screen === "hockey" ? "frozen-pond" : "snow-crew");
           setScreen("central-park");
         } else if (screen === "central-park") {
+          setMapReturn("central-park");
+          setSelectedId(null);
           setScreen("city");
+        } else if (screen === "apartment") {
+          setScreen("chelsea");
+        } else if (screen === "chelsea") {
+          setMapReturn("chelsea");
+          setSelectedId(null);
+          setScreen("city");
+        } else if (selectedId) {
+          setSelectedId(null);
+        } else if (mapReturn) {
+          setScreen(mapReturn);
+          setMapReturn(null);
         } else {
           setSelectedId(null);
         }
@@ -90,7 +125,7 @@ export function CityMap() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [screen]);
+  }, [mapReturn, screen, selectedId]);
 
   const mapStyle = {
     "--focus-x": selectedDistrict?.focusX ?? "0vw",
@@ -120,11 +155,29 @@ export function CityMap() {
     );
   }
 
+  if (screen === "apartment") {
+    return (
+      <ChelseaApartment
+        onExitToChelsea={() => setScreen("chelsea")}
+        onOpenMap={() => openWorldMap("apartment")}
+      />
+    );
+  }
+
+  if (screen === "chelsea") {
+    return (
+      <ChelseaDistrict
+        onEnterApartment={() => setScreen("apartment")}
+        onOpenMap={() => openWorldMap("chelsea")}
+      />
+    );
+  }
+
   if (screen === "central-park") {
     return (
       <CentralParkMap
         spawn={parkSpawn}
-        onReturnToCity={() => setScreen("city")}
+        onReturnToCity={() => openWorldMap("central-park")}
         onEnterHockey={() => {
           setParkSpawn("frozen-pond");
           setScreen("hockey");
@@ -193,9 +246,8 @@ export function CityMap() {
               aria-pressed={district.id === selectedId}
               onClick={() => {
                 if (district.id === "central-park") {
-                  setSelectedId(null);
                   setParkSpawn("south-gate");
-                  setScreen("central-park");
+                  travelTo("central-park");
                 } else {
                   setSelectedId(district.id);
                 }
@@ -228,6 +280,20 @@ export function CityMap() {
         Select a district
       </div>
 
+      {mapReturn && !selectedDistrict ? (
+        <button
+          type="button"
+          className="map-close"
+          onClick={() => {
+            setScreen(mapReturn);
+            setMapReturn(null);
+          }}
+        >
+          <span aria-hidden="true">←</span>
+          Back to where you were
+        </button>
+      ) : null}
+
       {selectedDistrict ? (
         <>
           <button
@@ -243,6 +309,15 @@ export function CityMap() {
             <p>District overview</p>
             <h2>{selectedDistrict.name}</h2>
             <span>{selectedDistrict.mapNote}</span>
+            {selectedDistrict.id === "chelsea" ? (
+              <button
+                type="button"
+                className="district-enter"
+                onClick={() => travelTo("chelsea")}
+              >
+                Visit Chelsea
+              </button>
+            ) : null}
           </section>
         </>
       ) : null}

@@ -77,7 +77,7 @@ districts without requiring every intervening street to be built.
 | District | Landmark or identity | Candidate activities |
 | --- | --- | --- |
 | FiDi | One World Trade-inspired skyline | Street cleanup, deliveries |
-| Chelsea | Flatiron-inspired building | Pressure washing, shopping |
+| Chelsea | West-side blocks, starter apartment building, Flatiron-inspired landmark later | Pressure washing, shopping |
 | West Village | Jazz cellar, West Side waterfront | Music activity, biking |
 | Central Park | Winter park, pond-hockey rink, and maintenance yard | Pond hockey, snow shoveling, sledding later |
 | Midtown | Times Square and Empire State-inspired skyline | Social hub, cleanup |
@@ -159,15 +159,34 @@ the rink readable. Scores reset when the activity closes; multiplayer,
 matchmaking, rewards, and leaderboards come later.
 
 The second activity is snow shoveling in the Snow Crew maintenance yard. The
-initial prototype is a 75-second session-only shift: the player moves with WASD
-or the arrow keys and holds Space to push the shovel, clearing at least 82% of
-the marked paths. Cleared snow becomes visible snowbanks at the route edges.
-Results reset when the activity closes, and returning places the player beside
-the Snow Crew entrance.
+initial prototype is a 90-second session-only shift built around physical
+shoveling runs rather than instant snow removal. The player lines up with WASD
+or the arrow keys, holds Space to lower the blade, and pushes forward. Snow
+collects visibly in the shovel, progressively slows the turtle, and must be
+carried off the path; releasing Space there dumps the load into a growing
+snowbank. Dropping a load on the path puts snow back onto the route. The shift
+ends after at least 72% of the marked paths are open. Results reset when the
+activity closes, and returning places the player beside the Snow Crew entrance.
 Sledding remains a later Central Park activity. Do not add multiplayer,
 accounts, progression, chat, snow particles, or permanent explanatory HUD
 elements yet. Central Park remains permanently winter, expressed through the
 environment rather than an ambient particle effect.
+
+The first home and city-block prototype is in **Chelsea**. A new session begins
+in Apartment 4B, a shabby starter unit inside the fictional West 22 Apartments.
+The apartment is worn, cramped, and funny rather than unsafe or genuinely
+disturbing. It is a fixed-camera interior with stable upgrade slots for the
+walls, floor, window, kitchen, heating, bed, lighting, furniture, and storage.
+Those slots establish the future customization model, but they do not yet save
+choices, charge currency, or offer real upgrades.
+
+Leaving Apartment 4B opens one continuous Chelsea street section. The player
+can walk the block, see fictional turtle businesses, re-enter West 22 through
+its street door, or open the world map. A lobby is intentionally omitted from
+this first slice; it should be added only if the direct apartment-to-street
+transition feels abrupt in playtesting. Opening the world map remembers the
+current scene so closing it returns the player to the apartment, Chelsea, or
+Central Park rather than treating the map as the default home screen.
 
 ## Technical direction
 
@@ -243,10 +262,12 @@ records, purchases/entitlements, and player reports.
    navigation through the continuous Central Park environment.
 5. **Activities:** build pond hockey first, snow shoveling second, and sledding
    later.
-6. **Social foundation:** add multiplayer, identity, chat safety, and transit
+6. **Home vertical slice:** build the shabby Chelsea starter apartment, its
+   apartment-building entrance, and one explorable Chelsea block.
+7. **Social foundation:** add multiplayer, identity, chat safety, and transit
    between districts.
-7. **Persistence and business:** only then add apartments, inventory,
-   progression, analytics, and monetization.
+8. **Persistence and business:** only then add saved apartment ownership and
+   upgrades, inventory, progression, analytics, and monetization.
 
 ## Confirmed decisions
 
@@ -261,6 +282,10 @@ records, purchases/entitlements, and player reports.
 - A session starts in the player’s apartment or saved last location. The city
   map is opened on demand as a travel/navigation view and can be closed to
   return to the current location.
+- The current prototype starts in a shabby, fixed-camera Chelsea apartment,
+  exits directly to one explorable block, and allows the player to re-enter the
+  same building. Apartment upgrades are represented only as future-ready
+  visual slots; no apartment state is persisted yet.
 - District areas use an illustrated 2.5D style, but the player is not confined
   to one fixed room for an entire district.
 - Outdoor districts use a continuous, softly following camera. Separate
@@ -314,11 +339,11 @@ records, purchases/entitlements, and player reports.
 
 ## Immediate next steps
 
-1. Playtest pond hockey and tune skating speed, puck control, AI pressure,
-   goalie behavior, match duration, and rink readability.
-2. Playtest the Snow Crew maintenance-yard shoveling loop and tune its clearing
-   target, shift duration, and snow feedback.
-3. Refine Central Park scenery clusters and landmark proportions around the
-   path network.
-4. Add district collision boundaries later, after the first two activities
-   establish the desired game feel.
+1. Playtest the Apartment 4B → Chelsea street → Apartment 4B loop and decide
+   whether a lobby would improve the transition.
+2. Refine the first Chelsea block’s depth, storefront scale, sidewalk, and
+   apartment-building entrance before extending the district.
+3. Choose one apartment upgrade slot to prototype visually without adding
+   currency, saving, or a store.
+4. Continue tuning pond hockey and snow shoveling independently; collision
+   boundaries remain deferred.
