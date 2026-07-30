@@ -37,7 +37,7 @@ interiors, transit, and activities can use separate fixed-camera scenes.
 | Chelsea | Starter apartment and west-side blocks | Pressure washing; cooking @ gregs papaya, doorman game, news stand for puzzles |
 | Midtown | Times Square and Empire State-inspired skyline | Falling-object dodge game, trash pickup |
 | FiDi | One World Trade-inspired skyline | Delivery driving(should be like subway surfers); tycoon progression later |
-| West Village | Jazz cellar and waterfront | Music activity/guitar hero, biking |
+| West Village | Jazz cellar and waterfront | Hudson bike race; music activity later |
 | East Village / LES | East River construction area | Excavator |
 
 Later districts may include the Upper West Side, Upper East Side, Harlem,
@@ -65,8 +65,8 @@ Bushwick.
 - Leaving the apartment opens an explorable Chelsea block. The player can
   re-enter West 22 or walk to the West 23 Street subway.
 - West Village is an explorable continuous district connecting quiet restaurant
-  and jazz-club streets to the Hudson greenway. The jazz and bike-race
-  activities are visual placeholders only.
+  and jazz-club streets to the Hudson greenway. The bike race and Cellar Note
+  rhythm set are playable.
 - Subway entrances connect Chelsea, West Village, and Central Park. Each station
   has a walkable platform, an arrivals board, and a train that arrives almost
   immediately. Enter boards while the doors are open.
@@ -91,6 +91,11 @@ Bushwick.
 - **Pressure washing:** 75-second Chelsea shift. Hold the mouse button and sweep
   across the facade, or aim with WASD/arrows and spray with Space. Clean at
   least 85%.
+- **Hudson bike race:** Change lanes with W/S or the arrow keys, hold Space to
+  sprint, avoid obstacles, and race two riders to the Greenway finish.
+- **Cellar Note rhythm set:** Enter the West Village jazz club and play a
+  five-lane original set with A, S, D, F, and G. Accurate hits build a combo
+  and score multiplier.
 
 All activity scores and results are session-only and reset when the activity
 closes.

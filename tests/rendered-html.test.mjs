@@ -225,10 +225,23 @@ test("Chelsea connects the starter apartment, street, and subway", async () => {
   assert.match(styles, /assets\/turtles\/clover\.png/);
 });
 
-test("West Village connects neighborhood streets to the Hudson waterfront", async () => {
-  const [map, village, persistence, migration, styles] = await Promise.all([
+test("West Village connects its streets, music venue, and Hudson waterfront", async () => {
+  const [
+    map,
+    village,
+    bikeRace,
+    jazzClub,
+    rhythmGame,
+    persistence,
+    migration,
+    styles,
+  ] =
+    await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/WestVillageDistrict.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/BikeRaceGame.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/JazzClub.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/RhythmGame.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../lib/persistence/playerPersistence.ts", import.meta.url),
       "utf8",
@@ -241,16 +254,29 @@ test("West Village connects neighborhood streets to the Hudson waterfront", asyn
       "utf8",
     ),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
-  ]);
+    ]);
 
   assert.match(map, /import \{ WestVillageDistrict \}/);
+  assert.match(map, /import \{ BikeRaceGame \}/);
+  assert.match(map, /import \{ JazzClub \}/);
+  assert.match(map, /import \{ RhythmGame \}/);
   assert.match(map, /screen === "west-village"/);
+  assert.match(map, /screen === "bike-race"/);
+  assert.match(map, /screen === "jazz-club"/);
+  assert.match(map, /screen === "rhythm-game"/);
+  assert.match(map, /setWestVillageSpawn\("waterfront"\)/);
+  assert.match(map, /setWestVillageSpawn\("jazz-club"\)/);
   assert.match(map, /enterSubway\("west-village"\)/);
   assert.match(village, /data-testid="west-village-district"/);
   assert.match(village, /CELLAR NOTE/);
   assert.match(village, /THE NIGHT HERON/);
   assert.match(village, /HUDSON GREENWAY/);
-  assert.match(village, /Bike races coming later/);
+  assert.match(village, /West Village bike race/);
+  assert.match(village, /onEnterBikeRace/);
+  assert.match(village, /onEnterJazzClub/);
+  assert.match(village, /village-jazz-zone/);
+  assert.match(village, /village-waterfront-plaza/);
+  assert.match(village, /village-road/);
   assert.match(village, /requestAnimationFrame/);
   assert.match(village, /className="village-player"/);
   assert.match(village, /className="turtle-nameplate"/);
@@ -262,8 +288,32 @@ test("West Village connects neighborhood streets to the Hudson waterfront", asyn
   assert.match(migration, /'west-village'/);
   assert.match(styles, /\.village-stage/);
   assert.match(styles, /\.village-jazz-club/);
+  assert.match(styles, /\.village-jazz-zone/);
   assert.match(styles, /\.village-waterfront/);
   assert.match(styles, /\.village-greenway/);
+  assert.match(styles, /\.bike-race-stage/);
+  assert.match(styles, /\.bike-race-track/);
+  assert.match(styles, /\.bike-racer/);
+  assert.match(bikeRace, /data-testid="bike-race-game"/);
+  assert.match(bikeRace, /const COURSE_LENGTH = 6200/);
+  assert.match(bikeRace, /Use W\/S or ↑\/↓ to change lanes/);
+  assert.match(bikeRace, /event\.code === "Space"/);
+  assert.match(bikeRace, /requestAnimationFrame/);
+  assert.match(bikeRace, /Return to West Village/);
+  assert.match(jazzClub, /data-testid="jazz-club"/);
+  assert.match(jazzClub, /OPEN SHELL SESSION/);
+  assert.match(jazzClub, /Play the set/);
+  assert.match(jazzClub, /className="turtle-nameplate"/);
+  assert.match(rhythmGame, /data-testid="rhythm-game"/);
+  assert.match(rhythmGame, /const LANE_KEYS = \["a", "s", "d", "f", "g"\]/);
+  assert.match(rhythmGame, /new AudioContext/);
+  assert.match(rhythmGame, /PERFECT/);
+  assert.match(rhythmGame, /requestAnimationFrame/);
+  assert.match(rhythmGame, /Start the set/);
+  assert.match(styles, /\.jazz-club-stage/);
+  assert.match(styles, /\.rhythm-stage/);
+  assert.match(styles, /\.rhythm-board/);
+  assert.match(styles, /\.rhythm-note/);
 });
 
 test("the subway is the only route to the onboard city map", async () => {

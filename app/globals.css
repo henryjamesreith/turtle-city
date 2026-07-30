@@ -5276,7 +5276,7 @@ html[data-turtle-variant="rosie"] {
   height: max(960px, 100dvh);
   overflow: hidden;
   background:
-    linear-gradient(180deg, #b8ced0 0 35%, #e6d8bc 35% 100%);
+    linear-gradient(180deg, #b8ced0 0 32%, #d9cfb8 32% 55%, #d8cbb2 55% 100%);
   transform-origin: 0 0;
   will-change: transform;
 }
@@ -5284,7 +5284,7 @@ html[data-turtle-variant="rosie"] {
 .village-sky {
   position: absolute;
   z-index: 1;
-  inset: 0 0 61%;
+  inset: 0 0 67%;
   overflow: hidden;
   background:
     linear-gradient(180deg, #a9c9ce, #d8d5bc 84%, #c3b291);
@@ -5361,8 +5361,8 @@ html[data-turtle-variant="rosie"] {
 .village-townhouses {
   position: absolute;
   z-index: 8;
-  top: 5%;
-  height: 58%;
+  top: 6%;
+  height: 50%;
   border: 5px solid var(--ink);
   border-bottom-width: 8px;
   box-shadow: 16px 18px 0 rgb(21 53 48 / 13%);
@@ -5562,6 +5562,18 @@ html[data-turtle-variant="rosie"] {
   font-style: italic;
 }
 
+.village-jazz-club button {
+  margin-top: 10px;
+  padding: 7px 13px;
+  border: 2px solid #d4b25e;
+  border-radius: 999px;
+  background: #d4b25e;
+  color: #172a27;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 900;
+}
+
 .village-record-shop {
   right: 50px;
   width: 225px;
@@ -5635,9 +5647,9 @@ html[data-turtle-variant="rosie"] {
   position: absolute;
   z-index: 18;
   right: 0;
-  bottom: 17%;
-  left: 1050px;
-  height: 22%;
+  bottom: 20%;
+  left: 1080px;
+  height: 25%;
   border-top: 5px solid var(--ink);
   background:
     repeating-linear-gradient(
@@ -5654,7 +5666,7 @@ html[data-turtle-variant="rosie"] {
 .village-sidewalk::after {
   position: absolute;
   right: 0;
-  bottom: -41px;
+  bottom: -15px;
   left: 0;
   height: 45px;
   border: solid var(--ink);
@@ -5698,47 +5710,87 @@ html[data-turtle-variant="rosie"] {
   box-shadow: 6px 7px 0 rgb(21 53 48 / 13%);
 }
 
-.village-cross-street {
+.village-road {
   position: absolute;
-  z-index: 17;
+  z-index: 14;
+  right: 0;
   bottom: 0;
-  left: 1000px;
-  width: 260px;
-  height: 62%;
+  left: 1080px;
+  height: 20%;
+  border-top: 7px solid var(--ink);
   background:
-    linear-gradient(90deg, transparent 0 47%, #d8bd5a 48% 51%, transparent 52%),
+    linear-gradient(180deg, transparent 0 48%, #d8bd5a 49% 53%, transparent 54%),
     #526461;
-  clip-path: polygon(26% 0, 78% 0, 100% 100%, 0 100%);
+  box-shadow: inset 0 16px 0 rgb(248 242 223 / 12%);
 }
 
-.village-cross-street span {
+.village-road span {
   position: absolute;
-  right: 30px;
-  bottom: 25%;
-  width: 170px;
-  height: 22px;
+  top: 18px;
+  width: 210px;
+  height: 15px;
   background:
     repeating-linear-gradient(
       90deg,
       #eee7d8 0 23px,
       transparent 24px 37px
     );
-  transform: rotate(-2deg);
 }
 
-.village-cross-street span:nth-child(2) {
-  bottom: 20%;
+.village-road span:first-child {
+  left: 240px;
 }
 
-.village-cross-street span:nth-child(3) {
-  bottom: 15%;
+.village-road span:nth-child(2) {
+  right: 280px;
+}
+
+.village-waterfront-plaza {
+  position: absolute;
+  z-index: 16;
+  bottom: 0;
+  left: 920px;
+  width: 290px;
+  height: 45%;
+  border: solid var(--ink);
+  border-width: 5px 5px 5px 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 52px,
+      rgb(21 53 48 / 9%) 53px 56px
+    ),
+    linear-gradient(165deg, #d8cbb2, #b9aa90);
+  clip-path: polygon(0 0, 100% 10%, 100% 90%, 0 100%);
+}
+
+.village-waterfront-plaza span {
+  position: absolute;
+  right: 26px;
+  width: 126px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgb(248 242 223 / 48%);
+  transform: rotate(3deg);
+}
+
+.village-waterfront-plaza span:nth-child(1) {
+  top: 28%;
+}
+
+.village-waterfront-plaza span:nth-child(2) {
+  top: 50%;
+}
+
+.village-waterfront-plaza span:nth-child(3) {
+  top: 72%;
 }
 
 .village-waterfront {
   position: absolute;
   z-index: 7;
-  inset: 31% auto 0 0;
-  width: 1080px;
+  inset: 28% auto 0 0;
+  width: 980px;
   border-right: 6px solid var(--ink);
 }
 
@@ -5747,7 +5799,7 @@ html[data-turtle-variant="rosie"] {
   z-index: 4;
   top: 0;
   right: 0;
-  width: 390px;
+  width: 360px;
   height: 100%;
   border-left: 5px solid var(--ink);
   background:
@@ -5777,7 +5829,7 @@ html[data-turtle-variant="rosie"] {
 
 .village-waterfront-sign {
   position: absolute;
-  top: 16%;
+  top: 14%;
   left: 50%;
   display: grid;
   min-width: 250px;
@@ -5802,9 +5854,21 @@ html[data-turtle-variant="rosie"] {
   font-style: italic;
 }
 
+.village-waterfront-sign button {
+  margin-top: 9px;
+  padding: 7px 13px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 900;
+}
+
 .village-river {
   position: absolute;
-  inset: 0 390px 0 0;
+  inset: 0 360px 0 0;
   overflow: hidden;
   background:
     repeating-linear-gradient(
@@ -5880,7 +5944,7 @@ html[data-turtle-variant="rosie"] {
 .village-tree {
   position: absolute;
   z-index: 22;
-  bottom: 26%;
+  bottom: 20%;
   width: 74px;
   height: 119px;
 }
@@ -5924,7 +5988,7 @@ html[data-turtle-variant="rosie"] {
 .village-lamp {
   position: absolute;
   z-index: 21;
-  bottom: 24%;
+  bottom: 20%;
   width: 16px;
   height: 142px;
   border: 4px solid var(--ink);
@@ -5951,6 +6015,1375 @@ html[data-turtle-variant="rosie"] {
 
 .village-lamp-two {
   left: 2820px;
+}
+
+.village-bike-zone {
+  position: absolute;
+  z-index: 32;
+  top: 70%;
+  left: 25%;
+  width: 190px;
+  height: 82px;
+  border: 3px dashed rgb(21 53 48 / 46%);
+  border-radius: 50%;
+  background: rgb(216 189 104 / 20%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.village-bike-zone span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 25px;
+  height: 25px;
+  border: 4px solid var(--ink);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.village-bike-zone span::before,
+.village-bike-zone span::after {
+  position: absolute;
+  top: 8px;
+  width: 21px;
+  height: 4px;
+  background: var(--ink);
+  content: "";
+}
+
+.village-bike-zone span::before {
+  right: 17px;
+  transform: rotate(-48deg);
+}
+
+.village-bike-zone span::after {
+  left: 17px;
+  transform: rotate(48deg);
+}
+
+.village-bike-zone.is-nearby {
+  background: rgb(216 189 104 / 45%);
+  box-shadow: 0 0 0 12px rgb(248 242 223 / 24%);
+}
+
+.village-jazz-zone {
+  position: absolute;
+  z-index: 32;
+  top: 64%;
+  left: 40%;
+  width: 170px;
+  height: 72px;
+  border: 3px dashed rgb(217 169 78 / 52%);
+  border-radius: 50%;
+  background: rgb(217 169 78 / 14%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.village-jazz-zone span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 25px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background: #d9a94e;
+  transform: translate(-50%, -50%);
+}
+
+.village-jazz-zone span::after {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 18px;
+  height: 3px;
+  background: var(--ink);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.village-jazz-zone.is-nearby {
+  background: rgb(217 169 78 / 42%);
+  box-shadow: 0 0 0 12px rgb(248 242 223 / 21%);
+}
+
+/* Cellar Note venue */
+
+.jazz-club-stage {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, transparent 0 70%, rgb(10 18 17 / 72%) 70% 100%),
+    #241f1e;
+  color: var(--paper);
+}
+
+.jazz-club-stage::after {
+  position: absolute;
+  z-index: 90;
+  inset: 0;
+  border: 8px solid rgb(225 181 91 / 17%);
+  content: "";
+  pointer-events: none;
+}
+
+.jazz-brick-wall {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 49%, rgb(18 23 22 / 40%) 50% 52%, transparent 53%) 0 0 / 110px 58px,
+    linear-gradient(90deg, rgb(18 23 22 / 42%) 1px, transparent 2px) 55px 29px / 110px 58px,
+    linear-gradient(0deg, rgb(18 23 22 / 48%) 1px, transparent 3px) 0 0 / 100% 29px,
+    #69483d;
+  box-shadow: inset 0 -180px 130px rgb(12 19 18 / 44%);
+}
+
+.jazz-club-title {
+  position: absolute;
+  z-index: 65;
+  top: clamp(24px, 4vh, 45px);
+  left: clamp(24px, 4vw, 58px);
+  padding: 11px 17px 13px;
+  border: 3px solid #d8b15b;
+  background: rgb(25 31 29 / 94%);
+  box-shadow: 8px 9px 0 rgb(8 14 13 / 25%);
+}
+
+.jazz-club-title p,
+.jazz-club-title h1 {
+  margin: 0;
+}
+
+.jazz-club-title p {
+  color: #d8b15b;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jazz-club-title h1 {
+  margin-top: 2px;
+  font-size: clamp(28px, 3vw, 48px);
+  letter-spacing: -0.055em;
+  line-height: 0.95;
+}
+
+.jazz-club-exit,
+.rhythm-exit {
+  position: absolute;
+  z-index: 70;
+  top: clamp(25px, 4vh, 46px);
+  right: clamp(25px, 4vw, 58px);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 16px;
+  border: 2px solid currentcolor;
+  border-radius: 999px;
+  background: rgb(248 242 223 / 96%);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.jazz-club-exit span,
+.rhythm-exit span {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.jazz-ceiling-pipes span {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  width: 17px;
+  height: 34%;
+  border: 3px solid #151b1a;
+  border-top: 0;
+  background: #3c4542;
+  box-shadow: 7px 0 0 rgb(8 13 12 / 17%);
+}
+
+.jazz-ceiling-pipes span:first-child {
+  left: 34%;
+}
+
+.jazz-ceiling-pipes span:last-child {
+  right: 27%;
+  height: 24%;
+}
+
+.jazz-stage {
+  position: absolute;
+  z-index: 10;
+  bottom: 15%;
+  left: 6%;
+  width: 58%;
+  height: 53%;
+  border: 5px solid #131c1b;
+  border-bottom-width: 14px;
+  background:
+    radial-gradient(circle at 18% 3%, rgb(233 190 92 / 34%), transparent 23%),
+    radial-gradient(circle at 76% 4%, rgb(213 92 75 / 24%), transparent 25%),
+    linear-gradient(180deg, #273734, #131b1a);
+  box-shadow:
+    13px 15px 0 rgb(9 15 14 / 28%),
+    inset 0 -20px 0 rgb(0 0 0 / 20%);
+}
+
+.jazz-stage::after {
+  position: absolute;
+  right: -5px;
+  bottom: -58px;
+  left: -5px;
+  height: 52px;
+  border: 5px solid #131c1b;
+  background:
+    repeating-linear-gradient(90deg, #76543e 0 45px, #936a4b 46px 50px);
+  content: "";
+  transform: perspective(260px) rotateX(34deg);
+  transform-origin: top;
+}
+
+.jazz-stage-sign {
+  position: absolute;
+  top: 7%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  padding: 8px 19px;
+  border: 2px solid #d8b15b;
+  background: #171e1d;
+  box-shadow: 0 0 24px rgb(216 177 91 / 19%);
+  color: #d8b15b;
+  transform: translateX(-50%);
+}
+
+.jazz-stage-sign small {
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.jazz-stage-sign strong {
+  margin-top: 2px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.jazz-stage > button {
+  position: absolute;
+  right: 22px;
+  bottom: 18px;
+  padding: 9px 15px;
+  border: 2px solid #e1b755;
+  border-radius: 999px;
+  background: #e1b755;
+  color: #182421;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.jazz-drum-kit {
+  position: absolute;
+  bottom: 11%;
+  left: 43%;
+  width: 115px;
+  height: 90px;
+  border: 7px solid #b96a54;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #d0a558 0 10%, #783f37 11% 49%, #e5c072 50% 55%, #56372f 56%);
+  box-shadow:
+    -58px 18px 0 -26px #ba735b,
+    62px 17px 0 -28px #ba735b;
+}
+
+.jazz-drum-kit::before,
+.jazz-drum-kit::after {
+  position: absolute;
+  top: -42px;
+  width: 75px;
+  height: 10px;
+  border: 3px solid #171e1d;
+  border-radius: 50%;
+  background: #d4aa58;
+  content: "";
+}
+
+.jazz-drum-kit::before {
+  left: -49px;
+  transform: rotate(-8deg);
+}
+
+.jazz-drum-kit::after {
+  right: -53px;
+  transform: rotate(9deg);
+}
+
+.jazz-upright-bass {
+  position: absolute;
+  bottom: 10%;
+  left: 16%;
+  width: 60px;
+  height: 145px;
+  border: 6px solid #171e1d;
+  border-radius: 50% 50% 42% 42%;
+  background: #a86642;
+  transform: rotate(-7deg);
+}
+
+.jazz-upright-bass::before {
+  position: absolute;
+  bottom: 112px;
+  left: 20px;
+  width: 15px;
+  height: 105px;
+  border: 4px solid #171e1d;
+  background: #805037;
+  content: "";
+}
+
+.jazz-microphone {
+  position: absolute;
+  right: 14%;
+  bottom: 9%;
+  width: 7px;
+  height: 190px;
+  border: 2px solid #111817;
+  background: #88938e;
+  transform: rotate(3deg);
+}
+
+.jazz-microphone::before {
+  position: absolute;
+  top: -14px;
+  left: -8px;
+  width: 18px;
+  height: 26px;
+  border: 3px solid #111817;
+  border-radius: 50%;
+  background: #35413f;
+  content: "";
+}
+
+.jazz-bar {
+  position: absolute;
+  z-index: 12;
+  right: 4%;
+  bottom: 17%;
+  display: grid;
+  width: 26%;
+  height: 41%;
+  grid-template-columns: repeat(3, 1fr);
+  align-content: end;
+  gap: 13px;
+  padding: 43px 22px 18px;
+  border: 5px solid #131c1b;
+  background: #392c29;
+  box-shadow: 11px 13px 0 rgb(8 13 12 / 25%);
+}
+
+.jazz-bar::after {
+  position: absolute;
+  right: -13px;
+  bottom: -20px;
+  left: -13px;
+  height: 38px;
+  border: 4px solid #131c1b;
+  background: #8a6046;
+  content: "";
+}
+
+.jazz-bar strong {
+  position: absolute;
+  top: 17px;
+  left: 50%;
+  color: #d8b15b;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.jazz-bar span {
+  height: 70px;
+  border: 3px solid #131c1b;
+  border-radius: 13px 13px 4px 4px;
+  background:
+    linear-gradient(90deg, transparent 42%, rgb(248 242 223 / 32%) 43% 53%, transparent 54%),
+    #55746a;
+}
+
+.jazz-tables {
+  position: absolute;
+  z-index: 20;
+  right: 6%;
+  bottom: 5%;
+  left: 8%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.jazz-tables span {
+  width: 155px;
+  height: 45px;
+  border: 5px solid #121918;
+  border-radius: 50%;
+  background: #6f4d3d;
+  box-shadow: 0 18px 0 -13px #25312f;
+  transform: perspective(110px) rotateX(54deg);
+}
+
+.jazz-audience {
+  position: absolute;
+  z-index: 23;
+  right: 31%;
+  bottom: 5%;
+  display: flex;
+  gap: 22px;
+}
+
+.jazz-audience span {
+  width: 54px;
+  height: 75px;
+  border: 4px solid #111817;
+  border-radius: 45% 45% 30% 30%;
+  background: #657452;
+  box-shadow: inset 0 18px #8a9a68;
+}
+
+.jazz-audience .is-coral {
+  background: #8c5147;
+  box-shadow: inset 0 18px #bd7161;
+}
+
+.jazz-audience .is-blue {
+  background: #405e66;
+  box-shadow: inset 0 18px #6f9097;
+}
+
+.jazz-club-player {
+  position: absolute;
+  z-index: 35;
+  bottom: 4%;
+  left: 13%;
+  width: 105px;
+  height: 132px;
+}
+
+.jazz-club-player .turtle-sprite {
+  position: absolute;
+  inset: 0;
+  background-image: var(--turtle-image);
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(4px 7px 0 rgb(5 10 9 / 25%));
+}
+
+.jazz-club-player .turtle-nameplate {
+  color: var(--paper);
+  text-shadow:
+    -1px -1px 0 #172622,
+    1px -1px 0 #172622,
+    -1px 1px 0 #172622,
+    1px 1px 0 #172622;
+}
+
+.jazz-show-card {
+  position: absolute;
+  z-index: 50;
+  top: 16%;
+  right: 4%;
+  display: grid;
+  width: min(310px, 25vw);
+  padding: 18px;
+  border: 3px solid #d8b15b;
+  background: rgb(19 27 25 / 96%);
+  box-shadow: 9px 10px 0 rgb(8 13 12 / 27%);
+}
+
+.jazz-show-card p,
+.jazz-show-card h2,
+.jazz-show-card span {
+  margin: 0;
+}
+
+.jazz-show-card p {
+  color: #d8b15b;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.jazz-show-card h2 {
+  margin-top: 4px;
+  font-size: 25px;
+}
+
+.jazz-show-card span {
+  margin-top: 7px;
+  color: rgb(248 242 223 / 68%);
+  font-family: Georgia, serif;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.jazz-show-card button {
+  margin-top: 14px;
+  padding: 10px 13px;
+  border: 0;
+  border-radius: 999px;
+  background: #d8b15b;
+  color: #172622;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+/* Cellar Note rhythm set */
+
+.rhythm-stage {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 18% 32%, rgb(210 83 72 / 35%), transparent 28%),
+    radial-gradient(circle at 82% 27%, rgb(64 118 139 / 35%), transparent 27%),
+    linear-gradient(180deg, #211c21, #0e1514);
+  color: var(--paper);
+}
+
+.rhythm-stage::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 94px, rgb(248 242 223 / 2%) 95px 97px),
+    linear-gradient(180deg, transparent 0 62%, rgb(0 0 0 / 45%) 100%);
+  content: "";
+}
+
+.rhythm-stage::after {
+  position: absolute;
+  z-index: 90;
+  inset: 0;
+  border: 8px solid rgb(216 177 91 / 16%);
+  content: "";
+  pointer-events: none;
+}
+
+.rhythm-title {
+  position: absolute;
+  z-index: 65;
+  top: clamp(24px, 4vh, 45px);
+  left: clamp(24px, 4vw, 58px);
+}
+
+.rhythm-title p,
+.rhythm-title h1 {
+  margin: 0;
+}
+
+.rhythm-title p {
+  color: #d8b15b;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.rhythm-title h1 {
+  margin-top: 2px;
+  font-size: clamp(30px, 3.3vw, 54px);
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+}
+
+.rhythm-scoreboard {
+  position: absolute;
+  z-index: 35;
+  top: 17%;
+  left: 5%;
+  display: grid;
+  width: min(250px, 22vw);
+  gap: 8px;
+}
+
+.rhythm-scoreboard > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-left: 4px solid #d8b15b;
+  background: rgb(11 18 17 / 72%);
+}
+
+.rhythm-scoreboard small {
+  color: rgb(248 242 223 / 55%);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rhythm-scoreboard strong {
+  font-size: 21px;
+}
+
+.rhythm-board {
+  position: absolute;
+  z-index: 20;
+  top: 7%;
+  bottom: 3%;
+  left: 50%;
+  width: min(620px, 48vw);
+  overflow: hidden;
+  border: 6px solid #111817;
+  background:
+    linear-gradient(90deg, transparent 19.5%, rgb(248 242 223 / 13%) 20% 20.5%, transparent 21% 39.5%, rgb(248 242 223 / 13%) 40% 40.5%, transparent 41% 59.5%, rgb(248 242 223 / 13%) 60% 60.5%, transparent 61% 79.5%, rgb(248 242 223 / 13%) 80% 80.5%, transparent 81%),
+    linear-gradient(180deg, #25312f, #101716);
+  box-shadow:
+    0 0 45px rgb(216 177 91 / 15%),
+    14px 17px 0 rgb(0 0 0 / 25%);
+  transform: translateX(-50%) perspective(760px) rotateX(5deg);
+  transform-origin: bottom;
+}
+
+.rhythm-lane-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.rhythm-lane-grid span {
+  background: linear-gradient(180deg, rgb(255 255 255 / 2%), color-mix(in srgb, var(--lane-color) 13%, transparent));
+  transition: background 100ms ease;
+}
+
+.rhythm-lane-grid span.is-active {
+  background: linear-gradient(180deg, rgb(255 255 255 / 4%), color-mix(in srgb, var(--lane-color) 50%, transparent));
+}
+
+.rhythm-note {
+  position: absolute;
+  z-index: 8;
+  top: var(--note-y);
+  left: var(--note-x);
+  width: 46px;
+  height: 25px;
+  border: 4px solid #101716;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 28%, rgb(255 255 255 / 73%) 0 8%, transparent 9%),
+    var(--note-color);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--note-color) 28%, transparent),
+    0 7px 0 rgb(0 0 0 / 20%);
+  transform: translate(-50%, -50%);
+}
+
+.rhythm-hit-line {
+  position: absolute;
+  z-index: 12;
+  right: 0;
+  bottom: 8%;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 19px 0;
+  border: solid rgb(248 242 223 / 45%);
+  border-width: 3px 0;
+  background: rgb(0 0 0 / 30%);
+}
+
+.rhythm-hit-line kbd {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  justify-self: center;
+  border: 5px solid #101716;
+  border-radius: 50%;
+  background: var(--lane-color);
+  box-shadow:
+    0 0 0 4px rgb(248 242 223 / 65%),
+    0 7px 0 rgb(0 0 0 / 25%);
+  color: #101716;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.rhythm-hit-line kbd.is-active {
+  filter: brightness(1.35);
+  transform: scale(1.14);
+}
+
+.rhythm-judgment {
+  position: absolute;
+  z-index: 22;
+  bottom: 25%;
+  left: 50%;
+  color: #f0c85e;
+  font-size: clamp(22px, 2.7vw, 42px);
+  font-style: italic;
+  letter-spacing: -0.04em;
+  text-shadow: 4px 5px 0 rgb(0 0 0 / 35%);
+  transform: translateX(-50%) rotate(-4deg);
+}
+
+.rhythm-judgment.is-miss {
+  color: #d55e56;
+}
+
+.rhythm-judgment.is-good {
+  color: #75ac7a;
+}
+
+.rhythm-overlay {
+  position: absolute;
+  z-index: 55;
+  top: 50%;
+  right: 4%;
+  display: grid;
+  width: min(315px, 25vw);
+  padding: 21px;
+  border: 3px solid #d8b15b;
+  background: rgb(18 27 25 / 96%);
+  box-shadow: 10px 12px 0 rgb(0 0 0 / 28%);
+  transform: translateY(-50%);
+}
+
+.rhythm-overlay p,
+.rhythm-overlay h2,
+.rhythm-overlay span {
+  margin: 0;
+}
+
+.rhythm-overlay p {
+  color: #d8b15b;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.rhythm-overlay h2 {
+  margin-top: 5px;
+  font-size: 27px;
+}
+
+.rhythm-overlay > span {
+  margin-top: 9px;
+  color: rgb(248 242 223 / 67%);
+  font-family: Georgia, serif;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.rhythm-overlay button {
+  margin-top: 17px;
+  padding: 11px 15px;
+  border: 0;
+  border-radius: 999px;
+  background: #d8b15b;
+  color: #172622;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.rhythm-overlay.is-results div {
+  display: flex;
+  gap: 8px;
+}
+
+.rhythm-overlay.is-results div button:last-child {
+  border: 2px solid #d8b15b;
+  background: transparent;
+  color: #d8b15b;
+}
+
+@media (max-width: 920px), (max-height: 690px) {
+  .jazz-show-card {
+    top: 18%;
+  }
+
+  .jazz-stage {
+    width: 61%;
+  }
+
+  .jazz-club-player {
+    width: 82px;
+    height: 104px;
+  }
+
+  .rhythm-scoreboard {
+    top: auto;
+    bottom: 4%;
+  }
+
+  .rhythm-board {
+    width: min(520px, 46vw);
+  }
+
+  .rhythm-overlay {
+    width: min(280px, 27vw);
+  }
+}
+
+/* Hudson Greenway bike race */
+
+.bike-race-stage {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  background: #9fc9cf;
+  color: var(--ink);
+}
+
+.bike-race-stage::after {
+  position: absolute;
+  z-index: 90;
+  inset: 0;
+  border: 8px solid rgb(21 53 48 / 13%);
+  content: "";
+  pointer-events: none;
+}
+
+.bike-race-header {
+  position: absolute;
+  z-index: 65;
+  top: clamp(22px, 3.5vh, 42px);
+  left: clamp(22px, 3.5vw, 55px);
+  padding: 11px 16px 13px;
+  border: 3px solid var(--ink);
+  background: rgb(248 242 223 / 95%);
+  box-shadow: 8px 9px 0 rgb(21 53 48 / 14%);
+}
+
+.bike-race-header p,
+.bike-race-header h1 {
+  margin: 0;
+}
+
+.bike-race-header p {
+  color: #477f76;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bike-race-header h1 {
+  margin-top: 2px;
+  font-size: clamp(24px, 2.4vw, 38px);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.bike-race-exit {
+  position: absolute;
+  z-index: 66;
+  top: clamp(25px, 3.5vh, 45px);
+  right: clamp(22px, 3.5vw, 55px);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 16px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background: rgb(248 242 223 / 95%);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.bike-race-hud {
+  position: absolute;
+  z-index: 64;
+  top: clamp(25px, 3.5vh, 45px);
+  left: 50%;
+  display: flex;
+  min-width: min(510px, 48vw);
+  overflow: hidden;
+  border: 4px solid var(--ink);
+  border-radius: 8px;
+  background: rgb(248 242 223 / 95%);
+  box-shadow: 8px 9px 0 rgb(21 53 48 / 13%);
+  transform: translateX(-50%);
+}
+
+.bike-race-hud > div {
+  display: grid;
+  min-width: 108px;
+  flex: 1;
+  gap: 3px;
+  padding: 10px 15px;
+  border-right: 2px solid rgb(21 53 48 / 18%);
+}
+
+.bike-race-hud > div:last-child {
+  border: 0;
+}
+
+.bike-race-hud small {
+  color: rgb(21 53 48 / 55%);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.bike-race-hud strong {
+  font-size: 17px;
+}
+
+.bike-race-hud div > span {
+  position: relative;
+  height: 14px;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: #d1c7af;
+}
+
+.bike-race-hud i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: #e9bb50;
+  transition: width 80ms linear;
+}
+
+.bike-race-scene {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #a9ced2 0 43%, #627b68 43% 100%);
+}
+
+.bike-race-skyline {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 55%;
+  left: 0;
+  height: 27%;
+  opacity: 0.45;
+}
+
+.bike-race-skyline span {
+  position: absolute;
+  bottom: 0;
+  width: 13%;
+  border: 5px solid var(--ink);
+  border-bottom: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 25px,
+      rgb(248 242 223 / 22%) 26px 31px
+    ),
+    #657d79;
+}
+
+.bike-race-skyline span:nth-child(1) {
+  left: 4%;
+  height: 54%;
+}
+
+.bike-race-skyline span:nth-child(2) {
+  left: 18%;
+  height: 82%;
+}
+
+.bike-race-skyline span:nth-child(3) {
+  left: 46%;
+  height: 65%;
+}
+
+.bike-race-skyline span:nth-child(4) {
+  right: 21%;
+  height: 92%;
+}
+
+.bike-race-skyline span:nth-child(5) {
+  right: 4%;
+  height: 48%;
+}
+
+.bike-race-river {
+  position: absolute;
+  z-index: 2;
+  top: 30%;
+  right: 0;
+  left: 0;
+  height: 19%;
+  overflow: hidden;
+  border-top: 5px solid var(--ink);
+  background:
+    repeating-linear-gradient(
+      168deg,
+      transparent 0 85px,
+      rgb(248 242 223 / 28%) 86px 90px,
+      transparent 91px 138px
+    ),
+    #6eabb2;
+}
+
+.bike-race-river span {
+  position: absolute;
+  width: 260px;
+  height: 26px;
+  border-top: 4px solid rgb(248 242 223 / 48%);
+  border-radius: 50%;
+}
+
+.bike-race-river span:nth-child(1) {
+  top: 24%;
+  left: 12%;
+}
+
+.bike-race-river span:nth-child(2) {
+  top: 52%;
+  left: 47%;
+}
+
+.bike-race-river span:nth-child(3) {
+  top: 30%;
+  right: 8%;
+}
+
+.bike-race-fence {
+  position: absolute;
+  z-index: 5;
+  top: 45%;
+  right: 0;
+  left: 0;
+  height: 38px;
+  border: solid var(--ink);
+  border-width: 6px 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 66px,
+      var(--ink) 67px 73px
+    ),
+    #b9c4bb;
+  box-shadow: 0 8px 0 rgb(21 53 48 / 14%);
+}
+
+.bike-race-track {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 55%;
+  border-top: 8px solid #31534e;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 104px,
+      rgb(248 242 223 / 14%) 105px 110px
+    ),
+    #637c69;
+  background-position-x: var(--race-scroll);
+}
+
+.bike-race-track > span {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgb(248 242 223 / 68%) 0 48px,
+      transparent 49px 81px
+    );
+  background-position-x: var(--race-scroll);
+}
+
+.bike-race-track > span:nth-child(1) {
+  top: 27%;
+}
+
+.bike-race-track > span:nth-child(2) {
+  top: 61%;
+}
+
+.bike-race-track > span:nth-child(3) {
+  right: auto;
+  bottom: 8%;
+  left: 0;
+  width: 100%;
+  height: 17px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #d7b756 0 54px,
+      transparent 55px 105px
+    );
+  background-position-x: var(--race-scroll);
+}
+
+.bike-racer {
+  position: absolute;
+  z-index: 20;
+  top: var(--racer-lane);
+  left: var(--racer-x);
+  width: 100px;
+  height: 104px;
+  transform: translate(-50%, -50%);
+  transition: top 180ms ease;
+}
+
+.bike-racer.is-player {
+  top: var(--player-lane);
+  left: 27%;
+  z-index: 27;
+}
+
+.bike-racer > .turtle-sprite {
+  position: absolute;
+  z-index: 3;
+  top: -7px;
+  left: 25px;
+  width: 62px;
+  height: 77px;
+  background-image: var(--turtle-image);
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(3px 5px 0 rgb(21 53 48 / 15%));
+}
+
+.bike-frame {
+  position: absolute;
+  z-index: 4;
+  right: 13px;
+  bottom: 5px;
+  left: 13px;
+  height: 43px;
+}
+
+.bike-frame::before,
+.bike-frame::after {
+  position: absolute;
+  bottom: 0;
+  width: 35px;
+  height: 35px;
+  border: 6px solid var(--ink);
+  border-radius: 50%;
+  background: rgb(248 242 223 / 12%);
+  content: "";
+}
+
+.bike-frame::before {
+  left: 0;
+}
+
+.bike-frame::after {
+  right: 0;
+}
+
+.bike-racer .bike-frame {
+  background:
+    linear-gradient(35deg, transparent 0 42%, #e7bd54 43% 49%, transparent 50%),
+    linear-gradient(-35deg, transparent 0 42%, #e7bd54 43% 49%, transparent 50%);
+}
+
+.bike-racer small {
+  position: absolute;
+  z-index: 8;
+  top: -22px;
+  left: 50%;
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: rgb(248 242 223 / 88%);
+  font-size: 9px;
+  font-weight: 900;
+  transform: translateX(-50%);
+}
+
+.bike-racer.is-opponent {
+  z-index: 23;
+}
+
+.bike-racer-shell {
+  position: absolute;
+  z-index: 3;
+  top: 9px;
+  left: 33px;
+  width: 50px;
+  height: 58px;
+  border: 4px solid var(--ink);
+  border-radius: 48% 52% 45% 55%;
+  background:
+    radial-gradient(circle at 37% 26%, #c4d175 0 7%, transparent 8%),
+    #729356;
+  box-shadow: 15px 9px 0 -3px #b66f4c;
+}
+
+.bike-racer.is-skipper .bike-racer-shell {
+  background-color: #5b8d79;
+  box-shadow: 15px 9px 0 -3px #d1a44f;
+}
+
+.bike-obstacle {
+  position: absolute;
+  z-index: 22;
+  top: var(--obstacle-lane);
+  left: var(--obstacle-x);
+  width: 42px;
+  height: 42px;
+  transform: translate(-50%, -50%);
+}
+
+.bike-obstacle.is-cone {
+  border: 5px solid var(--ink);
+  background:
+    linear-gradient(180deg, transparent 0 29%, #f5dfae 30% 42%, transparent 43%),
+    #d96f4e;
+  clip-path: polygon(50% 0, 88% 79%, 100% 80%, 100% 100%, 0 100%, 0 80%, 12% 79%);
+}
+
+.bike-obstacle.is-puddle {
+  width: 75px;
+  height: 24px;
+  border: 4px solid #31534e;
+  border-radius: 50%;
+  background: #75aab2;
+}
+
+.bike-obstacle.is-crate {
+  border: 5px solid var(--ink);
+  background:
+    linear-gradient(45deg, transparent 43%, rgb(248 242 223 / 35%) 44% 51%, transparent 52%),
+    #a87850;
+}
+
+.bike-finish-line {
+  position: absolute;
+  z-index: 18;
+  top: 44%;
+  bottom: 0;
+  left: var(--finish-x);
+  width: 48px;
+  padding-top: 20px;
+  border: 5px solid var(--ink);
+  background:
+    conic-gradient(#f8f2df 25%, #1b3531 0 50%, #f8f2df 0 75%, #1b3531 0) 0 0 / 24px 24px;
+  color: var(--paper);
+  font-size: 9px;
+  font-weight: 950;
+  text-align: center;
+  writing-mode: vertical-rl;
+  transform: translateX(-50%);
+}
+
+.bike-race-message {
+  position: absolute;
+  z-index: 40;
+  top: 38%;
+  left: 27%;
+  padding: 8px 13px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background: #e46f54;
+  color: var(--paper);
+  font-size: 12px;
+  transform: translate(-50%, -50%);
+}
+
+.bike-race-overlay {
+  position: absolute;
+  z-index: 70;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: min(470px, calc(100vw - 40px));
+  justify-items: center;
+  padding: 34px 39px 37px;
+  border: 5px solid var(--ink);
+  border-radius: 24px;
+  background: rgb(248 242 223 / 97%);
+  box-shadow: 14px 16px 0 rgb(21 53 48 / 18%);
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.bike-race-overlay p,
+.bike-race-overlay h2,
+.bike-race-overlay > span {
+  margin: 0;
+}
+
+.bike-race-overlay p {
+  color: #477f76;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bike-race-overlay h2 {
+  margin-top: 5px;
+  font-size: clamp(34px, 4vw, 52px);
+  letter-spacing: -0.06em;
+}
+
+.bike-race-overlay > span {
+  margin-top: 9px;
+  color: rgb(21 53 48 / 65%);
+  font-family: Georgia, serif;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.bike-race-overlay button {
+  min-width: 145px;
+  margin-top: 22px;
+  padding: 11px 18px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.bike-race-overlay > div {
+  display: flex;
+  gap: 10px;
+}
+
+.bike-race-overlay > div button:last-child {
+  background: transparent;
+  color: var(--ink);
 }
 
 .village-player {

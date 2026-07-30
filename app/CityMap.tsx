@@ -1,11 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { BikeRaceGame } from "./BikeRaceGame";
 import { CentralParkMap } from "./CentralParkMap";
 import { ChelseaApartment } from "./ChelseaApartment";
 import { ChelseaDistrict } from "./ChelseaDistrict";
 import { HockeyGame } from "./HockeyGame";
+import { JazzClub } from "./JazzClub";
 import { PressureWashingGame } from "./PressureWashingGame";
+import { RhythmGame } from "./RhythmGame";
 import { SnowShovelingGame } from "./SnowShovelingGame";
 import { SubwayPlatform } from "./SubwayPlatform";
 import { SubwayTrain } from "./SubwayTrain";
@@ -50,18 +53,25 @@ type District = {
 
 type Screen =
   | "apartment"
+  | "bike-race"
   | "chelsea"
   | "city"
   | "central-park"
   | "hockey"
+  | "jazz-club"
   | "pressure-washing"
+  | "rhythm-game"
   | "snow-shoveling"
   | "subway-platform"
   | "subway-train"
   | "west-village";
 type ParkSpawn = "south-gate" | "frozen-pond" | "snow-crew";
 type ChelseaSpawn = "apartment" | "pressure-washing" | "subway";
-type WestVillageSpawn = "neighborhood" | "subway";
+type WestVillageSpawn =
+  | "jazz-club"
+  | "neighborhood"
+  | "subway"
+  | "waterfront";
 type EntryMode = "auth" | "creator" | "game" | "welcome";
 
 const districts: District[] = [
@@ -274,6 +284,14 @@ export function CityMap() {
         } else if (screen === "pressure-washing") {
           setChelseaSpawn("pressure-washing");
           setScreen("chelsea");
+        } else if (screen === "bike-race") {
+          setWestVillageSpawn("waterfront");
+          setScreen("west-village");
+        } else if (screen === "rhythm-game") {
+          setScreen("jazz-club");
+        } else if (screen === "jazz-club") {
+          setWestVillageSpawn("jazz-club");
+          setScreen("west-village");
         } else if (screen === "apartment") {
           setScreen("chelsea");
         } else if (screen === "subway-platform") {
@@ -446,6 +464,35 @@ export function CityMap() {
     );
   }
 
+  if (screen === "bike-race") {
+    return (
+      <BikeRaceGame
+        turtleName={turtleName}
+        onExit={() => {
+          setWestVillageSpawn("waterfront");
+          setScreen("west-village");
+        }}
+      />
+    );
+  }
+
+  if (screen === "jazz-club") {
+    return (
+      <JazzClub
+        turtleName={turtleName}
+        onExit={() => {
+          setWestVillageSpawn("jazz-club");
+          setScreen("west-village");
+        }}
+        onStartShow={() => setScreen("rhythm-game")}
+      />
+    );
+  }
+
+  if (screen === "rhythm-game") {
+    return <RhythmGame onExit={() => setScreen("jazz-club")} />;
+  }
+
   if (screen === "apartment") {
     return (
       <ChelseaApartment
@@ -493,6 +540,8 @@ export function CityMap() {
       <WestVillageDistrict
         turtleName={turtleName}
         spawn={westVillageSpawn}
+        onEnterBikeRace={() => setScreen("bike-race")}
+        onEnterJazzClub={() => setScreen("jazz-club")}
         onEnterSubway={() => enterSubway("west-village")}
       />
     );

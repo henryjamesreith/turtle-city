@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 
 type WestVillageDistrictProps = {
+  onEnterBikeRace: () => void;
+  onEnterJazzClub: () => void;
   onEnterSubway: () => void;
-  spawn: "neighborhood" | "subway";
+  spawn: "jazz-club" | "neighborhood" | "subway" | "waterfront";
   turtleName: string;
 };
 
@@ -44,12 +46,16 @@ function cameraOffset(
 }
 
 export function WestVillageDistrict({
+  onEnterBikeRace,
+  onEnterJazzClub,
   onEnterSubway,
   spawn,
   turtleName,
 }: WestVillageDistrictProps) {
   const worldRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
+  const [nearBikeRace, setNearBikeRace] = useState(false);
+  const [nearJazzClub, setNearJazzClub] = useState(false);
   const [nearSubway, setNearSubway] = useState(false);
 
   useEffect(() => {
@@ -57,6 +63,8 @@ export function WestVillageDistrict({
     const position = { x: 0, y: 0 };
     const camera = { x: 0, y: 0 };
     let initialized = false;
+    let isNearBikeRace = false;
+    let isNearJazzClub = false;
     let isNearSubway = false;
     let previousTime = performance.now();
     let animationFrame = 0;
@@ -79,9 +87,17 @@ export function WestVillageDistrict({
       if (movementKeys.has(event.key)) {
         event.preventDefault();
         pressed.add(event.key.toLowerCase());
-      } else if (event.key === "Enter" && isNearSubway && !event.repeat) {
-        event.preventDefault();
-        onEnterSubway();
+      } else if (event.key === "Enter" && !event.repeat) {
+        if (isNearSubway) {
+          event.preventDefault();
+          onEnterSubway();
+        } else if (isNearBikeRace) {
+          event.preventDefault();
+          onEnterBikeRace();
+        } else if (isNearJazzClub) {
+          event.preventDefault();
+          onEnterJazzClub();
+        }
       } else if (event.key === "Shift") {
         pressed.add("shift");
       }
@@ -108,8 +124,16 @@ export function WestVillageDistrict({
       const worldHeight = world.offsetHeight;
 
       if (!initialized) {
-        position.x = worldWidth * (spawn === "subway" ? 0.88 : 0.39);
-        position.y = worldHeight * 0.75;
+        position.x =
+          worldWidth *
+          (spawn === "subway"
+            ? 0.88
+            : spawn === "waterfront"
+              ? 0.25
+              : spawn === "jazz-club"
+                ? 0.4
+                : 0.48);
+        position.y = worldHeight * 0.72;
         camera.x = cameraOffset(window.innerWidth, worldWidth, position.x);
         camera.y = cameraOffset(window.innerHeight, worldHeight, position.y);
         initialized = true;
@@ -133,8 +157,8 @@ export function WestVillageDistrict({
       );
       position.y = clamp(
         position.y + (vertical / magnitude) * speed * elapsed,
-        worldHeight * 0.61,
-        worldHeight * 0.88,
+        worldHeight * 0.58,
+        worldHeight * 0.9,
       );
 
       const nearStation =
@@ -142,9 +166,27 @@ export function WestVillageDistrict({
           position.x - worldWidth * 0.88,
           position.y - worldHeight * 0.72,
         ) < 190;
+      const nearRace =
+        Math.hypot(
+          position.x - worldWidth * 0.25,
+          position.y - worldHeight * 0.7,
+        ) < 210;
+      const nearClub =
+        Math.hypot(
+          position.x - worldWidth * 0.4,
+          position.y - worldHeight * 0.64,
+        ) < 190;
       isNearSubway = nearStation;
+      isNearBikeRace = nearRace;
+      isNearJazzClub = nearClub;
       setNearSubway((current) =>
         current === nearStation ? current : nearStation,
+      );
+      setNearBikeRace((current) =>
+        current === nearRace ? current : nearRace,
+      );
+      setNearJazzClub((current) =>
+        current === nearClub ? current : nearClub,
       );
 
       const targetX = cameraOffset(window.innerWidth, worldWidth, position.x);
@@ -177,7 +219,7 @@ export function WestVillageDistrict({
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", clearInput);
     };
-  }, [onEnterSubway, spawn]);
+  }, [onEnterBikeRace, onEnterJazzClub, onEnterSubway, spawn]);
 
   return (
     <main className="village-stage" data-testid="west-village-district">
@@ -190,7 +232,8 @@ export function WestVillageDistrict({
       <p className="sr-only">
         Move with the arrow keys or W, A, S, and D. Hold Shift to run. Travel
         west from the neighborhood streets to reach the waterfront. The subway
-        entrance is at the east end of the neighborhood.
+        entrance is at the east end of the neighborhood. Press Enter at the
+        Hudson Greenway start line to begin a bike race.
       </p>
 
       <section className="village-viewport" aria-label="West Village streets">
@@ -233,6 +276,9 @@ export function WestVillageDistrict({
               <span>downstairs</span>
               <strong>CELLAR NOTE</strong>
               <small>jazz nightly</small>
+              <button type="button" onClick={onEnterJazzClub}>
+                Enter club
+              </button>
             </div>
             <div className="village-record-shop">
               <strong>SIDE B</strong>
@@ -257,7 +303,12 @@ export function WestVillageDistrict({
             <span className="village-news-box" />
           </div>
 
-          <div className="village-cross-street" aria-hidden="true">
+          <div className="village-road" aria-hidden="true">
+            <span />
+            <span />
+          </div>
+
+          <div className="village-waterfront-plaza" aria-hidden="true">
             <span />
             <span />
             <span />
@@ -269,7 +320,10 @@ export function WestVillageDistrict({
               <span className="village-bike-lane-mark second">↟</span>
               <div className="village-waterfront-sign">
                 <strong>HUDSON GREENWAY</strong>
-                <small>Bike races coming later</small>
+                <small>West Village bike race</small>
+                <button type="button" onClick={onEnterBikeRace}>
+                  Start race
+                </button>
               </div>
             </div>
             <div className="village-river" aria-hidden="true">
@@ -283,6 +337,20 @@ export function WestVillageDistrict({
               </div>
             </div>
           </section>
+
+          <div
+            className={`village-bike-zone${nearBikeRace ? " is-nearby" : ""}`}
+            aria-hidden="true"
+          >
+            <span />
+          </div>
+
+          <div
+            className={`village-jazz-zone${nearJazzClub ? " is-nearby" : ""}`}
+            aria-hidden="true"
+          >
+            <span />
+          </div>
 
           <span className="village-tree village-tree-one" aria-hidden="true" />
           <span className="village-tree village-tree-two" aria-hidden="true" />
@@ -326,7 +394,27 @@ export function WestVillageDistrict({
         <span>Village streets →</span>
       </aside>
 
-      {nearSubway ? (
+      {nearBikeRace ? (
+        <aside className="village-enter-prompt" aria-live="polite">
+          <div>
+            <strong>Hudson Greenway</strong>
+            <small>Race bikes along the river.</small>
+          </div>
+          <button type="button" onClick={onEnterBikeRace}>
+            Start race
+          </button>
+        </aside>
+      ) : nearJazzClub ? (
+        <aside className="village-enter-prompt" aria-live="polite">
+          <div>
+            <strong>Cellar Note</strong>
+            <small>Go downstairs for live music.</small>
+          </div>
+          <button type="button" onClick={onEnterJazzClub}>
+            Enter club
+          </button>
+        </aside>
+      ) : nearSubway ? (
         <aside className="village-enter-prompt" aria-live="polite">
           <div>
             <strong>West 4 Street</strong>
