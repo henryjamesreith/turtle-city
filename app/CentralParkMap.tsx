@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 type CentralParkMapProps = {
-  onReturnToCity: () => void;
   onEnterHockey: () => void;
   onEnterShoveling: () => void;
+  onEnterSubway: () => void;
   spawn?: "south-gate" | "frozen-pond" | "snow-crew";
   turtleName: string;
 };
@@ -140,6 +140,14 @@ const interactionZones = [
     y: 1980,
     radius: 190,
   },
+  {
+    id: "subway",
+    label: "South Gate",
+    detail: "Subway",
+    x: 0.5,
+    y: 2090,
+    radius: 175,
+  },
 ] as const;
 
 type InteractionZoneId = (typeof interactionZones)[number]["id"];
@@ -197,9 +205,9 @@ function cameraOffset(
 }
 
 export function CentralParkMap({
-  onReturnToCity,
   onEnterHockey,
   onEnterShoveling,
+  onEnterSubway,
   spawn = "south-gate",
   turtleName,
 }: CentralParkMapProps) {
@@ -240,6 +248,9 @@ export function CentralParkMap({
         } else if (activeZoneId === "snow-crew") {
           event.preventDefault();
           onEnterShoveling();
+        } else if (activeZoneId === "subway") {
+          event.preventDefault();
+          onEnterSubway();
         }
       } else if (movementKeys.has(event.key)) {
         event.preventDefault();
@@ -397,7 +408,7 @@ export function CentralParkMap({
       window.removeEventListener("blur", handleBlur);
       viewport?.removeEventListener("wheel", handleWheel);
     };
-  }, [onEnterHockey, onEnterShoveling, spawn]);
+  }, [onEnterHockey, onEnterShoveling, onEnterSubway, spawn]);
 
   return (
     <main className="park-camera-stage" data-testid="central-park-map">
@@ -405,15 +416,6 @@ export function CentralParkMap({
         <p>Turtle City</p>
         <h1>Central Park</h1>
       </header>
-
-      <button
-        type="button"
-        className="park-return"
-        onClick={onReturnToCity}
-      >
-        <span aria-hidden="true">←</span>
-        City map
-      </button>
 
       <div className="park-zoom-controls" role="group" aria-label="Camera zoom">
         <button
@@ -462,7 +464,7 @@ export function CentralParkMap({
       <p className="sr-only">
         Move the turtle with the arrow keys or W, A, S, and D. Hold Shift to
         run. Press Enter to start a nearby activity. Zoom with the mouse wheel
-        or the zoom controls.
+        or the zoom controls. Enter the subway at South Gate.
       </p>
 
       <section
@@ -575,7 +577,9 @@ export function CentralParkMap({
               className={`activity-threshold${
                 nearbyZoneId === zone.id ? " is-nearby" : ""
               }${
-                zone.id === "ice-hockey" || zone.id === "snow-crew"
+                zone.id === "ice-hockey" ||
+                zone.id === "snow-crew" ||
+                zone.id === "subway"
                   ? " is-playable"
                   : ""
               }`}
@@ -593,19 +597,25 @@ export function CentralParkMap({
                 <strong>{zone.label}</strong>
                 <small>{zone.detail}</small>
               </span>
-              {zone.id === "ice-hockey" || zone.id === "snow-crew" ? (
+              {zone.id === "ice-hockey" ||
+              zone.id === "snow-crew" ||
+              zone.id === "subway" ? (
                 <button
                   type="button"
                   className="activity-threshold-action"
                   aria-label={
                     zone.id === "ice-hockey"
                       ? "Play pond hockey"
-                      : "Start snow shoveling"
+                      : zone.id === "snow-crew"
+                        ? "Start snow shoveling"
+                        : "Enter South Gate subway"
                   }
                   onClick={
                     zone.id === "ice-hockey"
                       ? onEnterHockey
-                      : onEnterShoveling
+                      : zone.id === "snow-crew"
+                        ? onEnterShoveling
+                        : onEnterSubway
                   }
                 />
               ) : null}
@@ -630,19 +640,26 @@ export function CentralParkMap({
           <span aria-hidden="true" />
           <div>
             <strong>{nearbyZone.label}</strong>
-            <small>{nearbyZone.detail} activity entrance</small>
+            <small>
+              {nearbyZone.id === "subway"
+                ? "Turtle City subway entrance"
+                : `${nearbyZone.detail} activity entrance`}
+            </small>
           </div>
           {nearbyZone.id === "ice-hockey" ||
-          nearbyZone.id === "snow-crew" ? (
+          nearbyZone.id === "snow-crew" ||
+          nearbyZone.id === "subway" ? (
             <button
               type="button"
               onClick={
                 nearbyZone.id === "ice-hockey"
                   ? onEnterHockey
-                  : onEnterShoveling
+                  : nearbyZone.id === "snow-crew"
+                    ? onEnterShoveling
+                    : onEnterSubway
               }
             >
-              Play
+              {nearbyZone.id === "subway" ? "Enter station" : "Play"}
             </button>
           ) : null}
         </aside>

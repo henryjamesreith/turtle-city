@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 
 type ChelseaApartmentProps = {
   onExitToChelsea: () => void;
-  onOpenMap: () => void;
   turtleName: string;
 };
 
@@ -29,7 +28,6 @@ function clamp(value: number, minimum: number, maximum: number) {
 
 export function ChelseaApartment({
   onExitToChelsea,
-  onOpenMap,
   turtleName,
 }: ChelseaApartmentProps) {
   const roomRef = useRef<HTMLElement>(null);
@@ -157,10 +155,6 @@ export function ChelseaApartment({
         <h1>Your apartment</h1>
         <span>Starter condition · needs work</span>
       </header>
-
-      <button type="button" className="apartment-map-button" onClick={onOpenMap}>
-        City map
-      </button>
 
       <p className="sr-only">
         Move around the apartment with the arrow keys or W, A, S, and D. Press

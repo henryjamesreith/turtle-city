@@ -6,7 +6,11 @@ import {
   type TurtleVariant,
 } from "../turtles";
 
-export type PersistedLocation = "apartment" | "chelsea" | "central-park";
+export type PersistedLocation =
+  | "apartment"
+  | "chelsea"
+  | "central-park"
+  | "west-village";
 
 export type TurtleAppearance = {
   variant: TurtleVariant;
@@ -37,7 +41,8 @@ function isPersistedLocation(value: string): value is PersistedLocation {
   return (
     value === "apartment" ||
     value === "chelsea" ||
-    value === "central-park"
+    value === "central-park" ||
+    value === "west-village"
   );
 }
 
@@ -182,7 +187,9 @@ export async function saveLastLocation(location: PersistedLocation) {
   }
 
   const lastDistrict =
-    location === "central-park" ? "central-park" : "chelsea";
+    location === "central-park" || location === "west-village"
+      ? location
+      : "chelsea";
   const { error } = await client
     .from("player_states")
     .update({

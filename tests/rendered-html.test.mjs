@@ -184,7 +184,7 @@ test("the map has focus interactions without game dependencies", async () => {
   assert.doesNotMatch(packageJson, /phaser|drizzle|colyseus/i);
 });
 
-test("Chelsea connects the starter apartment, street, and city map", async () => {
+test("Chelsea connects the starter apartment, street, and subway", async () => {
   const [map, district, apartment, styles] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
@@ -195,14 +195,17 @@ test("Chelsea connects the starter apartment, street, and city map", async () =>
   assert.match(map, /useState<Screen>\("apartment"\)/);
   assert.match(map, /<ChelseaApartment/);
   assert.match(map, /<ChelseaDistrict/);
-  assert.match(map, /mapReturn/);
-  assert.match(map, /Visit Chelsea/);
+  assert.doesNotMatch(map, /mapReturn|openWorldMap/);
+  assert.match(map, /enterSubway\("chelsea"\)/);
   assert.match(district, /data-testid="chelsea-district"/);
   assert.match(district, /West 22 Apartments/);
   assert.match(district, /onEnterApartment/);
   assert.match(district, /onEnterPressureWashing/);
   assert.match(district, /chelsea-pressure-marker/);
   assert.match(district, /spawn === "pressure-washing"/);
+  assert.match(district, /spawn === "subway"/);
+  assert.match(district, /West 23 Street/);
+  assert.match(district, /onEnterSubway/);
   assert.match(district, /requestAnimationFrame/);
   assert.match(apartment, /data-testid="chelsea-apartment"/);
   assert.match(apartment, /Apartment 4B/);
@@ -214,11 +217,103 @@ test("Chelsea connects the starter apartment, street, and city map", async () =>
   assert.match(apartment, /data-tier="starter"/);
   assert.match(apartment, /onExitToChelsea/);
   assert.match(apartment, /requestAnimationFrame/);
+  assert.doesNotMatch(apartment, /City map|onOpenMap/);
   assert.match(styles, /\.chelsea-stage/);
   assert.match(styles, /\.chelsea-apartment-building/);
   assert.match(styles, /\.apartment-stage/);
   assert.match(styles, /\.apartment-room/);
   assert.match(styles, /assets\/turtles\/clover\.png/);
+});
+
+test("West Village connects neighborhood streets to the Hudson waterfront", async () => {
+  const [map, village, persistence, migration, styles] = await Promise.all([
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/WestVillageDistrict.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../lib/persistence/playerPersistence.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../supabase/migrations/20260729030000_west_village_location.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(map, /import \{ WestVillageDistrict \}/);
+  assert.match(map, /screen === "west-village"/);
+  assert.match(map, /enterSubway\("west-village"\)/);
+  assert.match(village, /data-testid="west-village-district"/);
+  assert.match(village, /CELLAR NOTE/);
+  assert.match(village, /THE NIGHT HERON/);
+  assert.match(village, /HUDSON GREENWAY/);
+  assert.match(village, /Bike races coming later/);
+  assert.match(village, /requestAnimationFrame/);
+  assert.match(village, /className="village-player"/);
+  assert.match(village, /className="turtle-nameplate"/);
+  assert.match(village, /West 4 Street/);
+  assert.match(village, /onEnterSubway/);
+  assert.doesNotMatch(village, /City map|onOpenMap/);
+  assert.match(persistence, /\| "west-village";/);
+  assert.match(migration, /last_location in/);
+  assert.match(migration, /'west-village'/);
+  assert.match(styles, /\.village-stage/);
+  assert.match(styles, /\.village-jazz-club/);
+  assert.match(styles, /\.village-waterfront/);
+  assert.match(styles, /\.village-greenway/);
+});
+
+test("the subway is the only route to the onboard city map", async () => {
+  const [map, park, platform, train, subway, apartment, district, village, styles] =
+    await Promise.all([
+      readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/SubwayPlatform.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/SubwayTrain.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../lib/world/subway.ts", import.meta.url), "utf8"),
+      readFile(new URL("../app/ChelseaApartment.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/WestVillageDistrict.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    ]);
+
+  assert.match(map, /screen === "subway-platform"/);
+  assert.match(map, /screen === "subway-train"/);
+  assert.match(map, /<SubwayPlatform/);
+  assert.match(map, /<SubwayTrain/);
+  assert.match(map, /onChooseStop/);
+  assert.equal([...map.matchAll(/setScreen\("city"\)/g)].length, 1);
+  assert.match(map, /Back to train/);
+  assert.match(map, /Ride to/);
+  assert.match(map, /arriveInDistrict/);
+  assert.match(platform, /data-testid="subway-platform"/);
+  assert.match(platform, /Upcoming trains/);
+  assert.match(platform, /FIRST_ARRIVAL_TIME = 1/);
+  assert.match(platform, /phase === "boarding"/);
+  assert.match(platform, /event\.key === "Enter"/);
+  assert.match(platform, /MOVEMENT_KEYS/);
+  assert.match(platform, /requestAnimationFrame/);
+  assert.match(platform, /Board train/);
+  assert.match(train, /data-testid="subway-train"/);
+  assert.match(train, /Open subway map/);
+  assert.match(train, /train-center-doors/);
+  assert.match(train, /train-ceiling-lights/);
+  assert.match(subway, /central-park/);
+  assert.match(subway, /west-village/);
+  assert.match(subway, /chelsea/);
+  assert.match(park, /activeZoneId === "subway"/);
+  assert.match(park, /onEnterSubway/);
+  assert.doesNotMatch(park, /City map|onReturnToCity/);
+  assert.doesNotMatch(apartment, /City map|onOpenMap/);
+  assert.doesNotMatch(district, /City map|onOpenMap/);
+  assert.doesNotMatch(village, /City map|onOpenMap/);
+  assert.match(styles, /\.subway-arrivals/);
+  assert.match(styles, /\.subway-train-door/);
+  assert.match(styles, /\.train-interior-stage/);
+  assert.match(styles, /\.train-map-card/);
 });
 
 test("Chelsea pressure washing clears a facade in a session-only shift", async () => {

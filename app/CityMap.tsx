@@ -7,8 +7,11 @@ import { ChelseaDistrict } from "./ChelseaDistrict";
 import { HockeyGame } from "./HockeyGame";
 import { PressureWashingGame } from "./PressureWashingGame";
 import { SnowShovelingGame } from "./SnowShovelingGame";
+import { SubwayPlatform } from "./SubwayPlatform";
+import { SubwayTrain } from "./SubwayTrain";
 import { TurtleAuth } from "./TurtleAuth";
 import { TurtleOnboarding } from "./TurtleOnboarding";
+import { WestVillageDistrict } from "./WestVillageDistrict";
 import {
   defaultTurtleAppearance,
   getPersistedLocation,
@@ -25,6 +28,11 @@ import {
   type TurtleAppearance,
 } from "@/lib/persistence/playerPersistence";
 import { getTurtleImage } from "@/lib/turtles";
+import {
+  isTransitDistrict,
+  subwayStations,
+  type TransitDistrict,
+} from "@/lib/world/subway";
 
 type District = {
   id:
@@ -47,10 +55,13 @@ type Screen =
   | "central-park"
   | "hockey"
   | "pressure-washing"
-  | "snow-shoveling";
-type MapReturn = "apartment" | "chelsea" | "central-park";
+  | "snow-shoveling"
+  | "subway-platform"
+  | "subway-train"
+  | "west-village";
 type ParkSpawn = "south-gate" | "frozen-pond" | "snow-crew";
-type ChelseaSpawn = "apartment" | "pressure-washing";
+type ChelseaSpawn = "apartment" | "pressure-washing" | "subway";
+type WestVillageSpawn = "neighborhood" | "subway";
 type EntryMode = "auth" | "creator" | "game" | "welcome";
 
 const districts: District[] = [
@@ -102,7 +113,8 @@ function isPersistedScreen(screen: Screen): screen is PersistedLocation {
   return (
     screen === "apartment" ||
     screen === "chelsea" ||
-    screen === "central-park"
+    screen === "central-park" ||
+    screen === "west-village"
   );
 }
 
@@ -126,28 +138,41 @@ export function CityMap() {
   const [turtlePersonality, setTurtlePersonality] = useState("");
   const [turtleAppearance, setTurtleAppearance] =
     useState<TurtleAppearance>(defaultTurtleAppearance);
-  const [mapReturn, setMapReturn] = useState<MapReturn | null>(null);
+  const [subwayOrigin, setSubwayOrigin] =
+    useState<TransitDistrict>("chelsea");
   const [parkSpawn, setParkSpawn] = useState<ParkSpawn>("south-gate");
   const [chelseaSpawn, setChelseaSpawn] =
     useState<ChelseaSpawn>("apartment");
+  const [westVillageSpawn, setWestVillageSpawn] =
+    useState<WestVillageSpawn>("neighborhood");
   const [selectedId, setSelectedId] = useState<District["id"] | null>(null);
   const selectedDistrict =
     districts.find((district) => district.id === selectedId) ?? null;
 
-  function openWorldMap(returnTo: MapReturn) {
-    setMapReturn(returnTo);
+  function enterSubway(origin: TransitDistrict) {
+    setSubwayOrigin(origin);
     setSelectedId(null);
-    setScreen("city");
+    setScreen("subway-platform");
   }
 
-  function travelTo(destination: "chelsea" | "central-park") {
-    setMapReturn(null);
+  const arriveInDistrict = useCallback((destination: TransitDistrict) => {
     setSelectedId(null);
-    if (destination === "chelsea") {
-      setChelseaSpawn("apartment");
+    setSubwayOrigin(destination);
+
+    if (destination === "central-park") {
+      setParkSpawn("south-gate");
+    } else if (destination === "chelsea") {
+      setChelseaSpawn("subway");
+    } else {
+      setWestVillageSpawn("subway");
     }
+
     setScreen(destination);
-  }
+  }, []);
+
+  const exitSubwayToOrigin = useCallback(() => {
+    arriveInDistrict(subwayOrigin);
+  }, [arriveInDistrict, subwayOrigin]);
 
   const applyPlayerSnapshot = useCallback((snapshot: PlayerSnapshot) => {
     const appearance = getTurtleAppearance(snapshot.profile);
@@ -173,7 +198,6 @@ export function CityMap() {
     setTurtlePersonality("");
     setTurtleAppearance(defaultTurtleAppearance);
     applyTurtleAppearance(defaultTurtleAppearance);
-    setMapReturn(null);
     setSelectedId(null);
     setScreen("apartment");
   }
@@ -250,30 +274,24 @@ export function CityMap() {
         } else if (screen === "pressure-washing") {
           setChelseaSpawn("pressure-washing");
           setScreen("chelsea");
-        } else if (screen === "central-park") {
-          setMapReturn("central-park");
-          setSelectedId(null);
-          setScreen("city");
         } else if (screen === "apartment") {
           setScreen("chelsea");
-        } else if (screen === "chelsea") {
-          setMapReturn("chelsea");
+        } else if (screen === "subway-platform") {
+          exitSubwayToOrigin();
+        } else if (screen === "subway-train") {
+          setScreen("subway-platform");
+        } else if (screen === "city" && selectedId) {
           setSelectedId(null);
-          setScreen("city");
-        } else if (selectedId) {
+        } else if (screen === "city") {
           setSelectedId(null);
-        } else if (mapReturn) {
-          setScreen(mapReturn);
-          setMapReturn(null);
-        } else {
-          setSelectedId(null);
+          setScreen("subway-train");
         }
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [entryMode, mapReturn, screen, selectedId]);
+  }, [entryMode, exitSubwayToOrigin, screen, selectedId]);
 
   const mapStyle = {
     "--focus-x": selectedDistrict?.focusX ?? "0vw",
@@ -366,6 +384,30 @@ export function CityMap() {
     );
   }
 
+  if (screen === "subway-platform") {
+    return (
+      <SubwayPlatform
+        origin={subwayOrigin}
+        turtleName={turtleName}
+        onExit={exitSubwayToOrigin}
+        onBoard={() => setScreen("subway-train")}
+      />
+    );
+  }
+
+  if (screen === "subway-train") {
+    return (
+      <SubwayTrain
+        origin={subwayOrigin}
+        turtleName={turtleName}
+        onChooseStop={() => {
+          setSelectedId(null);
+          setScreen("city");
+        }}
+      />
+    );
+  }
+
   if (screen === "hockey") {
     return (
       <HockeyGame
@@ -412,7 +454,6 @@ export function CityMap() {
           setChelseaSpawn("apartment");
           setScreen("chelsea");
         }}
-        onOpenMap={() => openWorldMap("apartment")}
       />
     );
   }
@@ -424,7 +465,7 @@ export function CityMap() {
         spawn={chelseaSpawn}
         onEnterApartment={() => setScreen("apartment")}
         onEnterPressureWashing={() => setScreen("pressure-washing")}
-        onOpenMap={() => openWorldMap("chelsea")}
+        onEnterSubway={() => enterSubway("chelsea")}
       />
     );
   }
@@ -434,7 +475,7 @@ export function CityMap() {
       <CentralParkMap
         turtleName={turtleName}
         spawn={parkSpawn}
-        onReturnToCity={() => openWorldMap("central-park")}
+        onEnterSubway={() => enterSubway("central-park")}
         onEnterHockey={() => {
           setParkSpawn("frozen-pond");
           setScreen("hockey");
@@ -447,13 +488,23 @@ export function CityMap() {
     );
   }
 
+  if (screen === "west-village") {
+    return (
+      <WestVillageDistrict
+        turtleName={turtleName}
+        spawn={westVillageSpawn}
+        onEnterSubway={() => enterSubway("west-village")}
+      />
+    );
+  }
+
   return (
     <main
       className={`map-stage${selectedDistrict ? " is-focused" : ""}`}
       data-testid="city-map"
     >
       <header className="map-wordmark">
-        <p>Turtle City</p>
+        <p>T train · onboard map</p>
         <h1>Map</h1>
       </header>
 
@@ -500,14 +551,7 @@ export function CityMap() {
               }`}
               aria-label={`Focus ${district.name}`}
               aria-pressed={district.id === selectedId}
-              onClick={() => {
-                if (district.id === "central-park") {
-                  setParkSpawn("south-gate");
-                  travelTo("central-park");
-                } else {
-                  setSelectedId(district.id);
-                }
-              }}
+              onClick={() => setSelectedId(district.id)}
             >
               <span>{district.name}</span>
             </button>
@@ -530,21 +574,18 @@ export function CityMap() {
 
       <div className="map-key" aria-hidden={selectedDistrict !== null}>
         <span className="key-mark" />
-        Select a district
+        Choose your stop
       </div>
 
       <div className="map-toolbar">
-        {mapReturn && !selectedDistrict ? (
+        {!selectedDistrict ? (
           <button
             type="button"
             className="map-close"
-            onClick={() => {
-              setScreen(mapReturn);
-              setMapReturn(null);
-            }}
+            onClick={() => setScreen("subway-train")}
           >
             <span aria-hidden="true">←</span>
-            Back to where you were
+            Back to train
           </button>
         ) : null}
 
@@ -578,15 +619,26 @@ export function CityMap() {
             <p>District overview</p>
             <h2>{selectedDistrict.name}</h2>
             <span>{selectedDistrict.mapNote}</span>
-            {selectedDistrict.id === "chelsea" ? (
+            {isTransitDistrict(selectedDistrict.id) &&
+            selectedDistrict.id !== subwayOrigin ? (
               <button
                 type="button"
                 className="district-enter"
-                onClick={() => travelTo("chelsea")}
+                onClick={() => {
+                  if (isTransitDistrict(selectedDistrict.id)) {
+                    arriveInDistrict(selectedDistrict.id);
+                  }
+                }}
               >
-                Visit Chelsea
+                Ride to {subwayStations[selectedDistrict.id].name}
               </button>
-            ) : null}
+            ) : (
+              <small className="district-transit-note">
+                {selectedDistrict.id === subwayOrigin
+                  ? "You boarded here."
+                  : "No station is open here yet."}
+              </small>
+            )}
           </section>
         </>
       ) : null}

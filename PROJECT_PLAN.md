@@ -20,10 +20,11 @@ apartment.
 
 1. Start in the player’s apartment or their last saved location.
 2. Explore the current district in a continuous environment.
-3. Open the map when traveling to another district.
-4. Enter buildings or activity areas as separate scenes.
-5. Play short activities and return to the same neighborhood afterward.
-6. Later, earn currency and use it for turtle cosmetics and apartment upgrades.
+3. Enter a neighborhood subway station to travel.
+4. Board a train, open the map, and choose an available station.
+5. Enter buildings or activity areas as separate scenes.
+6. Play short activities and return to the same neighborhood afterward.
+7. Later, earn currency and use it for turtle cosmetics and apartment upgrades.
 
 Outdoor districts use a continuous following camera with zoom. Apartments,
 interiors, transit, and activities can use separate fixed-camera scenes.
@@ -33,10 +34,10 @@ interiors, transit, and activities can use separate fixed-camera scenes.
 | District | Identity | Activities |
 | --- | --- | --- |
 | Central Park | Permanently winter | Pond hockey, snow shoveling; sledding later, Chess with old man |
-| Chelsea | Starter apartment and west-side blocks | Pressure washing; cooking and doorman games planned |
+| Chelsea | Starter apartment and west-side blocks | Pressure washing; cooking @ gregs papaya, doorman game, news stand for puzzles |
 | Midtown | Times Square and Empire State-inspired skyline | Falling-object dodge game, trash pickup |
 | FiDi | One World Trade-inspired skyline | Delivery driving(should be like subway surfers); tycoon progression later |
-| West Village | Jazz cellar and waterfront | Music activity, biking |
+| West Village | Jazz cellar and waterfront | Music activity/guitar hero, biking |
 | East Village / LES | East River construction area | Excavator |
 
 Later districts may include the Upper West Side, Upper East Side, Harlem,
@@ -62,10 +63,18 @@ Bushwick.
   its walls, floor, window, kitchen, heating, bed, lighting, furniture, and
   storage.
 - Leaving the apartment opens an explorable Chelsea block. The player can
-  re-enter West 22 or open the map.
-- The map can be opened from the current location and closed to return there.
-- Central Park and Chelsea use continuous movement. Collision boundaries are
-  intentionally deferred.
+  re-enter West 22 or walk to the West 23 Street subway.
+- West Village is an explorable continuous district connecting quiet restaurant
+  and jazz-club streets to the Hudson greenway. The jazz and bike-race
+  activities are visual placeholders only.
+- Subway entrances connect Chelsea, West Village, and Central Park. Each station
+  has a walkable platform, an arrivals board, and a train that arrives almost
+  immediately. Enter boards while the doors are open.
+- The city map is available only after boarding a train. Players choose an open
+  station from the onboard map and arrive beside that district’s subway
+  entrance.
+- Central Park, Chelsea, and West Village use continuous movement. Collision
+  boundaries are intentionally deferred.
 - The turtle currently uses one static character image with no walking
   animation.
 - Supabase restores the turtle profile and last stable location. Profiles,
@@ -88,7 +97,7 @@ closes.
 
 ## Later product systems
 
-- Subway, bus, and bike travel between districts.
+- Bus and bike travel between districts.
 - Multiplayer district rooms and activities.
 - Friends and open text chat with filtering, reporting, blocking, rate limits,
   and appropriate all-ages safeguards.
@@ -97,6 +106,7 @@ closes.
 - Avoid loot boxes, trading, pay-to-win items, and a premium currency until the
   core game and economy are proven.
 - Saved inventory, apartment layouts, progression, rewards, and last location.
+- You move slow by default and then you can buy a skateboard to move faster
 
 ## Technical direction
 
@@ -128,15 +138,17 @@ small interfaces so mobile and desktop-store versions remain possible later.
    last location.
 2. **Onboarding — complete:** account access, welcome page, turtle creator,
    saved appearance, and Apartment 4B arrival.
-3. **Multiplayer:** add shared districts, synchronized movement, friends, and
-   chat.
-4. **Subway system:** establish travel between districts before expanding the
-   city.
+3. **West Village — complete:** connect restaurant and jazz-club streets to the
+   Hudson greenway.
+4. **Subway system — complete:** district entrances, arrivals boards, arriving
+   trains, boarding, and onboard-only map travel.
 5. **More neighborhoods:** build and connect additional districts.
 6. **More games:** add activities alongside neighborhood development rather
    than waiting for every district to be finished.
-7. **Store and apartment upgrades:** add Shells, inventory, turtle cosmetics,
+7. **Minimal multiplayer:** validate shared district presence and synchronized
+   movement before building chat, friends, or multiplayer activities.
+8. **Store and apartment upgrades:** add Shells, inventory, turtle cosmetics,
    furniture, apartment improvements, and paid items.
-8. **Player-created games:** build an original underground creator hub with a
+9. **Player-created games:** build an original underground creator hub with a
    sidebar chat interface where players can design and publish mini-games.
    Players can browse trending games, invite friends, and issue challenges.

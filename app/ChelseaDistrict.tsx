@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 
 type ChelseaDistrictProps = {
-  spawn: "apartment" | "pressure-washing";
+  spawn: "apartment" | "pressure-washing" | "subway";
   onEnterApartment: () => void;
   onEnterPressureWashing: () => void;
-  onOpenMap: () => void;
+  onEnterSubway: () => void;
   turtleName: string;
 };
 
@@ -49,13 +49,14 @@ export function ChelseaDistrict({
   spawn,
   onEnterApartment,
   onEnterPressureWashing,
-  onOpenMap,
+  onEnterSubway,
   turtleName,
 }: ChelseaDistrictProps) {
   const worldRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
   const [nearBuilding, setNearBuilding] = useState(false);
   const [nearPressureWashing, setNearPressureWashing] = useState(false);
+  const [nearSubway, setNearSubway] = useState(false);
 
   useEffect(() => {
     const pressed = new Set<string>();
@@ -64,6 +65,7 @@ export function ChelseaDistrict({
     let initialized = false;
     let nearEntrance = false;
     let nearWashCrew = false;
+    let nearSubwayEntrance = false;
     let previousTime = performance.now();
     let animationFrame = 0;
 
@@ -84,6 +86,13 @@ export function ChelseaDistrict({
       } else if (event.key === "Enter" && nearEntrance && !event.repeat) {
         event.preventDefault();
         onEnterApartment();
+      } else if (
+        event.key === "Enter" &&
+        nearSubwayEntrance &&
+        !event.repeat
+      ) {
+        event.preventDefault();
+        onEnterSubway();
       } else if (movementKeys.has(event.key)) {
         event.preventDefault();
         pressed.add(event.key.toLowerCase());
@@ -116,6 +125,8 @@ export function ChelseaDistrict({
         position.x =
           spawn === "pressure-washing"
             ? worldWidth * 0.2 + 140
+            : spawn === "subway"
+              ? worldWidth * 0.86
             : worldWidth * 0.5 + 210;
         position.y = worldHeight * 0.72;
         camera.x = cameraOffset(window.innerWidth, worldWidth, position.x);
@@ -149,6 +160,8 @@ export function ChelseaDistrict({
       const entranceY = worldHeight * 0.68;
       const pressureEntranceX = worldWidth * 0.2;
       const pressureEntranceY = worldHeight * 0.68;
+      const subwayEntranceX = worldWidth * 0.86;
+      const subwayEntranceY = worldHeight * 0.68;
       const isNearApartment =
         Math.hypot(position.x - entranceX, position.y - entranceY) < 175;
       const isNearPressureWashing =
@@ -156,9 +169,15 @@ export function ChelseaDistrict({
           position.x - pressureEntranceX,
           position.y - pressureEntranceY,
         ) < 175;
+      const isNearSubway =
+        Math.hypot(
+          position.x - subwayEntranceX,
+          position.y - subwayEntranceY,
+        ) < 175;
 
       nearEntrance = isNearApartment;
       nearWashCrew = isNearPressureWashing;
+      nearSubwayEntrance = isNearSubway;
       setNearBuilding((current) =>
         current === isNearApartment ? current : isNearApartment,
       );
@@ -166,6 +185,9 @@ export function ChelseaDistrict({
         current === isNearPressureWashing
           ? current
           : isNearPressureWashing,
+      );
+      setNearSubway((current) =>
+        current === isNearSubway ? current : isNearSubway,
       );
 
       const targetX = cameraOffset(window.innerWidth, worldWidth, position.x);
@@ -198,7 +220,7 @@ export function ChelseaDistrict({
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", clearInput);
     };
-  }, [onEnterApartment, onEnterPressureWashing, spawn]);
+  }, [onEnterApartment, onEnterPressureWashing, onEnterSubway, spawn]);
 
   return (
     <main className="chelsea-stage" data-testid="chelsea-district">
@@ -207,14 +229,11 @@ export function ChelseaDistrict({
         <h1>Chelsea</h1>
       </header>
 
-      <button type="button" className="chelsea-map-button" onClick={onOpenMap}>
-        City map
-      </button>
-
       <p className="sr-only">
         Move with the arrow keys or W, A, S, and D. Hold Shift to run. Press
         Enter near the apartment building to go home or near the Wash Crew
-        entrance to pressure wash the neighboring facade.
+        entrance to pressure wash the neighboring facade. Enter the subway from
+        the stairway at the east end of the block.
       </p>
 
       <section className="chelsea-viewport" aria-label="Chelsea street">
@@ -279,6 +298,17 @@ export function ChelseaDistrict({
             <div className="chelsea-store-awning" />
           </section>
 
+          <section className="chelsea-subway-entrance" aria-label="West 23 Street subway">
+            <span className="subway-line-badge">T</span>
+            <div>
+              <strong>West 23 Street</strong>
+              <small>Subway</small>
+            </div>
+            <button type="button" onClick={onEnterSubway}>
+              Enter
+            </button>
+          </section>
+
           <div className="chelsea-sidewalk" aria-hidden="true">
             <span className="chelsea-hydrant" />
             <span className="chelsea-trash-bags" />
@@ -313,6 +343,13 @@ export function ChelseaDistrict({
           </div>
 
           <div
+            className={`chelsea-subway-zone${nearSubway ? " is-nearby" : ""}`}
+            aria-hidden="true"
+          >
+            <span />
+          </div>
+
+          <div
             className="chelsea-player"
             ref={playerRef}
             role="img"
@@ -325,7 +362,17 @@ export function ChelseaDistrict({
         </div>
       </section>
 
-      {nearPressureWashing ? (
+      {nearSubway ? (
+        <aside className="chelsea-enter-prompt" aria-live="polite">
+          <div>
+            <strong>West 23 Street</strong>
+            <small>Enter the Turtle City subway.</small>
+          </div>
+          <button type="button" onClick={onEnterSubway}>
+            Enter station
+          </button>
+        </aside>
+      ) : nearPressureWashing ? (
         <aside className="chelsea-enter-prompt" aria-live="polite">
           <div>
             <strong>Chelsea Wash Crew</strong>
