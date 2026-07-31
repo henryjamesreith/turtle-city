@@ -141,6 +141,12 @@ export function CityMap() {
   const [hasPlayerSession, setHasPlayerSession] = useState(false);
   const [playerIsAnonymous, setPlayerIsAnonymous] = useState(false);
   const [returningPlayer, setReturningPlayer] = useState(false);
+  const [creatingFreshTurtle, setCreatingFreshTurtle] = useState(false);
+  const [pendingTurtle, setPendingTurtle] = useState<{
+    appearance: TurtleAppearance;
+    personality: string;
+    turtleName: string;
+  } | null>(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [logoutError, setLogoutError] = useState("");
@@ -227,6 +233,26 @@ export function CityMap() {
     } finally {
       setLogoutLoading(false);
     }
+  }
+
+  async function completeTurtleCreation(input: {
+    appearance: TurtleAppearance;
+    personality: string;
+    turtleName: string;
+  }) {
+    await saveTurtleProfile(input);
+    await saveLastLocation("apartment");
+    setTurtleName(input.turtleName);
+    setTurtlePersonality(input.personality);
+    setTurtleAppearance(input.appearance);
+    setReturningPlayer(true);
+    setHasPlayerSession(true);
+    setPlayerIsAnonymous(false);
+    setCreatingFreshTurtle(false);
+    setPendingTurtle(null);
+    applyTurtleAppearance(input.appearance);
+    setScreen("apartment");
+    setEntryMode("game");
   }
 
   useEffect(() => {
@@ -322,7 +348,7 @@ export function CityMap() {
       <TurtleAuth
         key={authMode}
         mode={authMode}
-        onBack={() => setEntryMode("welcome")}
+        onBack={() => setEntryMode(pendingTurtle ? "creator" : "welcome")}
         onSwitchMode={() =>
           setAuthMode((current) =>
             current === "sign-in" ? "sign-up" : "sign-in",
@@ -338,6 +364,8 @@ export function CityMap() {
             }
 
             const hasTurtle = applyPlayerSnapshot(snapshot);
+            setCreatingFreshTurtle(false);
+            setPendingTurtle(null);
             setEntryMode(hasTurtle ? "game" : "creator");
             return;
           }
@@ -355,7 +383,11 @@ export function CityMap() {
           }
 
           applyPlayerSnapshot(snapshot);
-          setEntryMode("creator");
+          if (pendingTurtle) {
+            await completeTurtleCreation(pendingTurtle);
+          } else {
+            setEntryMode("creator");
+          }
         }}
       />
     );
@@ -364,39 +396,46 @@ export function CityMap() {
   if (entryMode !== "game") {
     return (
       <TurtleOnboarding
-        key={`${entryMode}-${turtleName}-${turtleAppearance.variant}`}
+        key={`${entryMode}-${pendingTurtle?.turtleName ?? turtleName}-${pendingTurtle?.appearance.variant ?? turtleAppearance.variant}`}
         mode={entryMode}
         sessionLoading={sessionLoading}
-        initialName={returningPlayer ? turtleName : ""}
-        initialPersonality={returningPlayer ? turtlePersonality : ""}
-        initialAppearance={turtleAppearance}
-        onBack={() => setEntryMode("welcome")}
+        initialName={
+          pendingTurtle?.turtleName ?? (returningPlayer ? turtleName : "")
+        }
+        initialPersonality={
+          pendingTurtle?.personality ??
+          (returningPlayer ? turtlePersonality : "")
+        }
+        initialAppearance={pendingTurtle?.appearance ?? turtleAppearance}
+        onBack={() => {
+          setCreatingFreshTurtle(false);
+          setPendingTurtle(null);
+          setEntryMode("welcome");
+        }}
         onPlay={() => {
           if (returningPlayer) {
             setEntryMode("game");
-          } else if (hasPlayerSession && !playerIsAnonymous) {
-            setEntryMode("creator");
           } else {
+            setCreatingFreshTurtle(false);
+            setPendingTurtle(null);
             setAuthMode("sign-in");
             setEntryMode("auth");
           }
         }}
         onCreate={() => {
-          setAuthMode("sign-up");
-          setEntryMode("auth");
+          setCreatingFreshTurtle(true);
+          setPendingTurtle(null);
+          setEntryMode("creator");
         }}
         onSave={async (input) => {
-          await saveTurtleProfile(input);
-          await saveLastLocation("apartment");
-          setTurtleName(input.turtleName);
-          setTurtlePersonality(input.personality);
-          setTurtleAppearance(input.appearance);
-          setReturningPlayer(true);
-          setHasPlayerSession(true);
-          setPlayerIsAnonymous(false);
-          applyTurtleAppearance(input.appearance);
-          setScreen("apartment");
-          setEntryMode("game");
+          if (creatingFreshTurtle || !hasPlayerSession || playerIsAnonymous) {
+            setPendingTurtle(input);
+            setAuthMode("sign-up");
+            setEntryMode("auth");
+            return;
+          }
+
+          await completeTurtleCreation(input);
         }}
       />
     );
