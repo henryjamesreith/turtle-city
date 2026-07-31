@@ -1,6 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
+import {
+  useWestVillageMultiplayer,
+} from "@/lib/multiplayer/useWestVillageMultiplayer";
+import { getTurtleImage, isTurtleVariant } from "@/lib/turtles";
 
 type WestVillageDistrictProps = {
   onEnterBikeRace: () => void;
@@ -54,9 +63,16 @@ export function WestVillageDistrict({
 }: WestVillageDistrictProps) {
   const worldRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
+  const remotePlayerRefs = useRef(new Map<string, HTMLDivElement>());
   const [nearBikeRace, setNearBikeRace] = useState(false);
   const [nearJazzClub, setNearJazzClub] = useState(false);
   const [nearSubway, setNearSubway] = useState(false);
+  const {
+    remotePlayers,
+    remoteTargetsRef,
+    sendMovement,
+    status: multiplayerStatus,
+  } = useWestVillageMultiplayer(spawn);
 
   useEffect(() => {
     const pressed = new Set<string>();
@@ -67,6 +83,8 @@ export function WestVillageDistrict({
     let isNearJazzClub = false;
     let isNearSubway = false;
     let previousTime = performance.now();
+    let lastNetworkUpdate = 0;
+    let facing: "left" | "right" = "left";
     let animationFrame = 0;
 
     function isEditableTarget(target: EventTarget | null) {
@@ -196,14 +214,41 @@ export function WestVillageDistrict({
       camera.y += (targetY - camera.y) * smoothing;
 
       if (horizontal < 0) {
+        facing = "left";
         player.dataset.facing = "left";
       } else if (horizontal > 0) {
+        facing = "right";
         player.dataset.facing = "right";
       }
 
       player.style.transform = `translate3d(${position.x - 55}px, ${
         position.y - 124
       }px, 0)`;
+
+      if (time - lastNetworkUpdate >= 65) {
+        sendMovement({
+          facing,
+          x: position.x / worldWidth,
+          y: position.y / worldHeight,
+        });
+        lastNetworkUpdate = time;
+      }
+
+      remotePlayerRefs.current.forEach((remotePlayer, sessionId) => {
+        const target = remoteTargetsRef.current.get(sessionId);
+        if (!target) {
+          return;
+        }
+
+        const remoteSmoothing = Math.min(1, elapsed * 10);
+        target.currentX += (target.x - target.currentX) * remoteSmoothing;
+        target.currentY += (target.y - target.currentY) * remoteSmoothing;
+        remotePlayer.dataset.facing = target.facing;
+        remotePlayer.style.transform = `translate3d(${
+          target.currentX * worldWidth - 55
+        }px, ${target.currentY * worldHeight - 124}px, 0)`;
+      });
+
       world.style.transform = `translate3d(${camera.x}px, ${camera.y}px, 0)`;
       animationFrame = requestAnimationFrame(update);
     }
@@ -219,7 +264,14 @@ export function WestVillageDistrict({
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", clearInput);
     };
-  }, [onEnterBikeRace, onEnterJazzClub, onEnterSubway, spawn]);
+  }, [
+    onEnterBikeRace,
+    onEnterJazzClub,
+    onEnterSubway,
+    remoteTargetsRef,
+    sendMovement,
+    spawn,
+  ]);
 
   return (
     <main className="village-stage" data-testid="west-village-district">
@@ -228,6 +280,22 @@ export function WestVillageDistrict({
         <h1>West Village</h1>
         <span>Quiet corners · late afternoon</span>
       </header>
+
+      <aside
+        className={`village-live-status is-${multiplayerStatus}`}
+        aria-live="polite"
+      >
+        <span aria-hidden="true" />
+        <strong>
+          {multiplayerStatus === "live"
+            ? `${remotePlayers.length + 1} ${
+                remotePlayers.length === 0 ? "turtle" : "turtles"
+              } here`
+            : multiplayerStatus === "connecting"
+              ? "Joining the city"
+              : "Solo mode"}
+        </strong>
+      </aside>
 
       <p className="sr-only">
         Move with the arrow keys or W, A, S, and D. Hold Shift to run. Travel
@@ -375,6 +443,40 @@ export function WestVillageDistrict({
           >
             <span />
           </div>
+
+          {remotePlayers.map((remotePlayer) => {
+            const variant = isTurtleVariant(remotePlayer.variant)
+              ? remotePlayer.variant
+              : "clover";
+
+            return (
+              <div
+                key={remotePlayer.sessionId}
+                className="village-remote-player"
+                ref={(element) => {
+                  if (element) {
+                    remotePlayerRefs.current.set(
+                      remotePlayer.sessionId,
+                      element,
+                    );
+                  } else {
+                    remotePlayerRefs.current.delete(remotePlayer.sessionId);
+                  }
+                }}
+                data-facing="left"
+                style={
+                  {
+                    "--remote-turtle-image": `url("${getTurtleImage(variant)}")`,
+                  } as CSSProperties
+                }
+              >
+                <span className="turtle-sprite" aria-hidden="true" />
+                <span className="turtle-nameplate">
+                  {remotePlayer.turtleName}
+                </span>
+              </div>
+            );
+          })}
 
           <div
             className="village-player"

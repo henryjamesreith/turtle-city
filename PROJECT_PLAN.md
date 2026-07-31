@@ -67,6 +67,9 @@ Bushwick.
 - West Village is an explorable continuous district connecting quiet restaurant
   and jazz-club streets to the Hudson greenway. The bike race and Cellar Note
   rhythm set are playable.
+- West Village has the first multiplayer room. Up to 20 authenticated turtles
+  can see one another's names, appearances, positions, and facing direction.
+  Movement is validated by the game server and smoothed in the browser.
 - Subway entrances connect Chelsea, West Village, and Central Park. Each station
   has a walkable platform, an arrivals board, and a train that arrives almost
   immediately. Enter boards while the doors are open.
@@ -150,8 +153,9 @@ small interfaces so mobile and desktop-store versions remain possible later.
 5. **More neighborhoods:** build and connect additional districts.
 6. **More games:** add activities alongside neighborhood development rather
    than waiting for every district to be finished.
-7. **Minimal multiplayer:** validate shared district presence and synchronized
-   movement before building chat, friends, or multiplayer activities.
+7. **Minimal multiplayer — West Village complete:** expand authenticated shared
+   presence and synchronized movement to Chelsea and Central Park before
+   building chat, friends, or multiplayer activities.
 8. **Store and apartment upgrades:** add Shells, inventory, turtle cosmetics,
    furniture, apartment improvements, and paid items.
 9. **Player-created games:** build an original underground creator hub with a

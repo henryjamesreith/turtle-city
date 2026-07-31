@@ -1,8 +1,8 @@
 # Turtle City
 
 Turtle City is a New York-inspired social world inhabited by turtles. The
-current prototype includes the city map, explorable Central Park and Chelsea
-districts, Apartment 4B, pond hockey, snow shoveling, and pressure washing.
+current prototype includes three explorable districts, Apartment 4B, the
+subway, five activities, and shared multiplayer presence in West Village.
 
 See [PROJECT_PLAN.md](./PROJECT_PLAN.md) for the current product documentation.
 
@@ -15,7 +15,17 @@ npm install
 npm run dev
 ```
 
-Use `npm run build` to create a production build.
+Start the multiplayer server in a second terminal:
+
+```bash
+npm run multiplayer:dev
+```
+
+The web app runs at `http://localhost:3000` and the local Colyseus server runs
+at `http://localhost:2567`. West Village remains playable in solo mode when the
+multiplayer server is unavailable.
+
+Use `npm run build` to build both the web app and multiplayer server.
 
 ## Supabase persistence
 
@@ -48,6 +58,24 @@ last location; currency, inventory, upgrades, and rewards require trusted
 server logic.
 
 Configure the production Site URL and redirect URLs before deploying.
+
+## Multiplayer
+
+West Village uses one authenticated Colyseus room with a maximum of 20
+turtles. The server verifies the Supabase access token, loads the turtle name
+and appearance through the player's row-level security policy, and validates
+movement before synchronizing it.
+
+For deployment, run `npm run multiplayer:start` on the game-server host and
+configure:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `TURTLE_CITY_WEB_ORIGIN` with the deployed web origin
+- `PORT`, normally supplied by the host
+
+Set `NEXT_PUBLIC_MULTIPLAYER_URL` on the Next.js deployment to the public HTTPS
+URL of that game server.
 
 ## Contributing
 

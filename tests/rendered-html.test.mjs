@@ -181,7 +181,7 @@ test("the map has focus interactions without game dependencies", async () => {
   assert.match(styles, /\.district-fidi[\s\S]*68% 94%[\s\S]*37% 98%/);
   assert.doesNotMatch(styles, /52% 100%/);
   assert.match(packageJson, /@supabase\/supabase-js/);
-  assert.doesNotMatch(packageJson, /phaser|drizzle|colyseus/i);
+  assert.doesNotMatch(packageJson, /phaser|drizzle/i);
 });
 
 test("Chelsea connects the starter apartment, street, and subway", async () => {
@@ -314,6 +314,70 @@ test("West Village connects its streets, music venue, and Hudson waterfront", as
   assert.match(styles, /\.rhythm-stage/);
   assert.match(styles, /\.rhythm-board/);
   assert.match(styles, /\.rhythm-note/);
+});
+
+test("West Village has authenticated shared multiplayer presence", async () => {
+  const [village, hook, schema, room, server, persistence, packageJson, styles] =
+    await Promise.all([
+      readFile(
+        new URL("../app/WestVillageDistrict.tsx", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL(
+          "../lib/multiplayer/useWestVillageMultiplayer.ts",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+      readFile(
+        new URL("../lib/multiplayer/schema.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../server/WestVillageRoom.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(new URL("../server/index.ts", import.meta.url), "utf8"),
+      readFile(
+        new URL("../lib/persistence/playerPersistence.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(new URL("../package.json", import.meta.url), "utf8"),
+      readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    ]);
+
+  assert.match(village, /useWestVillageMultiplayer/);
+  assert.match(village, /className="village-remote-player"/);
+  assert.match(village, /remoteSmoothing/);
+  assert.match(village, /sendMovement/);
+  assert.match(village, /village-live-status/);
+  assert.match(hook, /client\.auth\.token = accessToken/);
+  assert.match(hook, /joinOrCreate\(/);
+  assert.match(hook, /Callbacks\.get\(room\)/);
+  assert.match(hook, /callbacks\.onAdd/);
+  assert.match(hook, /callbacks\.onChange/);
+  assert.match(hook, /callbacks\.onRemove/);
+  assert.match(schema, /class WestVillagePlayer extends Schema/);
+  assert.match(schema, /players = new MapSchema/);
+  assert.match(room, /maxClients = 20/);
+  assert.match(room, /authClient\.auth\.getUser\(token\)/);
+  assert.match(room, /from\("profiles"\)/);
+  assert.match(room, /elapsedMilliseconds < 40/);
+  assert.match(room, /requestedX/);
+  assert.match(room, /requestedY/);
+  assert.match(room, /this\.state\.players\.delete/);
+  assert.match(server, /west_village: defineRoom\(WestVillageRoom\)/);
+  assert.match(server, /TURTLE_CITY_WEB_ORIGIN/);
+  assert.match(server, /\/health/);
+  assert.match(persistence, /getPlayerAccessToken/);
+  assert.match(packageJson, /"@colyseus\/sdk"/);
+  assert.match(packageJson, /"@colyseus\/core"/);
+  assert.match(packageJson, /"@colyseus\/ws-transport"/);
+  assert.match(packageJson, /"multiplayer:dev"/);
+  assert.match(packageJson, /"multiplayer:build"/);
+  assert.match(styles, /\.village-remote-player/);
+  assert.match(styles, /\.village-live-status/);
 });
 
 test("the subway is the only route to the onboard city map", async () => {

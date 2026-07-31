@@ -68,6 +68,24 @@ async function loadPlayerSession() {
   return null;
 }
 
+export async function getPlayerAccessToken() {
+  const client = getSupabaseBrowserClient();
+  if (!client) {
+    return null;
+  }
+
+  const {
+    data: { session },
+    error,
+  } = await client.auth.getSession();
+
+  if (error) {
+    throw error;
+  }
+
+  return session?.access_token ?? null;
+}
+
 export async function signInPlayer(input: {
   email: string;
   password: string;

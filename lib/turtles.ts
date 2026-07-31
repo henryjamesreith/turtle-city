@@ -1,22 +1,22 @@
 export const turtleVariants = [
   {
     id: "clover",
-    image: "/assets/turtles/clover.png?v=2",
+    image: "/assets/turtles/clover.png",
     label: "Clover",
   },
   {
     id: "pebble",
-    image: "/assets/turtles/pebble.png?v=2",
+    image: "/assets/turtles/pebble.png",
     label: "Pebble",
   },
   {
     id: "marina",
-    image: "/assets/turtles/marina.png?v=2",
+    image: "/assets/turtles/marina.png",
     label: "Marina",
   },
   {
     id: "rosie",
-    image: "/assets/turtles/rosie.png?v=2",
+    image: "/assets/turtles/rosie.png",
     label: "Rosie",
   },
 ] as const;

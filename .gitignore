@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.devmode.json
 /.vinext/
 /out/
 
@@ -39,6 +40,7 @@ yarn-error.log*
 next-env.d.ts
 *.tsbuildinfo
 /dist/
+/dist-server/
 /.wrangler/
 /outputs/
 /work/
