@@ -135,6 +135,55 @@ export async function signUpPlayer(input: {
   }
 }
 
+export async function sendPlayerPasswordReset(email: string) {
+  const client = getSupabaseBrowserClient();
+
+  if (!client) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { error } = await client.auth.resetPasswordForEmail(
+    email.trim().toLowerCase(),
+    { redirectTo: window.location.origin },
+  );
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function updatePlayerPassword(password: string) {
+  const client = getSupabaseBrowserClient();
+
+  if (!client) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { error } = await client.auth.updateUser({ password });
+
+  if (error) {
+    throw error;
+  }
+}
+
+export function onPlayerPasswordRecovery(callback: () => void) {
+  const client = getSupabaseBrowserClient();
+
+  if (!client) {
+    return () => undefined;
+  }
+
+  const {
+    data: { subscription },
+  } = client.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") {
+      callback();
+    }
+  });
+
+  return () => subscription.unsubscribe();
+}
+
 export async function loadPlayerSnapshot(): Promise<PlayerSnapshot | null> {
   const client = getSupabaseBrowserClient();
   const user = await loadPlayerSession();

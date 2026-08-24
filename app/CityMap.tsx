@@ -21,11 +21,14 @@ import {
   getTurtleAppearance,
   hasCompletedOnboarding,
   loadPlayerSnapshot,
+  onPlayerPasswordRecovery,
   saveLastLocation,
   saveTurtleProfile,
+  sendPlayerPasswordReset,
   signInPlayer,
   signOutPlayer,
   signUpPlayer,
+  updatePlayerPassword,
   type PlayerSnapshot,
   type PersistedLocation,
   type TurtleAppearance,
@@ -73,6 +76,7 @@ type WestVillageSpawn =
   | "subway"
   | "waterfront";
 type EntryMode = "auth" | "creator" | "game" | "welcome";
+type AuthMode = "forgot-password" | "reset-password" | "sign-in" | "sign-up";
 
 const districts: District[] = [
   {
@@ -137,7 +141,7 @@ export function CityMap() {
   const [entryMode, setEntryMode] = useState<EntryMode>("welcome");
   const [persistenceReady, setPersistenceReady] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(true);
-  const [authMode, setAuthMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [authMode, setAuthMode] = useState<AuthMode>("sign-in");
   const [hasPlayerSession, setHasPlayerSession] = useState(false);
   const [playerIsAnonymous, setPlayerIsAnonymous] = useState(false);
   const [returningPlayer, setReturningPlayer] = useState(false);
@@ -256,6 +260,14 @@ export function CityMap() {
   }
 
   useEffect(() => {
+    return onPlayerPasswordRecovery(() => {
+      setAuthMode("reset-password");
+      setEntryMode("auth");
+      setSessionLoading(false);
+    });
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     void loadPlayerSnapshot()
@@ -348,13 +360,38 @@ export function CityMap() {
       <TurtleAuth
         key={authMode}
         mode={authMode}
-        onBack={() => setEntryMode(pendingTurtle ? "creator" : "welcome")}
+        onBack={() => {
+          if (authMode === "forgot-password") {
+            setAuthMode("sign-in");
+          } else {
+            setEntryMode(pendingTurtle ? "creator" : "welcome");
+          }
+        }}
+        onForgotPassword={() => setAuthMode("forgot-password")}
         onSwitchMode={() =>
           setAuthMode((current) =>
             current === "sign-in" ? "sign-up" : "sign-in",
           )
         }
         onSubmit={async (credentials) => {
+          if (authMode === "forgot-password") {
+            await sendPlayerPasswordReset(credentials.email);
+            return;
+          }
+
+          if (authMode === "reset-password") {
+            await updatePlayerPassword(credentials.password);
+            const snapshot = await loadPlayerSnapshot();
+
+            if (!snapshot) {
+              throw new Error("We could not load this turtle.");
+            }
+
+            const hasTurtle = applyPlayerSnapshot(snapshot);
+            setEntryMode(hasTurtle ? "game" : "creator");
+            return;
+          }
+
           if (authMode === "sign-in") {
             await signInPlayer(credentials);
             const snapshot = await loadPlayerSnapshot();

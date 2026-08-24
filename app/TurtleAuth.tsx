@@ -3,8 +3,9 @@
 import { useState, type FormEvent } from "react";
 
 type TurtleAuthProps = {
-  mode: "sign-in" | "sign-up";
+  mode: "forgot-password" | "reset-password" | "sign-in" | "sign-up";
   onBack: () => void;
+  onForgotPassword: () => void;
   onSubmit: (input: {
     email: string;
     password: string;
@@ -40,6 +41,7 @@ function friendlyAuthError(error: unknown) {
 export function TurtleAuth({
   mode,
   onBack,
+  onForgotPassword,
   onSubmit,
   onSwitchMode,
 }: TurtleAuthProps) {
@@ -48,12 +50,15 @@ export function TurtleAuth({
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const isSignIn = mode === "sign-in";
+  const isForgotPassword = mode === "forgot-password";
+  const isResetPassword = mode === "reset-password";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (password.length < 8) {
+    if (!isForgotPassword && password.length < 8) {
       setError("Use a password with at least 8 characters.");
       return;
     }
@@ -63,6 +68,9 @@ export function TurtleAuth({
 
     try {
       await onSubmit({ email, password });
+      if (isForgotPassword) {
+        setResetEmailSent(true);
+      }
     } catch (authError) {
       setError(friendlyAuthError(authError));
     } finally {
@@ -79,51 +87,79 @@ export function TurtleAuth({
 
       <section className="auth-card">
         <header>
-          <p>{isSignIn ? "Welcome back" : "New resident"}</p>
-          <h1>{isSignIn ? "Find your turtle" : "Create your account"}</h1>
+          <p>
+            {isForgotPassword || isResetPassword
+              ? "Account recovery"
+              : isSignIn
+                ? "Welcome back"
+                : "New resident"}
+          </p>
+          <h1>
+            {isForgotPassword
+              ? "Reset your password"
+              : isResetPassword
+                ? "Choose a new password"
+                : isSignIn
+                  ? "Find your turtle"
+                  : "Create your account"}
+          </h1>
           <span>
-            {isSignIn
+            {isForgotPassword
+              ? "Enter your account email and we’ll send you a secure reset link."
+              : isResetPassword
+                ? "Use at least 8 characters. Then you’ll head straight back to your turtle."
+                : isSignIn
               ? "Sign in and we’ll take you back to where you left off."
               : "Use an email and password so your turtle is never lost."}
           </span>
         </header>
 
         <form onSubmit={handleSubmit}>
-          <label htmlFor="auth-email">
-            Email
-            <input
-              id="auth-email"
-              type="email"
-              autoComplete="email"
-              required
-              placeholder="you@example.com"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </label>
-
-          <label htmlFor="auth-password">
-            Password
-            <span className="auth-password-field">
+          {!isResetPassword ? (
+            <label htmlFor="auth-email">
+              Email
               <input
-                id="auth-password"
-                type={showPassword ? "text" : "password"}
-                autoComplete={isSignIn ? "current-password" : "new-password"}
+                id="auth-email"
+                type="email"
+                autoComplete="email"
                 required
-                minLength={8}
-                placeholder="At least 8 characters"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                placeholder="you@example.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
               />
-              <button
-                type="button"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                onClick={() => setShowPassword((current) => !current)}
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            </span>
-          </label>
+            </label>
+          ) : null}
+
+          {!isForgotPassword ? (
+            <label htmlFor="auth-password">
+              {isResetPassword ? "New password" : "Password"}
+              <span className="auth-password-field">
+                <input
+                  id="auth-password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete={isSignIn ? "current-password" : "new-password"}
+                  required
+                  minLength={8}
+                  placeholder="At least 8 characters"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword((current) => !current)}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </span>
+            </label>
+          ) : null}
+
+          {resetEmailSent ? (
+            <p className="auth-success" role="status">
+              Check your inbox. We sent a password reset link to {email}.
+            </p>
+          ) : null}
 
           {error ? (
             <p className="auth-error" role="alert">
@@ -131,24 +167,58 @@ export function TurtleAuth({
             </p>
           ) : null}
 
-          <button type="submit" className="auth-primary" disabled={submitting}>
+          <button
+            type="submit"
+            className="auth-primary"
+            disabled={submitting || resetEmailSent}
+          >
             {submitting
-              ? isSignIn
+              ? isForgotPassword
+                ? "Sending reset email…"
+                : isResetPassword
+                  ? "Saving password…"
+                  : isSignIn
                 ? "Finding your turtle…"
                 : "Creating account…"
-              : isSignIn
-                ? "Play"
-                : "Continue to your turtle"}
+              : isForgotPassword
+                ? resetEmailSent
+                  ? "Reset email sent"
+                  : "Send reset email"
+                : isResetPassword
+                  ? "Save new password"
+                  : isSignIn
+                    ? "Play"
+                    : "Continue to your turtle"}
             <span aria-hidden="true">→</span>
           </button>
         </form>
 
-        <footer>
-          {isSignIn ? "New to the city?" : "Already have a turtle?"}
-          <button type="button" onClick={onSwitchMode}>
-            {isSignIn ? "Create an account" : "Sign in"}
-          </button>
-        </footer>
+        {!isResetPassword ? (
+          <footer>
+            {isForgotPassword ? (
+              <>
+                Remembered it?
+                <button type="button" onClick={onBack}>
+                  Sign in
+                </button>
+              </>
+            ) : (
+              <>
+                <span>
+                  {isSignIn ? "New to the city?" : "Already have a turtle?"}
+                  <button type="button" onClick={onSwitchMode}>
+                    {isSignIn ? "Create an account" : "Sign in"}
+                  </button>
+                </span>
+                {isSignIn ? (
+                  <button type="button" onClick={onForgotPassword}>
+                    Forgot your password?
+                  </button>
+                ) : null}
+              </>
+            )}
+          </footer>
+        ) : null}
       </section>
     </main>
   );

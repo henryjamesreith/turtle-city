@@ -5151,6 +5151,14 @@ html[data-turtle-variant="rosie"] {
   font-weight: 850;
 }
 
+.auth-success {
+  margin: -5px 0 0;
+  color: #477f76;
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
 .auth-primary {
   display: flex;
   width: 100%;
@@ -5187,12 +5195,19 @@ html[data-turtle-variant="rosie"] {
 
 .auth-card footer {
   display: flex;
+  align-items: center;
+  flex-direction: column;
   justify-content: center;
   gap: 7px;
   color: rgb(21 53 48 / 58%);
   font-family: Georgia, serif;
   font-size: 13px;
   font-style: italic;
+}
+
+.auth-card footer span {
+  display: flex;
+  gap: 7px;
 }
 
 .auth-card footer button {

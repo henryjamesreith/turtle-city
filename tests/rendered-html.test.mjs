@@ -20,6 +20,10 @@ test("renders the full-screen Turtle City welcome", async () => {
   assert.match(auth, /data-testid=\{`turtle-\$\{mode\}`\}/);
   assert.match(auth, /Find your turtle/);
   assert.match(auth, /Create an account/);
+  assert.match(auth, /Forgot your password\?/);
+  assert.match(auth, /Send reset email/);
+  assert.match(map, /onPlayerPasswordRecovery/);
+  assert.match(map, /updatePlayerPassword/);
   assert.doesNotMatch(auth, /Check your email|email-confirmation/);
 });
 
@@ -61,6 +65,8 @@ test("email onboarding saves a turtle and enters Apartment 4B", async () => {
   assert.doesNotMatch(persistence, /signInAnonymously/);
   assert.match(persistence, /signInWithPassword/);
   assert.match(persistence, /auth\.signUp/);
+  assert.match(persistence, /resetPasswordForEmail/);
+  assert.match(persistence, /auth\.updateUser\(\{ password \}\)/);
   assert.match(persistence, /onboarding_completed_at/);
   assert.match(persistence, /personality/);
   assert.match(databaseTypes, /onboarding_completed_at/);
