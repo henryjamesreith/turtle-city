@@ -1,6 +1,7 @@
 export type MultiplayerDistrictId =
   | "central-park"
   | "chelsea"
+  | "midtown"
   | "west-village";
 
 type DistrictPosition = {
@@ -55,6 +56,23 @@ export const districtMultiplayerConfigs: Record<
       apartment: { x: 0.62, y: 0.72 },
       "pressure-washing": { x: 0.28, y: 0.72 },
       subway: { x: 0.86, y: 0.72 },
+    },
+  },
+  midtown: {
+    bounds: {
+      maximumX: 0.965,
+      maximumY: 0.89,
+      minimumX: 0.035,
+      minimumY: 0.56,
+    },
+    label: "Midtown",
+    maximumMovementPerSecond: { x: 0.22, y: 0.75 },
+    roomName: "midtown",
+    spawns: {
+      "falling-items": { x: 0.43, y: 0.72 },
+      plaza: { x: 0.58, y: 0.72 },
+      subway: { x: 0.1, y: 0.72 },
+      "trash-pickup": { x: 0.78, y: 0.72 },
     },
   },
   "west-village": {

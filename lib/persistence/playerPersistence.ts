@@ -10,6 +10,7 @@ export type PersistedLocation =
   | "apartment"
   | "chelsea"
   | "central-park"
+  | "midtown"
   | "west-village";
 
 export type TurtleAppearance = {
@@ -42,6 +43,7 @@ function isPersistedLocation(value: string): value is PersistedLocation {
     value === "apartment" ||
     value === "chelsea" ||
     value === "central-park" ||
+    value === "midtown" ||
     value === "west-village"
   );
 }
@@ -254,7 +256,9 @@ export async function saveLastLocation(location: PersistedLocation) {
   }
 
   const lastDistrict =
-    location === "central-park" || location === "west-village"
+    location === "central-park" ||
+    location === "midtown" ||
+    location === "west-village"
       ? location
       : "chelsea";
   const { error } = await client

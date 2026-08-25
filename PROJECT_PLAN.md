@@ -67,8 +67,11 @@ Bushwick.
 - West Village is an explorable continuous district connecting quiet restaurant
   and jazz-club streets to the Hudson greenway. The bike race and Cellar Note
   rhythm set are playable.
-- Central Park, Chelsea, and West Village have separate multiplayer rooms. Up
-  to 20 authenticated turtles in the same outdoor district can see one
+- Midtown is an explorable nighttime district with the Empire Shell Building,
+  Times Square station, a falling-object dodge challenge, and a street cleanup
+  shift.
+- Central Park, Chelsea, Midtown, and West Village have separate multiplayer
+  rooms. Up to 20 authenticated turtles in the same outdoor district can see one
   another's names, appearances, positions, and facing direction. Movement uses
   district-specific server validation and is smoothed in the browser.
 - Subway entrances connect Chelsea, West Village, and Central Park. Each station
@@ -100,6 +103,10 @@ Bushwick.
 - **Cellar Note rhythm set:** Enter the West Village jazz club and play a
   five-lane original set with A, S, D, F, and G. Accurate hits build a combo
   and score multiplier.
+- **Look Out Below:** Survive 45 seconds beneath the Empire Shell Building by
+  dodging falling coins, coffee cups, playbills, and loose signs.
+- **Crossroads Cleanup:** Walk a Midtown block and collect at least 10 pieces of
+  litter before the 60-second shift ends.
 
 All activity scores and results are session-only and reset when the activity
 closes.
@@ -151,11 +158,13 @@ small interfaces so mobile and desktop-store versions remain possible later.
    Hudson greenway.
 4. **Subway system — complete:** district entrances, arrivals boards, arriving
    trains, boarding, and onboard-only map travel.
-5. **More neighborhoods:** build and connect additional districts.
-6. **More games:** add activities alongside neighborhood development rather
-   than waiting for every district to be finished.
+5. **More neighborhoods — ongoing:** Midtown is complete; FiDi and the East
+   Village / LES remain next.
+6. **More games — ongoing:** Midtown adds falling-object and trash-pickup
+   activities; continue adding games alongside neighborhood development.
 7. **Minimal outdoor multiplayer — complete:** authenticated shared presence
-   and synchronized movement cover Central Park, Chelsea, and West Village.
+   and synchronized movement cover Central Park, Chelsea, Midtown, and West
+   Village.
    Keep interiors and activities private until their multiplayer rules exist.
 8. **Store and apartment upgrades:** add Shells, inventory, turtle cosmetics,
    furniture, apartment improvements, and paid items.

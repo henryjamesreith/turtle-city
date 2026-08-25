@@ -1,6 +1,7 @@
 export type TransitDistrict =
   | "central-park"
   | "chelsea"
+  | "midtown"
   | "west-village";
 
 export type SubwayStation = {
@@ -36,6 +37,14 @@ export const subwayStations: Record<TransitDistrict, SubwayStation> = {
     neighborhood: "Central Park",
     platformDirection: "Downtown",
     terminus: "West Village",
+  },
+  midtown: {
+    district: "midtown",
+    id: "midtown-times-square",
+    name: "Times Square",
+    neighborhood: "Midtown",
+    platformDirection: "Uptown & Downtown",
+    terminus: "Central Park",
   },
 };
 
