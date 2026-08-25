@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Callbacks,
-  Client,
-  type Room,
-} from "@colyseus/sdk";
+import { Callbacks, Client, type Room } from "@colyseus/sdk";
 import {
   useCallback,
   useEffect,
@@ -14,9 +10,10 @@ import {
 } from "react";
 import { getPlayerAccessToken } from "../persistence/playerPersistence";
 import {
-  WestVillageState,
-  type WestVillagePlayer,
-} from "./schema";
+  districtMultiplayerConfigs,
+  type MultiplayerDistrictId,
+} from "./districts";
+import { DistrictState, type DistrictPlayer } from "./schema";
 
 export type MultiplayerStatus = "connecting" | "live" | "offline";
 
@@ -40,7 +37,7 @@ type MovementMessage = {
   y: number;
 };
 
-type WestVillageMultiplayer = {
+type DistrictMultiplayer = {
   remotePlayers: RemotePlayerPresence[];
   remoteTargetsRef: MutableRefObject<Map<string, RemotePlayerTarget>>;
   sendMovement: (movement: MovementMessage) => void;
@@ -58,7 +55,7 @@ function getMultiplayerUrl() {
 
 function toPresence(
   sessionId: string,
-  player: WestVillagePlayer,
+  player: DistrictPlayer,
 ): RemotePlayerPresence {
   return {
     sessionId,
@@ -67,10 +64,11 @@ function toPresence(
   };
 }
 
-export function useWestVillageMultiplayer(
-  spawn: "jazz-club" | "neighborhood" | "subway" | "waterfront",
-): WestVillageMultiplayer {
-  const roomRef = useRef<Room<WestVillageState> | null>(null);
+export function useDistrictMultiplayer(
+  districtId: MultiplayerDistrictId,
+  spawn: string,
+): DistrictMultiplayer {
+  const roomRef = useRef<Room<DistrictState> | null>(null);
   const remoteTargetsRef = useRef(new Map<string, RemotePlayerTarget>());
   const [remotePlayers, setRemotePlayers] = useState<RemotePlayerPresence[]>([]);
   const [status, setStatus] = useState<MultiplayerStatus>(() =>
@@ -83,9 +81,10 @@ export function useWestVillageMultiplayer(
 
   useEffect(() => {
     const multiplayerUrl = getMultiplayerUrl();
+    const district = districtMultiplayerConfigs[districtId];
     let cancelled = false;
     let retryTimer = 0;
-    let activeRoom: Room<WestVillageState> | null = null;
+    let activeRoom: Room<DistrictState> | null = null;
     const playerUnbinds = new Map<string, () => void>();
     const remoteTargets = remoteTargetsRef.current;
 
@@ -105,9 +104,9 @@ export function useWestVillageMultiplayer(
         const client = new Client(multiplayerUrl);
         client.auth.token = accessToken;
         const room = await client.joinOrCreate(
-          "west_village",
+          district.roomName,
           { spawn },
-          WestVillageState,
+          DistrictState,
         );
 
         if (cancelled) {
@@ -179,7 +178,7 @@ export function useWestVillageMultiplayer(
           }
         });
       } catch (error) {
-        console.warn("West Village multiplayer is unavailable.", error);
+        console.warn(`${district.label} multiplayer is unavailable.`, error);
         if (!cancelled) {
           setStatus("offline");
           retryTimer = window.setTimeout(connect, 4000);
@@ -202,7 +201,7 @@ export function useWestVillageMultiplayer(
         void activeRoom.leave();
       }
     };
-  }, [spawn]);
+  }, [districtId, spawn]);
 
   return {
     remotePlayers,

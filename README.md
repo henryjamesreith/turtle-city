@@ -2,7 +2,8 @@
 
 Turtle City is a New York-inspired social world inhabited by turtles. The
 current prototype includes three explorable districts, Apartment 4B, the
-subway, five activities, and shared multiplayer presence in West Village.
+subway, five activities, and shared multiplayer presence throughout every
+outdoor district.
 
 See [PROJECT_PLAN.md](./PROJECT_PLAN.md) for the current product documentation.
 
@@ -22,8 +23,8 @@ npm run multiplayer:dev
 ```
 
 The web app runs at `http://localhost:3000` and the local Colyseus server runs
-at `http://localhost:2567`. West Village remains playable in solo mode when the
-multiplayer server is unavailable.
+at `http://localhost:2567`. Outdoor districts remain playable in solo mode when
+the multiplayer server is unavailable.
 
 Use `npm run build` to build both the web app and multiplayer server.
 
@@ -61,10 +62,11 @@ Configure the production Site URL and redirect URLs before deploying.
 
 ## Multiplayer
 
-West Village uses one authenticated Colyseus room with a maximum of 20
-turtles. The server verifies the Supabase access token, loads the turtle name
-and appearance through the player's row-level security policy, and validates
-movement before synchronizing it.
+Central Park, Chelsea, and West Village each use a separate authenticated
+Colyseus room with a maximum of 20 turtles. The server verifies the Supabase
+access token, loads the turtle name and appearance through the player's
+row-level security policy, and applies district-specific movement bounds before
+synchronizing it. Entering an interior or activity leaves the outdoor room.
 
 For deployment, run `npm run multiplayer:start` on the game-server host and
 configure:

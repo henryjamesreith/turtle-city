@@ -1,7 +1,11 @@
 import { defineRoom, defineServer } from "@colyseus/core";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import type { NextFunction, Request, Response } from "express";
-import { WestVillageRoom } from "./WestVillageRoom.js";
+import {
+  CentralParkRoom,
+  ChelseaRoom,
+  WestVillageRoom,
+} from "./DistrictRoom.js";
 
 const webOrigin =
   process.env.TURTLE_CITY_WEB_ORIGIN ?? "http://localhost:3000";
@@ -11,6 +15,8 @@ const gameServer = defineServer({
   devMode: process.env.NODE_ENV !== "production",
   transport: new WebSocketTransport(),
   rooms: {
+    central_park: defineRoom(CentralParkRoom),
+    chelsea: defineRoom(ChelseaRoom),
     west_village: defineRoom(WestVillageRoom),
   },
   express: (app) => {
@@ -35,7 +41,10 @@ const gameServer = defineServer({
     });
 
     app.get("/health", (_request: Request, response: Response) => {
-      response.json({ district: "west-village", status: "ok" });
+      response.json({
+        districts: ["central-park", "chelsea", "west-village"],
+        status: "ok",
+      });
     });
   },
 });

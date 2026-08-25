@@ -7427,7 +7427,7 @@ html[data-turtle-variant="rosie"] {
 }
 
 .village-player,
-.village-remote-player {
+.district-remote-player {
   position: absolute;
   z-index: 10000;
   top: 0;
@@ -7439,7 +7439,7 @@ html[data-turtle-variant="rosie"] {
 }
 
 .village-player::after,
-.village-remote-player::after {
+.district-remote-player::after {
   position: absolute;
   z-index: 0;
   right: 22px;
@@ -7453,7 +7453,7 @@ html[data-turtle-variant="rosie"] {
 }
 
 .village-player > .turtle-sprite,
-.village-remote-player > .turtle-sprite {
+.district-remote-player > .turtle-sprite {
   position: absolute;
   z-index: 1;
   inset: 0;
@@ -7465,22 +7465,22 @@ html[data-turtle-variant="rosie"] {
   transform-origin: center bottom;
 }
 
-.village-remote-player {
+.district-remote-player {
   z-index: 9999;
   pointer-events: none;
 }
 
-.village-remote-player > .turtle-sprite {
+.district-remote-player > .turtle-sprite {
   background-image: var(--remote-turtle-image);
 }
 
 .village-player[data-facing="left"] > .turtle-sprite,
-.village-remote-player[data-facing="left"] > .turtle-sprite {
+.district-remote-player[data-facing="left"] > .turtle-sprite {
   transform: scaleX(-1);
 }
 
 /* Multiplayer presence */
-.village-live-status {
+.district-live-status {
   position: absolute;
   z-index: 72;
   top: clamp(24px, 3.5vh, 44px);
@@ -7496,19 +7496,19 @@ html[data-turtle-variant="rosie"] {
   font-size: 10px;
 }
 
-.village-live-status > span {
+.district-live-status > span {
   width: 9px;
   height: 9px;
   border-radius: 50%;
   background: #8b9085;
 }
 
-.village-live-status.is-live > span {
+.district-live-status.is-live > span {
   background: #4f9a68;
   box-shadow: 0 0 0 4px rgb(79 154 104 / 17%);
 }
 
-.village-live-status.is-connecting > span {
+.district-live-status.is-connecting > span {
   background: #d2a54e;
 }
 

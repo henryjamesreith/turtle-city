@@ -6,8 +6,12 @@ import {
   ServerError,
 } from "@colyseus/core";
 import {
-  WestVillagePlayer,
-  WestVillageState,
+  districtMultiplayerConfigs,
+  type MultiplayerDistrictId,
+} from "../lib/multiplayer/districts.js";
+import {
+  DistrictPlayer,
+  DistrictState,
 } from "../lib/multiplayer/schema.js";
 import { isTurtleVariant } from "../lib/turtles.js";
 
@@ -17,7 +21,7 @@ type PlayerAuth = {
   variant: string;
 };
 
-type WestVillageClient = Client<{
+type DistrictClient = Client<{
   auth: PlayerAuth;
 }>;
 
@@ -30,13 +34,6 @@ type MovementMessage = {
 type MovementLimit = {
   lastMoveAt: number;
 };
-
-const spawnPositions = {
-  "jazz-club": { x: 0.4, y: 0.72 },
-  neighborhood: { x: 0.48, y: 0.72 },
-  subway: { x: 0.88, y: 0.72 },
-  waterfront: { x: 0.25, y: 0.72 },
-} as const;
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(Math.max(value, minimum), maximum);
@@ -113,16 +110,17 @@ async function authenticatePlayer(token: string): Promise<PlayerAuth> {
   };
 }
 
-export class WestVillageRoom extends Room<{
-  client: WestVillageClient;
-  state: WestVillageState;
+abstract class DistrictRoom extends Room<{
+  client: DistrictClient;
+  state: DistrictState;
 }> {
+  protected abstract readonly districtId: MultiplayerDistrictId;
   maxClients = 20;
-  state = new WestVillageState();
+  state = new DistrictState();
   private readonly movementLimits = new Map<string, MovementLimit>();
 
   messages = {
-    move: (client: WestVillageClient, message: MovementMessage) => {
+    move: (client: DistrictClient, message: MovementMessage) => {
       const player = this.state.players.get(client.sessionId);
       if (
         !player ||
@@ -134,6 +132,7 @@ export class WestVillageRoom extends Room<{
         return;
       }
 
+      const config = districtMultiplayerConfigs[this.districtId];
       const now = Date.now();
       const movementLimit = this.movementLimits.get(client.sessionId);
       const elapsedMilliseconds = movementLimit
@@ -144,15 +143,21 @@ export class WestVillageRoom extends Room<{
         return;
       }
 
-      const elapsed = clamp(
-        elapsedMilliseconds / 1000,
-        0.04,
-        0.25,
+      const elapsed = clamp(elapsedMilliseconds / 1000, 0.04, 0.25);
+      const maximumXChange =
+        config.maximumMovementPerSecond.x * elapsed + 0.004;
+      const maximumYChange =
+        config.maximumMovementPerSecond.y * elapsed + 0.008;
+      const requestedX = clamp(
+        message.x,
+        config.bounds.minimumX,
+        config.bounds.maximumX,
       );
-      const maximumXChange = 0.22 * elapsed + 0.004;
-      const maximumYChange = 0.75 * elapsed + 0.008;
-      const requestedX = clamp(message.x, 0.027, 0.973);
-      const requestedY = clamp(message.y, 0.58, 0.9);
+      const requestedY = clamp(
+        message.y,
+        config.bounds.minimumY,
+        config.bounds.maximumY,
+      );
 
       player.x = clamp(
         requestedX,
@@ -174,7 +179,7 @@ export class WestVillageRoom extends Room<{
   };
 
   async onAuth(
-    _client: WestVillageClient,
+    _client: DistrictClient,
     _options: unknown,
     context: AuthContext,
   ) {
@@ -186,16 +191,17 @@ export class WestVillageRoom extends Room<{
   }
 
   onJoin(
-    client: WestVillageClient,
+    client: DistrictClient,
     options: { spawn?: unknown },
     auth: PlayerAuth,
   ) {
+    const config = districtMultiplayerConfigs[this.districtId];
     const requestedSpawn =
-      typeof options.spawn === "string" && options.spawn in spawnPositions
-        ? (options.spawn as keyof typeof spawnPositions)
-        : "neighborhood";
-    const spawn = spawnPositions[requestedSpawn];
-    const player = new WestVillagePlayer();
+      typeof options.spawn === "string" && options.spawn in config.spawns
+        ? options.spawn
+        : Object.keys(config.spawns)[0];
+    const spawn = config.spawns[requestedSpawn];
+    const player = new DistrictPlayer();
     player.userId = auth.userId;
     player.turtleName = auth.turtleName;
     player.variant = auth.variant;
@@ -205,8 +211,20 @@ export class WestVillageRoom extends Room<{
     this.movementLimits.set(client.sessionId, { lastMoveAt: Date.now() });
   }
 
-  onLeave(client: WestVillageClient) {
+  onLeave(client: DistrictClient) {
     this.movementLimits.delete(client.sessionId);
     this.state.players.delete(client.sessionId);
   }
+}
+
+export class CentralParkRoom extends DistrictRoom {
+  protected readonly districtId = "central-park" as const;
+}
+
+export class ChelseaRoom extends DistrictRoom {
+  protected readonly districtId = "chelsea" as const;
+}
+
+export class WestVillageRoom extends DistrictRoom {
+  protected readonly districtId = "west-village" as const;
 }

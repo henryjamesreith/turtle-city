@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  DistrictLiveStatus,
+  RemoteDistrictPlayers,
+} from "./MultiplayerDistrictPlayers";
+import { useDistrictMultiplayer } from "@/lib/multiplayer/useDistrictMultiplayer";
 
 type ChelseaDistrictProps = {
   spawn: "apartment" | "pressure-washing" | "subway";
@@ -54,9 +59,16 @@ export function ChelseaDistrict({
 }: ChelseaDistrictProps) {
   const worldRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
+  const remotePlayerRefs = useRef(new Map<string, HTMLDivElement>());
   const [nearBuilding, setNearBuilding] = useState(false);
   const [nearPressureWashing, setNearPressureWashing] = useState(false);
   const [nearSubway, setNearSubway] = useState(false);
+  const {
+    remotePlayers,
+    remoteTargetsRef,
+    sendMovement,
+    status: multiplayerStatus,
+  } = useDistrictMultiplayer("chelsea", spawn);
 
   useEffect(() => {
     const pressed = new Set<string>();
@@ -67,6 +79,8 @@ export function ChelseaDistrict({
     let nearWashCrew = false;
     let nearSubwayEntrance = false;
     let previousTime = performance.now();
+    let lastNetworkUpdate = 0;
+    let facing: "left" | "right" = "left";
     let animationFrame = 0;
 
     function handleKeyDown(event: KeyboardEvent) {
@@ -197,14 +211,41 @@ export function ChelseaDistrict({
       camera.y += (targetY - camera.y) * smoothing;
 
       if (horizontal < 0) {
+        facing = "left";
         player.dataset.facing = "left";
       } else if (horizontal > 0) {
+        facing = "right";
         player.dataset.facing = "right";
       }
 
       player.style.transform = `translate3d(${position.x - 55}px, ${
         position.y - 124
       }px, 0)`;
+
+      if (time - lastNetworkUpdate >= 65) {
+        sendMovement({
+          facing,
+          x: position.x / worldWidth,
+          y: position.y / worldHeight,
+        });
+        lastNetworkUpdate = time;
+      }
+
+      remotePlayerRefs.current.forEach((remotePlayer, sessionId) => {
+        const target = remoteTargetsRef.current.get(sessionId);
+        if (!target) {
+          return;
+        }
+
+        const remoteSmoothing = Math.min(1, elapsed * 10);
+        target.currentX += (target.x - target.currentX) * remoteSmoothing;
+        target.currentY += (target.y - target.currentY) * remoteSmoothing;
+        remotePlayer.dataset.facing = target.facing;
+        remotePlayer.style.transform = `translate3d(${
+          target.currentX * worldWidth - 55
+        }px, ${target.currentY * worldHeight - 124}px, 0)`;
+      });
+
       world.style.transform = `translate3d(${camera.x}px, ${camera.y}px, 0)`;
       animationFrame = requestAnimationFrame(update);
     }
@@ -220,7 +261,14 @@ export function ChelseaDistrict({
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", clearInput);
     };
-  }, [onEnterApartment, onEnterPressureWashing, onEnterSubway, spawn]);
+  }, [
+    onEnterApartment,
+    onEnterPressureWashing,
+    onEnterSubway,
+    remoteTargetsRef,
+    sendMovement,
+    spawn,
+  ]);
 
   return (
     <main className="chelsea-stage" data-testid="chelsea-district">
@@ -228,6 +276,11 @@ export function ChelseaDistrict({
         <p>Turtle City</p>
         <h1>Chelsea</h1>
       </header>
+
+      <DistrictLiveStatus
+        remotePlayerCount={remotePlayers.length}
+        status={multiplayerStatus}
+      />
 
       <p className="sr-only">
         Move with the arrow keys or W, A, S, and D. Hold Shift to run. Press
@@ -348,6 +401,11 @@ export function ChelseaDistrict({
           >
             <span />
           </div>
+
+          <RemoteDistrictPlayers
+            playerRefs={remotePlayerRefs}
+            remotePlayers={remotePlayers}
+          />
 
           <div
             className="chelsea-player"
