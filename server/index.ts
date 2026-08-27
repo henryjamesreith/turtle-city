@@ -4,6 +4,7 @@ import type { NextFunction, Request, Response } from "express";
 import {
   CentralParkRoom,
   ChelseaRoom,
+  FidiRoom,
   MidtownRoom,
   WestVillageRoom,
 } from "./DistrictRoom.js";
@@ -18,6 +19,7 @@ const gameServer = defineServer({
   rooms: {
     central_park: defineRoom(CentralParkRoom),
     chelsea: defineRoom(ChelseaRoom),
+    fidi: defineRoom(FidiRoom),
     midtown: defineRoom(MidtownRoom),
     west_village: defineRoom(WestVillageRoom),
   },
@@ -44,7 +46,13 @@ const gameServer = defineServer({
 
     app.get("/health", (_request: Request, response: Response) => {
       response.json({
-        districts: ["central-park", "chelsea", "midtown", "west-village"],
+        districts: [
+          "central-park",
+          "chelsea",
+          "fidi",
+          "midtown",
+          "west-village",
+        ],
         status: "ok",
       });
     });

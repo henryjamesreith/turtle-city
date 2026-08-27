@@ -36,7 +36,7 @@ interiors, transit, and activities can use separate fixed-camera scenes.
 | Central Park | Permanently winter | Pond hockey, snow shoveling; sledding later, Chess with old man |
 | Chelsea | Starter apartment and west-side blocks | Pressure washing; cooking @ gregs papaya, doorman game, news stand for puzzles |
 | Midtown | Times Square and Empire State-inspired skyline | Falling-object dodge game, trash pickup |
-| FiDi | One World Trade-inspired skyline | Delivery driving(should be like subway surfers); tycoon progression later |
+| FiDi | One Shell Plaza and the harbor edge | Shell Express delivery run; tycoon progression later |
 | West Village | Jazz cellar and waterfront | Hudson bike race; music activity later |
 | East Village / LES | East River construction area | Excavator |
 
@@ -70,17 +70,19 @@ Bushwick.
 - Midtown is an explorable nighttime district with the Empire Shell Building,
   Times Square station, a falling-object dodge challenge, and a street cleanup
   shift.
-- Central Park, Chelsea, Midtown, and West Village have separate multiplayer
+- FiDi is an explorable harbor-side business district with One Shell Plaza,
+  Fulton Street station, and the Shell Express delivery dispatch.
+- Central Park, Chelsea, FiDi, Midtown, and West Village have separate multiplayer
   rooms. Up to 20 authenticated turtles in the same outdoor district can see one
   another's names, appearances, positions, and facing direction. Movement uses
   district-specific server validation and is smoothed in the browser.
-- Subway entrances connect Chelsea, West Village, and Central Park. Each station
+- Subway entrances connect Chelsea, West Village, FiDi, Midtown, and Central Park. Each station
   has a walkable platform, an arrivals board, and a train that arrives almost
   immediately. Enter boards while the doors are open.
 - The city map is available only after boarding a train. Players choose an open
   station from the onboard map and arrive beside that district’s subway
   entrance.
-- Central Park, Chelsea, and West Village use continuous movement. Collision
+- Central Park, Chelsea, FiDi, Midtown, and West Village use continuous movement. Collision
   boundaries are intentionally deferred.
 - The turtle currently uses one static character image with no walking
   animation.
@@ -107,6 +109,8 @@ Bushwick.
   dodging falling coins, coffee cups, playbills, and loose signs.
 - **Crossroads Cleanup:** Walk a Midtown block and collect at least 10 pieces of
   litter before the 60-second shift ends.
+- **Shell Express:** Change lanes through FiDi traffic, collect parcels, cross
+  delivery zones, and complete at least six deliveries before dispatch closes.
 
 All activity scores and results are session-only and reset when the activity
 closes.
@@ -158,13 +162,14 @@ small interfaces so mobile and desktop-store versions remain possible later.
    Hudson greenway.
 4. **Subway system — complete:** district entrances, arrivals boards, arriving
    trains, boarding, and onboard-only map travel.
-5. **More neighborhoods — ongoing:** Midtown is complete; FiDi and the East
-   Village / LES remain next.
+5. **More neighborhoods — ongoing:** Midtown and FiDi are complete; the East
+   Village / LES remains next.
 6. **More games — ongoing:** Midtown adds falling-object and trash-pickup
-   activities; continue adding games alongside neighborhood development.
+   activities, and FiDi adds Shell Express; continue adding games alongside
+   neighborhood development.
 7. **Minimal outdoor multiplayer — complete:** authenticated shared presence
-   and synchronized movement cover Central Park, Chelsea, Midtown, and West
-   Village.
+   and synchronized movement cover Central Park, Chelsea, FiDi, Midtown, and
+   West Village.
    Keep interiors and activities private until their multiplayer rules exist.
 8. **Store and apartment upgrades:** add Shells, inventory, turtle cosmetics,
    furniture, apartment improvements, and paid items.

@@ -225,6 +225,10 @@ export class ChelseaRoom extends DistrictRoom {
   protected readonly districtId = "chelsea" as const;
 }
 
+export class FidiRoom extends DistrictRoom {
+  protected readonly districtId = "fidi" as const;
+}
+
 export class MidtownRoom extends DistrictRoom {
   protected readonly districtId = "midtown" as const;
 }

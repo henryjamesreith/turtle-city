@@ -385,10 +385,67 @@ test("Midtown connects its night streets, subway, and two activities", async () 
   assert.match(styles, /\.trash-game-stage/);
 });
 
+test("FiDi connects the harbor, subway, multiplayer, and delivery route", async () => {
+  const [
+    map,
+    district,
+    delivery,
+    persistence,
+    migration,
+    subway,
+    train,
+    styles,
+  ] = await Promise.all([
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/FidiDistrict.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ShellExpressGame.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../lib/persistence/playerPersistence.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../supabase/migrations/20260825000000_fidi_location.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(new URL("../lib/world/subway.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/SubwayTrain.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(map, /<FidiDistrict/);
+  assert.match(map, /screen === "fidi"/);
+  assert.match(map, /screen === "shell-express"/);
+  assert.match(map, /enterSubway\("fidi"\)/);
+  assert.match(map, /setFidiSpawn\("delivery"\)/);
+  assert.match(district, /data-testid="fidi-district"/);
+  assert.match(district, /ONE SHELL PLAZA/);
+  assert.match(district, /SHELL EXPRESS/);
+  assert.match(district, /Fulton Street/);
+  assert.match(district, /useDistrictMultiplayer\("fidi", spawn\)/);
+  assert.match(district, /RemoteDistrictPlayers/);
+  assert.match(delivery, /data-testid="shell-express-game"/);
+  assert.match(delivery, /const ROUTE_TIME = 60/);
+  assert.match(delivery, /const DELIVERY_TARGET = 6/);
+  assert.match(delivery, /state\.cargo = Math\.min/);
+  assert.match(delivery, /state\.delivered \+= state\.cargo/);
+  assert.match(delivery, /requestAnimationFrame/);
+  assert.match(persistence, /\| "fidi"/);
+  assert.match(migration, /'fidi'/);
+  assert.match(subway, /id: "fidi-fulton"/);
+  assert.match(train, /<small>FiDi<\/small>/);
+  assert.match(styles, /\.fidi-stage/);
+  assert.match(styles, /\.shell-express-stage/);
+  assert.match(styles, /\.delivery-route-item/);
+});
+
 test("outdoor districts have authenticated shared multiplayer presence", async () => {
   const [
     park,
     chelsea,
+    fidi,
     midtown,
     village,
     players,
@@ -404,6 +461,7 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
     await Promise.all([
       readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
       readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/FidiDistrict.tsx", import.meta.url), "utf8"),
       readFile(new URL("../app/MidtownDistrict.tsx", import.meta.url), "utf8"),
       readFile(
         new URL("../app/WestVillageDistrict.tsx", import.meta.url),
@@ -443,20 +501,24 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
 
   assert.match(park, /useDistrictMultiplayer\("central-park", spawn\)/);
   assert.match(chelsea, /useDistrictMultiplayer\("chelsea", spawn\)/);
+  assert.match(fidi, /useDistrictMultiplayer\("fidi", spawn\)/);
   assert.match(midtown, /useDistrictMultiplayer\("midtown", spawn\)/);
   assert.match(village, /useDistrictMultiplayer\("west-village", spawn\)/);
   assert.match(park, /RemoteDistrictPlayers/);
   assert.match(chelsea, /RemoteDistrictPlayers/);
+  assert.match(fidi, /RemoteDistrictPlayers/);
   assert.match(midtown, /RemoteDistrictPlayers/);
   assert.match(village, /RemoteDistrictPlayers/);
   assert.match(players, /className="district-remote-player"/);
   assert.match(players, /DistrictLiveStatus/);
   assert.match(park, /remoteSmoothing/);
   assert.match(chelsea, /remoteSmoothing/);
+  assert.match(fidi, /remoteSmoothing/);
   assert.match(midtown, /remoteSmoothing/);
   assert.match(village, /remoteSmoothing/);
   assert.match(park, /sendMovement/);
   assert.match(chelsea, /sendMovement/);
+  assert.match(fidi, /sendMovement/);
   assert.match(midtown, /sendMovement/);
   assert.match(village, /sendMovement/);
   assert.match(hook, /client\.auth\.token = accessToken/);
@@ -469,6 +531,7 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
   assert.match(schema, /players = new MapSchema/);
   assert.match(districts, /roomName: "central_park"/);
   assert.match(districts, /roomName: "chelsea"/);
+  assert.match(districts, /roomName: "fidi"/);
   assert.match(districts, /roomName: "midtown"/);
   assert.match(districts, /roomName: "west_village"/);
   assert.match(room, /maxClients = 20/);
@@ -480,6 +543,7 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
   assert.match(room, /this\.state\.players\.delete/);
   assert.match(server, /central_park: defineRoom\(CentralParkRoom\)/);
   assert.match(server, /chelsea: defineRoom\(ChelseaRoom\)/);
+  assert.match(server, /fidi: defineRoom\(FidiRoom\)/);
   assert.match(server, /midtown: defineRoom\(MidtownRoom\)/);
   assert.match(server, /west_village: defineRoom\(WestVillageRoom\)/);
   assert.match(server, /TURTLE_CITY_WEB_ORIGIN/);

@@ -6,11 +6,13 @@ import { CentralParkMap } from "./CentralParkMap";
 import { ChelseaApartment } from "./ChelseaApartment";
 import { ChelseaDistrict } from "./ChelseaDistrict";
 import { FallingItemsGame } from "./FallingItemsGame";
+import { FidiDistrict } from "./FidiDistrict";
 import { HockeyGame } from "./HockeyGame";
 import { JazzClub } from "./JazzClub";
 import { MidtownDistrict } from "./MidtownDistrict";
 import { PressureWashingGame } from "./PressureWashingGame";
 import { RhythmGame } from "./RhythmGame";
+import { ShellExpressGame } from "./ShellExpressGame";
 import { SnowShovelingGame } from "./SnowShovelingGame";
 import { SubwayPlatform } from "./SubwayPlatform";
 import { SubwayTrain } from "./SubwayTrain";
@@ -64,11 +66,13 @@ type Screen =
   | "city"
   | "central-park"
   | "falling-items"
+  | "fidi"
   | "hockey"
   | "jazz-club"
   | "midtown"
   | "pressure-washing"
   | "rhythm-game"
+  | "shell-express"
   | "snow-shoveling"
   | "subway-platform"
   | "subway-train"
@@ -81,6 +85,7 @@ type MidtownSpawn =
   | "plaza"
   | "subway"
   | "trash-pickup";
+type FidiSpawn = "delivery" | "harbor" | "subway";
 type WestVillageSpawn =
   | "jazz-club"
   | "neighborhood"
@@ -139,6 +144,7 @@ function isPersistedScreen(screen: Screen): screen is PersistedLocation {
     screen === "apartment" ||
     screen === "chelsea" ||
     screen === "central-park" ||
+    screen === "fidi" ||
     screen === "midtown" ||
     screen === "west-village"
   );
@@ -177,6 +183,7 @@ export function CityMap() {
     useState<ChelseaSpawn>("apartment");
   const [midtownSpawn, setMidtownSpawn] =
     useState<MidtownSpawn>("plaza");
+  const [fidiSpawn, setFidiSpawn] = useState<FidiSpawn>("harbor");
   const [westVillageSpawn, setWestVillageSpawn] =
     useState<WestVillageSpawn>("neighborhood");
   const [selectedId, setSelectedId] = useState<District["id"] | null>(null);
@@ -199,6 +206,8 @@ export function CityMap() {
       setChelseaSpawn("subway");
     } else if (destination === "midtown") {
       setMidtownSpawn("subway");
+    } else if (destination === "fidi") {
+      setFidiSpawn("subway");
     } else {
       setWestVillageSpawn("subway");
     }
@@ -343,6 +352,9 @@ export function CityMap() {
             screen === "falling-items" ? "falling-items" : "trash-pickup",
           );
           setScreen("midtown");
+        } else if (screen === "shell-express") {
+          setFidiSpawn("delivery");
+          setScreen("fidi");
         } else if (screen === "pressure-washing") {
           setChelseaSpawn("pressure-washing");
           setScreen("chelsea");
@@ -588,6 +600,18 @@ export function CityMap() {
     );
   }
 
+  if (screen === "shell-express") {
+    return (
+      <ShellExpressGame
+        turtleName={turtleName}
+        onExit={() => {
+          setFidiSpawn("delivery");
+          setScreen("fidi");
+        }}
+      />
+    );
+  }
+
   if (screen === "bike-race") {
     return (
       <BikeRaceGame
@@ -667,6 +691,17 @@ export function CityMap() {
         onEnterFallingItems={() => setScreen("falling-items")}
         onEnterTrashPickup={() => setScreen("trash-pickup")}
         onEnterSubway={() => enterSubway("midtown")}
+      />
+    );
+  }
+
+  if (screen === "fidi") {
+    return (
+      <FidiDistrict
+        turtleName={turtleName}
+        spawn={fidiSpawn}
+        onEnterDelivery={() => setScreen("shell-express")}
+        onEnterSubway={() => enterSubway("fidi")}
       />
     );
   }

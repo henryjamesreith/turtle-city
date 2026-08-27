@@ -1,6 +1,7 @@
 export type MultiplayerDistrictId =
   | "central-park"
   | "chelsea"
+  | "fidi"
   | "midtown"
   | "west-village";
 
@@ -56,6 +57,22 @@ export const districtMultiplayerConfigs: Record<
       apartment: { x: 0.62, y: 0.72 },
       "pressure-washing": { x: 0.28, y: 0.72 },
       subway: { x: 0.86, y: 0.72 },
+    },
+  },
+  fidi: {
+    bounds: {
+      maximumX: 0.965,
+      maximumY: 0.9,
+      minimumX: 0.035,
+      minimumY: 0.57,
+    },
+    label: "FiDi",
+    maximumMovementPerSecond: { x: 0.22, y: 0.75 },
+    roomName: "fidi",
+    spawns: {
+      delivery: { x: 0.71, y: 0.73 },
+      harbor: { x: 0.88, y: 0.73 },
+      subway: { x: 0.11, y: 0.73 },
     },
   },
   midtown: {

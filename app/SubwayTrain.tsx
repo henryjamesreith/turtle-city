@@ -37,7 +37,9 @@ export function SubwayTrain({
         <span />
         <span />
         <span />
+        <span />
         <div>
+          <small>FiDi</small>
           <small>West Village</small>
           <small>Chelsea</small>
           <small>Midtown</small>
