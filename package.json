@@ -23,11 +23,14 @@
     "@colyseus/core": "^0.17.46",
     "@colyseus/sdk": "^0.17.43",
     "@colyseus/ws-transport": "^0.17.13",
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
     "@supabase/supabase-js": "^2.111.0",
     "express": "^5.2.1",
     "next": "16.2.12",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",

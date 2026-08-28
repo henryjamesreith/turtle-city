@@ -92,9 +92,9 @@ test("accounts receive unique turtle tags and can log out safely", async () => {
     styles,
   ] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/ChelseaApartment.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/InteriorScenes3D.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ChelseaDistrict3D.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../app/PressureWashingGame.tsx", import.meta.url),
       "utf8",
@@ -129,9 +129,9 @@ test("accounts receive unique turtle tags and can log out safely", async () => {
   assert.match(migration, /add column turtle_tag text/);
   assert.match(migration, /create unique index profiles_turtle_tag_unique_idx/);
   assert.match(migration, /replace\(new\.user_id::text, '-', ''\)/);
-  assert.match(apartment, /className="turtle-nameplate"/);
-  assert.match(district, /className="turtle-nameplate"/);
-  assert.match(park, /className="turtle-nameplate"/);
+  assert.match(apartment, /TurtleBillboard/);
+  assert.match(district, /TurtleBillboard/);
+  assert.match(park, /CentralParkDistrict3D/);
   assert.match(pressureWashing, /className="turtle-nameplate"/);
   assert.match(hockey, /strokeText\(turtleName/);
   assert.match(shoveling, /strokeText\(turtleName/);
@@ -145,7 +145,7 @@ test("accounts receive unique turtle tags and can log out safely", async () => {
 test("the map has focus interactions without game dependencies", async () => {
   const [map, park, styles, packageJson, turtleCharacter] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../public/assets/turtles/clover.png", import.meta.url)),
@@ -155,30 +155,15 @@ test("the map has focus interactions without game dependencies", async () => {
   assert.match(map, /setSelectedId\(null\)/);
   assert.match(map, /setScreen\("central-park"\)/);
   assert.match(map, /event\.key === "Escape"/);
-  assert.match(park, /data-testid="central-park-map"/);
-  assert.match(park, /South Slopes/);
-  assert.doesNotMatch(park, /Winter Walk|Wooded paths/);
+  assert.match(park, /CentralParkDistrict3D/);
+  assert.match(park, /districtId="central-park"/);
   assert.match(park, /Snow Crew/);
   assert.match(park, /Frozen Pond/);
-  assert.match(park, /South Gate/);
-  assert.match(park, /requestAnimationFrame/);
-  assert.match(park, /translate3d/);
-  assert.match(park, /movementKeys/);
-  assert.match(park, /targetZoomRef/);
-  assert.match(park, /event\.deltaY/);
-  assert.match(park, /className="turtle-character"/);
-  assert.match(park, /data-interaction-zone/);
-  assert.doesNotMatch(park, /data-district-exit|West Gate|East Gate/);
-  assert.match(park, /pathSegments/);
-  assert.match(park, /isEditableTarget/);
-  assert.match(park, /event\.key === "Enter"/);
-  assert.match(park, /activeZoneId === "ice-hockey"/);
-  assert.match(park, /activeZoneId === "snow-crew"/);
-  assert.doesNotMatch(park, /is-walking|turtle-rig/);
-  assert.match(styles, /\.park-zoom-controls/);
-  assert.match(styles, /\.park-path-segment/);
-  assert.match(styles, /\.activity-threshold/);
-  assert.doesNotMatch(styles, /\.park-side-gate/);
+  assert.match(park, /South Gate Station/);
+  assert.match(park, /onEnterHockey/);
+  assert.match(park, /onEnterShoveling/);
+  assert.match(park, /onEnterSubway/);
+  assert.match(park, /spawnPositions/);
   assert.match(styles, /assets\/turtles\/clover\.png/);
   assert.doesNotMatch(styles, /turtle-rig|is-walking|@keyframes turtle-walk/);
   assert.ok(turtleCharacter.length > 100_000);
@@ -193,36 +178,31 @@ test("the map has focus interactions without game dependencies", async () => {
 test("Chelsea connects the starter apartment, street, and subway", async () => {
   const [map, district, apartment, styles] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/ChelseaApartment.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ChelseaDistrict3D.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/InteriorScenes3D.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
   assert.match(map, /useState<Screen>\("apartment"\)/);
-  assert.match(map, /<ChelseaApartment/);
-  assert.match(map, /<ChelseaDistrict/);
+  assert.match(map, /<ChelseaApartment3D/);
+  assert.match(map, /<ChelseaDistrict3D/);
   assert.doesNotMatch(map, /mapReturn|openWorldMap/);
   assert.match(map, /enterSubway\("chelsea"\)/);
-  assert.match(district, /data-testid="chelsea-district"/);
+  assert.match(district, /data-testid="chelsea-district-3d"/);
   assert.match(district, /West 22 Apartments/);
   assert.match(district, /onEnterApartment/);
   assert.match(district, /onEnterPressureWashing/);
-  assert.match(district, /chelsea-pressure-marker/);
-  assert.match(district, /spawn === "pressure-washing"/);
-  assert.match(district, /spawn === "subway"/);
+  assert.match(district, /Chelsea Wash Crew/);
+  assert.match(district, /"pressure-washing": \[-17, 0, -4\]/);
+  assert.match(district, /subway: \[20, 0, 6\.4\]/);
   assert.match(district, /West 23 Street/);
   assert.match(district, /onEnterSubway/);
-  assert.match(district, /requestAnimationFrame/);
-  assert.match(apartment, /data-testid="chelsea-apartment"/);
+  assert.match(district, /TurtleBillboard/);
+  assert.match(apartment, /data-testid="chelsea-apartment-3d"/);
   assert.match(apartment, /Apartment 4B/);
-  assert.match(apartment, /data-upgrade-slot/);
-  assert.equal(
-    [...apartment.matchAll(/className="turtle-nameplate"/g)].length,
-    1,
-  );
-  assert.match(apartment, /data-tier="starter"/);
+  assert.match(apartment, /TurtleBillboard/);
   assert.match(apartment, /onExitToChelsea/);
-  assert.match(apartment, /requestAnimationFrame/);
+  assert.match(apartment, /moveWithCollisions/);
   assert.doesNotMatch(apartment, /City map|onOpenMap/);
   assert.match(styles, /\.chelsea-stage/);
   assert.match(styles, /\.chelsea-apartment-building/);
@@ -244,7 +224,7 @@ test("West Village connects its streets, music venue, and Hudson waterfront", as
   ] =
     await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/WestVillageDistrict.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/BikeRaceGame.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/JazzClub.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/RhythmGame.tsx", import.meta.url), "utf8"),
@@ -262,7 +242,7 @@ test("West Village connects its streets, music venue, and Hudson waterfront", as
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     ]);
 
-  assert.match(map, /import \{ WestVillageDistrict \}/);
+  assert.match(map, /WestVillageDistrict3D/);
   assert.match(map, /import \{ BikeRaceGame \}/);
   assert.match(map, /import \{ JazzClub \}/);
   assert.match(map, /import \{ RhythmGame \}/);
@@ -273,19 +253,12 @@ test("West Village connects its streets, music venue, and Hudson waterfront", as
   assert.match(map, /setWestVillageSpawn\("waterfront"\)/);
   assert.match(map, /setWestVillageSpawn\("jazz-club"\)/);
   assert.match(map, /enterSubway\("west-village"\)/);
-  assert.match(village, /data-testid="west-village-district"/);
-  assert.match(village, /CELLAR NOTE/);
-  assert.match(village, /THE NIGHT HERON/);
-  assert.match(village, /HUDSON GREENWAY/);
-  assert.match(village, /West Village bike race/);
+  assert.match(village, /districtId="west-village"/);
+  assert.match(village, /The Cellar Note/);
+  assert.match(village, /Hudson Greenway/);
   assert.match(village, /onEnterBikeRace/);
   assert.match(village, /onEnterJazzClub/);
-  assert.match(village, /village-jazz-zone/);
-  assert.match(village, /village-waterfront-plaza/);
-  assert.match(village, /village-road/);
-  assert.match(village, /requestAnimationFrame/);
-  assert.match(village, /className="village-player"/);
-  assert.match(village, /className="turtle-nameplate"/);
+  assert.match(village, /spawnPositions/);
   assert.match(village, /West 4 Street/);
   assert.match(village, /onEnterSubway/);
   assert.doesNotMatch(village, /City map|onOpenMap/);
@@ -335,7 +308,7 @@ test("Midtown connects its night streets, subway, and two activities", async () 
     styles,
   ] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/MidtownDistrict.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/FallingItemsGame.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/TrashPickupGame.tsx", import.meta.url), "utf8"),
     readFile(
@@ -350,7 +323,7 @@ test("Midtown connects its night streets, subway, and two activities", async () 
       "utf8",
     ),
     readFile(new URL("../lib/world/subway.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/SubwayTrain.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/InteriorScenes3D.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
@@ -361,12 +334,10 @@ test("Midtown connects its night streets, subway, and two activities", async () 
   assert.match(map, /enterSubway\("midtown"\)/);
   assert.match(map, /setMidtownSpawn\("falling-items"\)/);
   assert.match(map, /setMidtownSpawn\("trash-pickup"\)/);
-  assert.match(district, /data-testid="midtown-district"/);
-  assert.match(district, /EMPIRE SHELL/);
-  assert.match(district, /MIDTOWN CLEAN TEAM/);
-  assert.match(district, /Times Square/);
-  assert.match(district, /useDistrictMultiplayer\("midtown", spawn\)/);
-  assert.match(district, /RemoteDistrictPlayers/);
+  assert.match(district, /districtId="midtown"/);
+  assert.match(district, /Look Out Below/);
+  assert.match(district, /Crossroads Cleanup/);
+  assert.match(district, /Turtle Square Station/);
   assert.match(fallingItems, /data-testid="falling-items-game"/);
   assert.match(fallingItems, /const CHALLENGE_LENGTH = 45/);
   assert.match(fallingItems, /state\.lives -= 1/);
@@ -379,7 +350,7 @@ test("Midtown connects its night streets, subway, and two activities", async () 
   assert.match(persistence, /\| "midtown"/);
   assert.match(migration, /'midtown'/);
   assert.match(subway, /id: "midtown-times-square"/);
-  assert.match(train, /<small>Midtown<\/small>/);
+  assert.match(train, /Open subway map/);
   assert.match(styles, /\.midtown-stage/);
   assert.match(styles, /\.falling-game-stage/);
   assert.match(styles, /\.trash-game-stage/);
@@ -397,7 +368,7 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
     styles,
   ] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/FidiDistrict.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ShellExpressGame.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../lib/persistence/playerPersistence.ts", import.meta.url),
@@ -411,7 +382,7 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
       "utf8",
     ),
     readFile(new URL("../lib/world/subway.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/SubwayTrain.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/InteriorScenes3D.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
 
@@ -420,12 +391,9 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
   assert.match(map, /screen === "shell-express"/);
   assert.match(map, /enterSubway\("fidi"\)/);
   assert.match(map, /setFidiSpawn\("delivery"\)/);
-  assert.match(district, /data-testid="fidi-district"/);
-  assert.match(district, /ONE SHELL PLAZA/);
-  assert.match(district, /SHELL EXPRESS/);
+  assert.match(district, /districtId="fidi"/);
+  assert.match(district, /Shell Express/);
   assert.match(district, /Fulton Street/);
-  assert.match(district, /useDistrictMultiplayer\("fidi", spawn\)/);
-  assert.match(district, /RemoteDistrictPlayers/);
   assert.match(delivery, /data-testid="shell-express-game"/);
   assert.match(delivery, /const ROUTE_TIME = 60/);
   assert.match(delivery, /const DELIVERY_TARGET = 6/);
@@ -435,7 +403,7 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
   assert.match(persistence, /\| "fidi"/);
   assert.match(migration, /'fidi'/);
   assert.match(subway, /id: "fidi-fulton"/);
-  assert.match(train, /<small>FiDi<\/small>/);
+  assert.match(train, /Open subway map/);
   assert.match(styles, /\.fidi-stage/);
   assert.match(styles, /\.shell-express-stage/);
   assert.match(styles, /\.delivery-route-item/);
@@ -445,9 +413,6 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
   const [
     park,
     chelsea,
-    fidi,
-    midtown,
-    village,
     players,
     districts,
     hook,
@@ -459,14 +424,8 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
     styles,
   ] =
     await Promise.all([
-      readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
-      readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
-      readFile(new URL("../app/FidiDistrict.tsx", import.meta.url), "utf8"),
-      readFile(new URL("../app/MidtownDistrict.tsx", import.meta.url), "utf8"),
-      readFile(
-        new URL("../app/WestVillageDistrict.tsx", import.meta.url),
-        "utf8",
-      ),
+      readFile(new URL("../app/OutdoorDistrict3D.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/ChelseaDistrict3D.tsx", import.meta.url), "utf8"),
       readFile(
         new URL("../app/MultiplayerDistrictPlayers.tsx", import.meta.url),
         "utf8",
@@ -499,28 +458,16 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
       readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     ]);
 
-  assert.match(park, /useDistrictMultiplayer\("central-park", spawn\)/);
-  assert.match(chelsea, /useDistrictMultiplayer\("chelsea", spawn\)/);
-  assert.match(fidi, /useDistrictMultiplayer\("fidi", spawn\)/);
-  assert.match(midtown, /useDistrictMultiplayer\("midtown", spawn\)/);
-  assert.match(village, /useDistrictMultiplayer\("west-village", spawn\)/);
-  assert.match(park, /RemoteDistrictPlayers/);
-  assert.match(chelsea, /RemoteDistrictPlayers/);
-  assert.match(fidi, /RemoteDistrictPlayers/);
-  assert.match(midtown, /RemoteDistrictPlayers/);
-  assert.match(village, /RemoteDistrictPlayers/);
+  assert.match(park, /useDistrictMultiplayer\(props\.districtId, props\.spawn\)/);
+  assert.match(chelsea, /useDistrictMultiplayer\("chelsea", props\.spawn\)/);
+  assert.match(park, /RemotePlayers/);
+  assert.match(chelsea, /RemotePlayers/);
   assert.match(players, /className="district-remote-player"/);
   assert.match(players, /DistrictLiveStatus/);
-  assert.match(park, /remoteSmoothing/);
-  assert.match(chelsea, /remoteSmoothing/);
-  assert.match(fidi, /remoteSmoothing/);
-  assert.match(midtown, /remoteSmoothing/);
-  assert.match(village, /remoteSmoothing/);
+  assert.match(park, /remoteTargetsRef/);
+  assert.match(chelsea, /remoteTargetsRef/);
   assert.match(park, /sendMovement/);
   assert.match(chelsea, /sendMovement/);
-  assert.match(fidi, /sendMovement/);
-  assert.match(midtown, /sendMovement/);
-  assert.match(village, /sendMovement/);
   assert.match(hook, /client\.auth\.token = accessToken/);
   assert.match(hook, /joinOrCreate\(/);
   assert.match(hook, /Callbacks\.get\(room\)/);
@@ -535,8 +482,7 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
   assert.match(districts, /roomName: "midtown"/);
   assert.match(districts, /roomName: "west_village"/);
   assert.match(room, /maxClients = 20/);
-  assert.match(room, /authClient\.auth\.getUser\(token\)/);
-  assert.match(room, /from\("profiles"\)/);
+  assert.match(room, /authenticatePlayer\(context\.token\)/);
   assert.match(room, /elapsedMilliseconds < 40/);
   assert.match(room, /requestedX/);
   assert.match(room, /requestedY/);
@@ -558,60 +504,88 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
   assert.match(styles, /\.district-live-status/);
 });
 
+test("hockey has a reusable server-authoritative multiplayer match", async () => {
+  const [server, room, lifecycle, schema, auth, hook] = await Promise.all([
+    readFile(new URL("../server/index.ts", import.meta.url), "utf8"),
+    readFile(new URL("../server/HockeyRoom.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/multiplayer/matchLifecycle.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/multiplayer/hockeySchema.ts", import.meta.url), "utf8"),
+    readFile(new URL("../server/playerAuth.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/multiplayer/useHockeyMultiplayer.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(server, /hockey: defineRoom\(HockeyRoom\)/);
+  assert.match(room, /class HockeyRoom extends Room/);
+  assert.match(room, /maxClients = 6/);
+  assert.match(room, /authenticatePlayer\(context\.token\)/);
+  assert.match(room, /setSimulationInterval/);
+  assert.match(room, /message\.sequence/);
+  assert.match(room, /beginCountdown/);
+  assert.match(room, /beginGoalPause/);
+  assert.match(room, /OVERTIME_LENGTH/);
+  assert.match(room, /this\.score\("home"\)/);
+  assert.match(room, /this\.score\("away"\)/);
+  assert.match(room, /rematch/);
+  assert.match(lifecycle, /type MatchPhase/);
+  assert.match(lifecycle, /tickMatchLifecycle/);
+  assert.match(schema, /class HockeyMatchState extends Schema/);
+  assert.match(schema, /players = new MapSchema/);
+  assert.match(schema, /homeScore/);
+  assert.match(auth, /authClient\.auth\.getUser\(token\)/);
+  assert.match(hook, /joinOrCreate\("hockey"/);
+  assert.match(hook, /room\.onStateChange/);
+  assert.match(hook, /send\("ready"\)/);
+  assert.match(hook, /send\("input"/);
+  assert.match(hook, /sequenceRef\.current \+= 1/);
+  assert.match(hook, /send\("rematch"\)/);
+});
+
 test("the subway is the only route to the onboard city map", async () => {
-  const [map, park, platform, train, subway, apartment, district, village, styles] =
+  const [map, park, platform, train, subway, apartment, district, village] =
     await Promise.all([
       readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
-      readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
-      readFile(new URL("../app/SubwayPlatform.tsx", import.meta.url), "utf8"),
-      readFile(new URL("../app/SubwayTrain.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/InteriorScenes3D.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/InteriorScenes3D.tsx", import.meta.url), "utf8"),
       readFile(new URL("../lib/world/subway.ts", import.meta.url), "utf8"),
-      readFile(new URL("../app/ChelseaApartment.tsx", import.meta.url), "utf8"),
-      readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
-      readFile(new URL("../app/WestVillageDistrict.tsx", import.meta.url), "utf8"),
-      readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+      readFile(new URL("../app/InteriorScenes3D.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/ChelseaDistrict3D.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
     ]);
 
   assert.match(map, /screen === "subway-platform"/);
   assert.match(map, /screen === "subway-train"/);
-  assert.match(map, /<SubwayPlatform/);
-  assert.match(map, /<SubwayTrain/);
+  assert.match(map, /<SubwayPlatform3D/);
+  assert.match(map, /<SubwayTrain3D/);
   assert.match(map, /onChooseStop/);
   assert.equal([...map.matchAll(/setScreen\("city"\)/g)].length, 1);
   assert.match(map, /Back to train/);
   assert.match(map, /Ride to/);
   assert.match(map, /arriveInDistrict/);
-  assert.match(platform, /data-testid="subway-platform"/);
-  assert.match(platform, /Upcoming trains/);
+  assert.match(platform, /data-testid="subway-platform-3d"/);
   assert.match(platform, /FIRST_ARRIVAL_TIME = 1/);
   assert.match(platform, /phase === "boarding"/);
-  assert.match(platform, /event\.key === "Enter"/);
-  assert.match(platform, /MOVEMENT_KEYS/);
-  assert.match(platform, /requestAnimationFrame/);
-  assert.match(platform, /Board train/);
-  assert.match(train, /data-testid="subway-train"/);
+  assert.match(platform, /PlatformTrain/);
+  assert.match(platform, /onBoard/);
+  assert.match(train, /data-testid="subway-train-3d"/);
   assert.match(train, /Open subway map/);
-  assert.match(train, /train-center-doors/);
-  assert.match(train, /train-ceiling-lights/);
+  assert.match(train, /TrainCar/);
   assert.match(subway, /central-park/);
   assert.match(subway, /west-village/);
   assert.match(subway, /chelsea/);
-  assert.match(park, /activeZoneId === "subway"/);
+  assert.match(park, /id: "south-gate"/);
   assert.match(park, /onEnterSubway/);
   assert.doesNotMatch(park, /City map|onReturnToCity/);
   assert.doesNotMatch(apartment, /City map|onOpenMap/);
   assert.doesNotMatch(district, /City map|onOpenMap/);
   assert.doesNotMatch(village, /City map|onOpenMap/);
-  assert.match(styles, /\.subway-arrivals/);
-  assert.match(styles, /\.subway-train-door/);
-  assert.match(styles, /\.train-interior-stage/);
-  assert.match(styles, /\.train-map-card/);
+  assert.match(train, /train3d-map-card/);
 });
 
 test("Chelsea pressure washing clears a facade in a session-only shift", async () => {
   const [map, district, pressureWashing, styles] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ChelseaDistrict3D.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../app/PressureWashingGame.tsx", import.meta.url),
       "utf8",
@@ -699,7 +673,7 @@ test("Supabase persistence protects player data and saves stable locations", asy
 test("pond hockey has two compact teams and session-only match rules", async () => {
   const [map, park, hockey, styles] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/HockeyGame.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
@@ -707,9 +681,12 @@ test("pond hockey has two compact teams and session-only match rules", async () 
   assert.match(map, /setScreen\("hockey"\)/);
   assert.match(map, /<HockeyGame/);
   assert.match(park, /onEnterHockey/);
-  assert.match(park, /ice-hockey/);
+  assert.match(park, /frozen-pond/);
   assert.match(hockey, /data-testid="hockey-game"/);
   assert.match(hockey, /const MATCH_LENGTH = 90/);
+  assert.match(hockey, /const COUNTDOWN_LENGTH = 3/);
+  assert.match(hockey, /const FIXED_STEP = 1 \/ 120/);
+  assert.match(hockey, /const OVERTIME_LENGTH = 30/);
   assert.match(hockey, /home-player/);
   assert.match(hockey, /home-wing/);
   assert.match(hockey, /home-goalie/);
@@ -721,6 +698,18 @@ test("pond hockey has two compact teams and session-only match rules", async () 
   assert.match(hockey, /event\.code === "KeyC"/);
   assert.match(hockey, /switchControlledPlayer/);
   assert.match(hockey, /controlledRole/);
+  assert.match(hockey, /event\.code === "KeyP"/);
+  assert.match(hockey, /hockey-countdown/);
+  assert.match(hockey, /hockey-stats/);
+  assert.match(hockey, /stats\[player\.team\]\.shots \+= 1/);
+  assert.match(hockey, /stats\[player\.team\]\.saves \+= 1/);
+  assert.match(hockey, /drawPuckTrail/);
+  assert.match(hockey, /hockey-goal-flash/);
+  assert.match(hockey, /hockey-result-stats/);
+  assert.match(hockey, /game\.period = "overtime"/);
+  assert.match(hockey, /AudioContext/);
+  assert.match(hockey, /pauseForLostFocus/);
+  assert.match(hockey, /queueAction/);
   assert.match(hockey, /context\.lineTo\(57, 12\)/);
   assert.match(hockey, /awardGoal/);
   assert.match(hockey, /requestAnimationFrame/);
@@ -728,12 +717,16 @@ test("pond hockey has two compact teams and session-only match rules", async () 
   assert.match(styles, /\.hockey-stage/);
   assert.match(styles, /\.hockey-scoreboard/);
   assert.match(styles, /\.hockey-start-card/);
+  assert.match(styles, /\.hockey-countdown/);
+  assert.match(styles, /\.hockey-stats/);
+  assert.match(styles, /\.hockey-goal-flash/);
+  assert.match(styles, /\.hockey-result-stats/);
 });
 
 test("snow shoveling clears the Snow Crew paths in a session-only shift", async () => {
   const [map, park, shoveling, styles] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/SnowShovelingGame.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);

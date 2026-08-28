@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type HockeyGameProps = {
   onExit: () => void;
@@ -10,7 +10,7 @@ type HockeyGameProps = {
 
 type Team = "home" | "away";
 type Role = "skater" | "goalie";
-type MatchStatus = "ready" | "playing" | "finished";
+type MatchStatus = "ready" | "countdown" | "playing" | "paused" | "finished";
 
 type HockeyPlayer = {
   id: string;
@@ -35,6 +35,9 @@ type HockeyPuck = {
   vy: number;
 };
 
+type TeamStats = { shots: number; passes: number; saves: number };
+type MatchPeriod = "regulation" | "overtime";
+
 type MatchState = {
   players: HockeyPlayer[];
   puck: HockeyPuck;
@@ -45,6 +48,11 @@ type MatchState = {
   message: string;
   actionQueued: "pass" | "shoot" | null;
   switchQueued: boolean;
+  countdown: number;
+  stats: Record<Team, TeamStats>;
+  puckTrail: Array<{ x: number; y: number; opacity: number }>;
+  goalFlash: Team | null;
+  period: MatchPeriod;
 };
 
 type HudState = {
@@ -54,6 +62,10 @@ type HudState = {
   status: MatchStatus;
   message: string;
   controlledRole: string;
+  countdown: number;
+  stats: Record<Team, TeamStats>;
+  goalFlash: Team | null;
+  period: MatchPeriod;
 };
 
 const RINK_WIDTH = 1200;
@@ -69,6 +81,9 @@ const MATCH_LENGTH = 90;
 const PLAYER_SPEED = 360;
 const HOME_AI_SPEED = 270;
 const AWAY_AI_SPEED = 230;
+const COUNTDOWN_LENGTH = 3;
+const FIXED_STEP = 1 / 120;
+const OVERTIME_LENGTH = 30;
 
 const teamNames: Record<Team, string> = {
   home: "Lettuce Leafs",
@@ -151,6 +166,14 @@ function createMatchState(status: MatchStatus = "ready"): MatchState {
     message: "",
     actionQueued: null,
     switchQueued: false,
+    countdown: status === "countdown" ? COUNTDOWN_LENGTH : 0,
+    stats: {
+      home: { shots: 0, passes: 0, saves: 0 },
+      away: { shots: 0, passes: 0, saves: 0 },
+    },
+    puckTrail: [],
+    goalFlash: null,
+    period: "regulation",
   };
 }
 
@@ -171,6 +194,8 @@ function resetFaceoff(game: MatchState) {
   game.message = "";
   game.actionQueued = null;
   game.switchQueued = false;
+  game.puckTrail = [];
+  game.goalFlash = null;
 }
 
 function controlledRoleLabel(game: MatchState) {
@@ -519,6 +544,18 @@ function drawPuck(context: CanvasRenderingContext2D, puck: HockeyPuck) {
   context.stroke();
 }
 
+function drawPuckTrail(
+  context: CanvasRenderingContext2D,
+  trail: MatchState["puckTrail"],
+) {
+  for (const point of trail) {
+    context.fillStyle = `rgb(32 52 47 / ${point.opacity * 0.24})`;
+    context.beginPath();
+    context.arc(point.x, point.y, PUCK_RADIUS * point.opacity, 0, Math.PI * 2);
+    context.fill();
+  }
+}
+
 function formatTime(time: number) {
   const seconds = Math.max(0, Math.ceil(time));
   const minutes = Math.floor(seconds / 60);
@@ -532,6 +569,7 @@ export function HockeyGame({
 }: HockeyGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<MatchState>(createMatchState());
+  const audioContextRef = useRef<AudioContext | null>(null);
   const [hud, setHud] = useState<HudState>({
     home: 0,
     away: 0,
@@ -539,6 +577,13 @@ export function HockeyGame({
     status: "ready",
     message: "",
     controlledRole: "Center",
+    countdown: 0,
+    stats: {
+      home: { shots: 0, passes: 0, saves: 0 },
+      away: { shots: 0, passes: 0, saves: 0 },
+    },
+    goalFlash: null,
+    period: "regulation",
   });
 
   function publishHud(game: MatchState) {
@@ -549,14 +594,74 @@ export function HockeyGame({
       status: game.status,
       message: game.message,
       controlledRole: controlledRoleLabel(game),
+      countdown: game.countdown,
+      stats: {
+        home: { ...game.stats.home },
+        away: { ...game.stats.away },
+      },
+      goalFlash: game.goalFlash,
+      period: game.period,
     });
   }
 
+  const playSound = useCallback((kind: "countdown" | "pass" | "shot" | "goal") => {
+    const AudioContextConstructor = window.AudioContext;
+    const audio = audioContextRef.current ?? new AudioContextConstructor();
+    audioContextRef.current = audio;
+    if (audio.state === "suspended") void audio.resume();
+    const oscillator = audio.createOscillator();
+    const gain = audio.createGain();
+    const now = audio.currentTime;
+    const settings = {
+      countdown: { frequency: 440, duration: 0.08, volume: 0.035 },
+      pass: { frequency: 170, duration: 0.055, volume: 0.025 },
+      shot: { frequency: 105, duration: 0.11, volume: 0.045 },
+      goal: { frequency: 620, duration: 0.42, volume: 0.055 },
+    }[kind];
+    oscillator.type = kind === "goal" ? "triangle" : "sine";
+    oscillator.frequency.setValueAtTime(settings.frequency, now);
+    if (kind === "goal") oscillator.frequency.exponentialRampToValueAtTime(930, now + settings.duration);
+    gain.gain.setValueAtTime(settings.volume, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + settings.duration);
+    oscillator.connect(gain).connect(audio.destination);
+    oscillator.start(now);
+    oscillator.stop(now + settings.duration);
+  }, []);
+
   function startMatch() {
-    const game = createMatchState("playing");
+    const game = createMatchState("countdown");
     gameRef.current = game;
     publishHud(game);
+    playSound("countdown");
     canvasRef.current?.focus();
+  }
+
+  function resumeMatch() {
+    const game = gameRef.current;
+    game.status = "countdown";
+    game.countdown = COUNTDOWN_LENGTH;
+    game.message = "";
+    publishHud(game);
+    playSound("countdown");
+    canvasRef.current?.focus();
+  }
+
+  function queueAction(action: "pass" | "shoot") {
+    gameRef.current.actionQueued = action;
+    canvasRef.current?.focus();
+  }
+
+  function queueSwitch() {
+    gameRef.current.switchQueued = true;
+    canvasRef.current?.focus();
+  }
+
+  function pauseMatch() {
+    const game = gameRef.current;
+    if (game.status !== "playing") return;
+    game.status = "paused";
+    game.message = "Game paused";
+    publishHud(game);
   }
 
   useEffect(() => {
@@ -580,6 +685,7 @@ export function HockeyGame({
     let animationFrame = 0;
     let previousTime = performance.now();
     let previousPublishedSecond = MATCH_LENGTH;
+    let simulationAccumulator = 0;
 
     function resizeCanvas() {
       const density = Math.min(window.devicePixelRatio || 1, 2);
@@ -609,7 +715,8 @@ export function HockeyGame({
         movementKeys.has(event.key) ||
         event.code === "Space" ||
         event.code === "KeyX" ||
-        event.code === "KeyC"
+        event.code === "KeyC" ||
+        event.code === "KeyP"
       ) {
         event.preventDefault();
       }
@@ -622,6 +729,19 @@ export function HockeyGame({
         gameRef.current.actionQueued = "pass";
       } else if (event.code === "KeyC" && !event.repeat) {
         gameRef.current.actionQueued = "shoot";
+      } else if (event.code === "KeyP" && !event.repeat) {
+        const game = gameRef.current;
+        if (game.status === "playing") {
+          game.status = "paused";
+          game.message = "Game paused";
+          clearInput();
+          publishHud(game);
+        } else if (game.status === "paused") {
+          game.status = "countdown";
+          game.countdown = COUNTDOWN_LENGTH;
+          game.message = "";
+          publishHud(game);
+        }
       }
     }
 
@@ -635,12 +755,33 @@ export function HockeyGame({
       gameRef.current.switchQueued = false;
     }
 
+    function pauseForLostFocus() {
+      clearInput();
+      const game = gameRef.current;
+      if (game.status === "playing" || game.status === "countdown") {
+        game.status = "paused";
+        game.message = "Game paused";
+        publishHud(game);
+      }
+    }
+
+    function handleVisibilityChange() {
+      if (document.hidden) pauseForLostFocus();
+    }
+
     function awardGoal(game: MatchState, team: Team) {
       game.score[team] += 1;
       game.goalPause = 1.25;
       game.message = `Goal — ${teamNames[team]}!`;
+      game.goalFlash = team;
       game.puck.vx = 0;
       game.puck.vy = 0;
+      playSound("goal");
+      if (game.period === "overtime") {
+        game.status = "finished";
+        game.timeLeft = 0;
+        game.message = `${teamNames[team]} win in overtime!`;
+      }
       publishHud(game);
     }
 
@@ -669,6 +810,16 @@ export function HockeyGame({
         const friction = Math.pow(0.025, elapsed);
         player.vx *= friction;
         player.vy *= friction;
+      }
+
+      const puckDistance = Math.sqrt(distanceSquared(player, game.puck));
+      const puckSpeed = Math.hypot(game.puck.vx, game.puck.vy);
+      if (!game.actionQueued && puckDistance < 62 && puckSpeed < 430) {
+        const stickX = player.x + player.facingX * (player.radius + 19);
+        const stickY = player.y + player.facingY * (player.radius + 19);
+        const control = Math.min(1, elapsed * 9);
+        game.puck.vx += (player.vx * 0.72 + (stickX - game.puck.x) * 8 - game.puck.vx) * control;
+        game.puck.vy += (player.vy * 0.72 + (stickY - game.puck.y) * 8 - game.puck.vy) * control;
       }
 
       if (
@@ -729,6 +880,13 @@ export function HockeyGame({
         game.puck.vx = directionX * puckSpeed + player.vx * 0.2;
         game.puck.vy = directionY * puckSpeed + player.vy * 0.2;
         player.kickCooldown = game.actionQueued === "pass" ? 0.3 : 0.42;
+        if (game.actionQueued === "pass") {
+          game.stats[player.team].passes += 1;
+          playSound("pass");
+        } else {
+          game.stats[player.team].shots += 1;
+          playSound("shot");
+        }
       }
     }
 
@@ -750,12 +908,21 @@ export function HockeyGame({
       let targetY = game.puck.y;
 
       if (player.id !== chaserId) {
-        const laneY = player.slot === 1 ? 210 : 470;
-        targetX = clamp(
-          game.puck.x - attackDirection * 155,
-          ICE_LEFT + 170,
-          ICE_RIGHT - 170,
-        );
+        const laneY = player.slot === 1 ? 220 : 460;
+        const puckInDefensiveHalf = player.team === "home"
+          ? game.puck.x < RINK_WIDTH / 2
+          : game.puck.x > RINK_WIDTH / 2;
+        targetX = puckInDefensiveHalf
+          ? clamp(
+              game.puck.x - attackDirection * 110,
+              player.team === "home" ? ICE_LEFT + 185 : RINK_WIDTH / 2,
+              player.team === "home" ? RINK_WIDTH / 2 : ICE_RIGHT - 185,
+            )
+          : clamp(
+              game.puck.x - attackDirection * 155,
+              ICE_LEFT + 170,
+              ICE_RIGHT - 170,
+            );
         targetY = laneY + (game.puck.y - RINK_HEIGHT / 2) * 0.18;
       }
 
@@ -842,12 +1009,33 @@ export function HockeyGame({
           game.puck.vx = (aimX / aimMagnitude) * kickSpeed;
           game.puck.vy = (aimY / aimMagnitude) * kickSpeed;
           player.kickCooldown = player.team === "home" ? 0.82 : 1.08;
+          if (player.role === "goalie") {
+            game.stats[player.team].saves += 1;
+            playSound("pass");
+          } else {
+            game.stats[player.team].shots += 1;
+            playSound("shot");
+          }
           aiKickTaken = true;
         }
       }
     }
 
     function updateGame(game: MatchState, elapsed: number) {
+      if (game.status === "countdown") {
+        const previousCount = Math.ceil(game.countdown);
+        game.countdown = Math.max(0, game.countdown - elapsed);
+        if (game.countdown <= 0) {
+          game.status = "playing";
+          game.message = "Play!";
+        }
+        if (Math.ceil(game.countdown) !== previousCount || game.status === "playing") {
+          playSound(game.status === "playing" ? "shot" : "countdown");
+          publishHud(game);
+        }
+        return;
+      }
+
       if (game.status !== "playing") {
         game.actionQueued = null;
         game.switchQueued = false;
@@ -874,6 +1062,17 @@ export function HockeyGame({
       game.timeLeft = Math.max(0, game.timeLeft - elapsed);
 
       if (game.timeLeft <= 0) {
+        if (game.score.home === game.score.away && game.period === "regulation") {
+          game.period = "overtime";
+          game.timeLeft = OVERTIME_LENGTH;
+          resetFaceoff(game);
+          game.status = "countdown";
+          game.countdown = COUNTDOWN_LENGTH;
+          game.message = "Sudden death overtime";
+          publishHud(game);
+          playSound("countdown");
+          return;
+        }
         game.status = "finished";
         game.message =
           game.score.home === game.score.away
@@ -935,6 +1134,16 @@ export function HockeyGame({
 
       game.puck.x += game.puck.vx * elapsed;
       game.puck.y += game.puck.vy * elapsed;
+      game.puckTrail = game.puckTrail
+        .map((point) => ({ ...point, opacity: point.opacity - elapsed * 3.6 }))
+        .filter((point) => point.opacity > 0.08);
+      const lastTrailPoint = game.puckTrail.at(-1);
+      if (
+        Math.hypot(game.puck.vx, game.puck.vy) > 260 &&
+        (!lastTrailPoint || distanceSquared(lastTrailPoint, game.puck) > 14 * 14)
+      ) {
+        game.puckTrail.push({ x: game.puck.x, y: game.puck.y, opacity: 1 });
+      }
       const puckFriction = Math.pow(0.3, elapsed);
       game.puck.vx *= puckFriction;
       game.puck.vy *= puckFriction;
@@ -988,6 +1197,7 @@ export function HockeyGame({
       activeContext.setTransform(scale, 0, 0, scale, offsetX, offsetY);
 
       drawRink(activeContext);
+      drawPuckTrail(activeContext, game.puckTrail);
 
       const playersByDepth = [...game.players].sort(
         (first, second) => first.y - second.y,
@@ -999,9 +1209,13 @@ export function HockeyGame({
     }
 
     function animate(time: number) {
-      const elapsed = Math.min((time - previousTime) / 1000, 0.04);
+      const elapsed = Math.min((time - previousTime) / 1000, 0.1);
       previousTime = time;
-      updateGame(gameRef.current, elapsed);
+      simulationAccumulator = Math.min(simulationAccumulator + elapsed, 0.25);
+      while (simulationAccumulator >= FIXED_STEP) {
+        updateGame(gameRef.current, FIXED_STEP);
+        simulationAccumulator -= FIXED_STEP;
+      }
       drawGame(gameRef.current);
       animationFrame = requestAnimationFrame(animate);
     }
@@ -1010,8 +1224,8 @@ export function HockeyGame({
     window.addEventListener("resize", resizeCanvas);
     window.addEventListener("keydown", handleKeyDown, { passive: false });
     window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("blur", clearInput);
-    document.addEventListener("visibilitychange", clearInput);
+    window.addEventListener("blur", pauseForLostFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     animationFrame = requestAnimationFrame(animate);
 
     return () => {
@@ -1019,17 +1233,19 @@ export function HockeyGame({
       window.removeEventListener("resize", resizeCanvas);
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
-      window.removeEventListener("blur", clearInput);
-      document.removeEventListener("visibilitychange", clearInput);
+      window.removeEventListener("blur", pauseForLostFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      void audioContextRef.current?.close();
+      audioContextRef.current = null;
     };
-  }, [turtleImageSrc, turtleName]);
+  }, [playSound, turtleImageSrc, turtleName]);
 
   const result =
     hud.home === hud.away
       ? "Tie game"
       : hud.home > hud.away
-        ? `${teamNames.home} win`
-        : `${teamNames.away} win`;
+        ? `${teamNames.home} win${hud.period === "overtime" ? " in OT" : ""}`
+        : `${teamNames.away} win${hud.period === "overtime" ? " in OT" : ""}`;
 
   return (
     <main className="hockey-stage" data-testid="hockey-game">
@@ -1037,6 +1253,7 @@ export function HockeyGame({
         ref={canvasRef}
         className="hockey-canvas"
         aria-label="Pond hockey game with two skaters and one goalie on each team"
+        onPointerDown={() => canvasRef.current?.focus()}
         tabIndex={-1}
       />
 
@@ -1051,7 +1268,7 @@ export function HockeyGame({
           <strong>{teamNames.home}</strong>
           <span>{hud.home}</span>
         </div>
-        <time>{formatTime(hud.timeLeft)}</time>
+        <time>{hud.period === "overtime" ? <small>OT</small> : null}{formatTime(hud.timeLeft)}</time>
         <div className="hockey-team away-team">
           <span>{hud.away}</span>
           <strong>{teamNames.away}</strong>
@@ -1059,20 +1276,49 @@ export function HockeyGame({
         </div>
       </header>
 
-      {hud.message && hud.status === "playing" ? (
+      {hud.message && hud.status === "playing" && hud.message !== "Play!" ? (
         <div className="hockey-announcement">{hud.message}</div>
+      ) : null}
+
+      {hud.goalFlash && hud.status !== "ready" ? (
+        <div className={`hockey-goal-flash is-${hud.goalFlash}`} aria-hidden="true" />
+      ) : null}
+
+      {hud.status === "countdown" ? (
+        <div className="hockey-countdown" aria-live="assertive">
+          <small>{hud.period === "overtime" ? "Sudden death in" : "Faceoff in"}</small>
+          <strong>{Math.max(1, Math.ceil(hud.countdown))}</strong>
+        </div>
       ) : null}
 
       {hud.status === "playing" ? (
         <aside className="hockey-controls" aria-live="polite">
           <strong>Controlling: {hud.controlledRole}</strong>
-          <span><kbd>Space</kbd> Switch</span>
-          <span><kbd>X</kbd> Pass</span>
-          <span><kbd>C</kbd> Shoot</span>
+          <button type="button" onClick={queueSwitch}><kbd>Space</kbd> Switch</button>
+          <button type="button" onClick={() => queueAction("pass")}><kbd>X</kbd> Pass</button>
+          <button type="button" onClick={() => queueAction("shoot")}><kbd>C</kbd> Shoot</button>
+          <button type="button" onClick={pauseMatch}><kbd>P</kbd> Pause</button>
         </aside>
       ) : null}
 
-      {hud.status !== "playing" ? (
+      {hud.status === "playing" || hud.status === "finished" ? (
+        <aside className="hockey-stats" aria-label="Match statistics">
+          <span><small>Shots</small><b>{hud.stats.home.shots}–{hud.stats.away.shots}</b></span>
+          <span><small>Passes</small><b>{hud.stats.home.passes}–{hud.stats.away.passes}</b></span>
+          <span><small>Saves</small><b>{hud.stats.home.saves}–{hud.stats.away.saves}</b></span>
+        </aside>
+      ) : null}
+
+      {hud.status === "paused" ? (
+        <section className="hockey-start-card hockey-pause-card">
+          <p>Turtle City Pond Hockey</p>
+          <h1>Game paused</h1>
+          <span>Your match is frozen right where you left it.</span>
+          <button type="button" onClick={resumeMatch}>Resume match</button>
+        </section>
+      ) : null}
+
+      {hud.status === "ready" || hud.status === "finished" ? (
         <section className="hockey-start-card">
           <p>Turtle City Pond Hockey</p>
           <h1>{hud.status === "finished" ? result : "Drop the puck"}</h1>
@@ -1087,6 +1333,13 @@ export function HockeyGame({
             <b>1 goalie</b>
             <i>per team</i>
           </div>
+          {hud.status === "finished" ? (
+            <div className="hockey-result-stats">
+              <span><small>Shots</small><b>{hud.stats.home.shots}–{hud.stats.away.shots}</b></span>
+              <span><small>Passes</small><b>{hud.stats.home.passes}–{hud.stats.away.passes}</b></span>
+              <span><small>Saves</small><b>{hud.stats.home.saves}–{hud.stats.away.saves}</b></span>
+            </div>
+          ) : null}
           <button type="button" onClick={startMatch}>
             {hud.status === "finished" ? "Play again" : "Start match"}
           </button>

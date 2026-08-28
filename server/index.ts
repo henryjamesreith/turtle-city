@@ -8,6 +8,7 @@ import {
   MidtownRoom,
   WestVillageRoom,
 } from "./DistrictRoom.js";
+import { HockeyRoom } from "./HockeyRoom.js";
 
 const webOrigin =
   process.env.TURTLE_CITY_WEB_ORIGIN ?? "http://localhost:3000";
@@ -20,6 +21,7 @@ const gameServer = defineServer({
     central_park: defineRoom(CentralParkRoom),
     chelsea: defineRoom(ChelseaRoom),
     fidi: defineRoom(FidiRoom),
+    hockey: defineRoom(HockeyRoom),
     midtown: defineRoom(MidtownRoom),
     west_village: defineRoom(WestVillageRoom),
   },
@@ -53,6 +55,7 @@ const gameServer = defineServer({
           "midtown",
           "west-village",
         ],
+        games: ["hockey"],
         status: "ok",
       });
     });
