@@ -2500,6 +2500,58 @@ button {
   transform: translateY(-1px);
 }
 
+.hockey-start-card > button:disabled {
+  cursor: default;
+  filter: grayscale(0.5);
+  opacity: 0.58;
+  transform: none;
+}
+
+.hockey-start-card > .hockey-secondary-action {
+  margin-top: 10px;
+  border-width: 2px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.hockey-lobby-card {
+  width: min(520px, calc(100vw - 44px));
+}
+
+.hockey-lobby-roster {
+  display: grid;
+  width: 100%;
+  gap: 7px;
+  margin: 20px 0;
+}
+
+.hockey-lobby-roster > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: #eef0df;
+  text-align: left;
+}
+
+.hockey-lobby-roster > div.is-away {
+  background: #f3d3c2;
+}
+
+.hockey-lobby-roster small,
+.hockey-lobby-roster i {
+  font-size: 9px;
+}
+
+.hockey-lobby-roster i {
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
 .chelsea-stage,
 .chelsea-viewport,
 .apartment-stage {

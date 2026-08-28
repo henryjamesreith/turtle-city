@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useHockeyMultiplayer } from "@/lib/multiplayer/useHockeyMultiplayer";
+import type { HockeyMatchState } from "@/lib/multiplayer/hockeySchema";
 
 type HockeyGameProps = {
   onExit: () => void;
@@ -37,6 +39,7 @@ type HockeyPuck = {
 
 type TeamStats = { shots: number; passes: number; saves: number };
 type MatchPeriod = "regulation" | "overtime";
+type PlayMode = "choose" | "solo" | "multiplayer";
 
 type MatchState = {
   players: HockeyPlayer[];
@@ -567,9 +570,13 @@ export function HockeyGame({
   turtleImage: turtleImageSrc,
   turtleName,
 }: HockeyGameProps) {
+  const multiplayer = useHockeyMultiplayer();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<MatchState>(createMatchState());
+  const modeRef = useRef<PlayMode>("choose");
+  const multiplayerRef = useRef(multiplayer);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const [mode, setMode] = useState<PlayMode>("choose");
   const [hud, setHud] = useState<HudState>({
     home: 0,
     away: 0,
@@ -585,6 +592,11 @@ export function HockeyGame({
     goalFlash: null,
     period: "regulation",
   });
+
+  useEffect(() => {
+    modeRef.current = mode;
+    multiplayerRef.current = multiplayer;
+  }, [mode, multiplayer]);
 
   function publishHud(game: MatchState) {
     setHud({
@@ -629,11 +641,25 @@ export function HockeyGame({
   }, []);
 
   function startMatch() {
+    setMode("solo");
     const game = createMatchState("countdown");
     gameRef.current = game;
     publishHud(game);
     playSound("countdown");
     canvasRef.current?.focus();
+  }
+
+  function startMultiplayer() {
+    setMode("multiplayer");
+    void multiplayer.connect();
+  }
+
+  function leaveMultiplayer() {
+    multiplayer.disconnect();
+    setMode("choose");
+    const game = createMatchState();
+    gameRef.current = game;
+    publishHud(game);
   }
 
   function resumeMatch() {
@@ -686,6 +712,7 @@ export function HockeyGame({
     let previousTime = performance.now();
     let previousPublishedSecond = MATCH_LENGTH;
     let simulationAccumulator = 0;
+    let multiplayerInputAccumulator = 0;
 
     function resizeCanvas() {
       const density = Math.min(window.devicePixelRatio || 1, 2);
@@ -730,6 +757,7 @@ export function HockeyGame({
       } else if (event.code === "KeyC" && !event.repeat) {
         gameRef.current.actionQueued = "shoot";
       } else if (event.code === "KeyP" && !event.repeat) {
+        if (modeRef.current === "multiplayer") return;
         const game = gameRef.current;
         if (game.status === "playing") {
           game.status = "paused";
@@ -1208,9 +1236,56 @@ export function HockeyGame({
       drawPuck(activeContext, game.puck);
     }
 
+    function drawMultiplayerGame(state: HockeyMatchState, sessionId: string) {
+      const pixelWidth = activeCanvas.width;
+      const pixelHeight = activeCanvas.height;
+      const scale = Math.min(pixelWidth / RINK_WIDTH, pixelHeight / RINK_HEIGHT);
+      const offsetX = (pixelWidth - RINK_WIDTH * scale) / 2;
+      const offsetY = (pixelHeight - RINK_HEIGHT * scale) / 2;
+      activeContext.setTransform(1, 0, 0, 1, 0, 0);
+      activeContext.clearRect(0, 0, pixelWidth, pixelHeight);
+      activeContext.setTransform(scale, 0, 0, scale, offsetX, offsetY);
+      drawRink(activeContext);
+      const players = [...state.players.entries()].map(([id, player], index): HockeyPlayer => ({
+        controlled: id === sessionId,
+        facingX: player.facingX,
+        facingY: player.facingY,
+        id,
+        kickCooldown: 0,
+        radius: 24,
+        role: "skater",
+        slot: index,
+        team: player.team === "away" ? "away" : "home",
+        vx: player.vx,
+        vy: player.vy,
+        x: player.x,
+        y: player.y,
+      }));
+      for (const player of players.sort((first, second) => first.y - second.y)) {
+        const networkName = state.players.get(player.id)?.turtleName ?? turtleName;
+        drawPlayer(activeContext, player, turtleImage, networkName);
+      }
+      drawPuck(activeContext, state.puck);
+    }
+
     function animate(time: number) {
       const elapsed = Math.min((time - previousTime) / 1000, 0.1);
       previousTime = time;
+      const activeMultiplayer = multiplayerRef.current;
+      const networkState = activeMultiplayer.stateRef.current;
+      if (modeRef.current === "multiplayer" && networkState) {
+        multiplayerInputAccumulator += elapsed;
+        if (multiplayerInputAccumulator >= 0.05) {
+          multiplayerInputAccumulator = 0;
+          const horizontal = Number(pressed.has("arrowright") || pressed.has("d")) - Number(pressed.has("arrowleft") || pressed.has("a"));
+          const vertical = Number(pressed.has("arrowdown") || pressed.has("s")) - Number(pressed.has("arrowup") || pressed.has("w"));
+          activeMultiplayer.sendInput(horizontal, vertical, gameRef.current.actionQueued ?? undefined);
+          gameRef.current.actionQueued = null;
+        }
+        drawMultiplayerGame(networkState, activeMultiplayer.sessionId);
+        animationFrame = requestAnimationFrame(animate);
+        return;
+      }
       simulationAccumulator = Math.min(simulationAccumulator + elapsed, 0.25);
       while (simulationAccumulator >= FIXED_STEP) {
         updateGame(gameRef.current, FIXED_STEP);
@@ -1246,6 +1321,11 @@ export function HockeyGame({
       : hud.home > hud.away
         ? `${teamNames.home} win${hud.period === "overtime" ? " in OT" : ""}`
         : `${teamNames.away} win${hud.period === "overtime" ? " in OT" : ""}`;
+  const multiplayerMatch = multiplayer.match;
+  const displayedHomeScore = mode === "multiplayer" ? multiplayerMatch.homeScore : hud.home;
+  const displayedAwayScore = mode === "multiplayer" ? multiplayerMatch.awayScore : hud.away;
+  const displayedTime = mode === "multiplayer" ? multiplayerMatch.timeLeft : hud.timeLeft;
+  const isMultiplayerPlaying = mode === "multiplayer" && multiplayerMatch.phase === "playing";
 
   return (
     <main className="hockey-stage" data-testid="hockey-game">
@@ -1257,7 +1337,7 @@ export function HockeyGame({
         tabIndex={-1}
       />
 
-      <button type="button" className="hockey-exit" onClick={onExit}>
+      <button type="button" className="hockey-exit" onClick={() => { if (mode === "multiplayer") multiplayer.disconnect(); onExit(); }}>
         <span aria-hidden="true">←</span>
         Central Park
       </button>
@@ -1266,42 +1346,42 @@ export function HockeyGame({
         <div className="hockey-team home-team">
           <small>2 skaters + G</small>
           <strong>{teamNames.home}</strong>
-          <span>{hud.home}</span>
+          <span>{displayedHomeScore}</span>
         </div>
-        <time>{hud.period === "overtime" ? <small>OT</small> : null}{formatTime(hud.timeLeft)}</time>
+        <time>{(mode === "multiplayer" ? multiplayerMatch.overtime : hud.period === "overtime") ? <small>OT</small> : null}{formatTime(displayedTime)}</time>
         <div className="hockey-team away-team">
-          <span>{hud.away}</span>
+          <span>{displayedAwayScore}</span>
           <strong>{teamNames.away}</strong>
           <small>2 skaters + G</small>
         </div>
       </header>
 
-      {hud.message && hud.status === "playing" && hud.message !== "Play!" ? (
+      {mode !== "multiplayer" && hud.message && hud.status === "playing" && hud.message !== "Play!" ? (
         <div className="hockey-announcement">{hud.message}</div>
       ) : null}
 
-      {hud.goalFlash && hud.status !== "ready" ? (
+      {mode !== "multiplayer" && hud.goalFlash && hud.status !== "ready" ? (
         <div className={`hockey-goal-flash is-${hud.goalFlash}`} aria-hidden="true" />
       ) : null}
 
-      {hud.status === "countdown" ? (
+      {(mode === "multiplayer" ? multiplayerMatch.phase === "countdown" : hud.status === "countdown") ? (
         <div className="hockey-countdown" aria-live="assertive">
-          <small>{hud.period === "overtime" ? "Sudden death in" : "Faceoff in"}</small>
-          <strong>{Math.max(1, Math.ceil(hud.countdown))}</strong>
+          <small>{(mode === "multiplayer" ? multiplayerMatch.overtime : hud.period === "overtime") ? "Sudden death in" : "Faceoff in"}</small>
+          <strong>{Math.max(1, Math.ceil(mode === "multiplayer" ? multiplayerMatch.countdownLeft : hud.countdown))}</strong>
         </div>
       ) : null}
 
-      {hud.status === "playing" ? (
+      {(mode === "multiplayer" ? isMultiplayerPlaying : hud.status === "playing") ? (
         <aside className="hockey-controls" aria-live="polite">
           <strong>Controlling: {hud.controlledRole}</strong>
-          <button type="button" onClick={queueSwitch}><kbd>Space</kbd> Switch</button>
+          {mode === "multiplayer" ? null : <button type="button" onClick={queueSwitch}><kbd>Space</kbd> Switch</button>}
           <button type="button" onClick={() => queueAction("pass")}><kbd>X</kbd> Pass</button>
           <button type="button" onClick={() => queueAction("shoot")}><kbd>C</kbd> Shoot</button>
-          <button type="button" onClick={pauseMatch}><kbd>P</kbd> Pause</button>
+          {mode === "multiplayer" ? null : <button type="button" onClick={pauseMatch}><kbd>P</kbd> Pause</button>}
         </aside>
       ) : null}
 
-      {hud.status === "playing" || hud.status === "finished" ? (
+      {mode !== "multiplayer" && (hud.status === "playing" || hud.status === "finished") ? (
         <aside className="hockey-stats" aria-label="Match statistics">
           <span><small>Shots</small><b>{hud.stats.home.shots}–{hud.stats.away.shots}</b></span>
           <span><small>Passes</small><b>{hud.stats.home.passes}–{hud.stats.away.passes}</b></span>
@@ -1309,7 +1389,7 @@ export function HockeyGame({
         </aside>
       ) : null}
 
-      {hud.status === "paused" ? (
+      {mode !== "multiplayer" && hud.status === "paused" ? (
         <section className="hockey-start-card hockey-pause-card">
           <p>Turtle City Pond Hockey</p>
           <h1>Game paused</h1>
@@ -1318,7 +1398,7 @@ export function HockeyGame({
         </section>
       ) : null}
 
-      {hud.status === "ready" || hud.status === "finished" ? (
+      {mode !== "multiplayer" && (hud.status === "ready" || hud.status === "finished") ? (
         <section className="hockey-start-card">
           <p>Turtle City Pond Hockey</p>
           <h1>{hud.status === "finished" ? result : "Drop the puck"}</h1>
@@ -1343,6 +1423,45 @@ export function HockeyGame({
           <button type="button" onClick={startMatch}>
             {hud.status === "finished" ? "Play again" : "Start match"}
           </button>
+          {mode === "choose" && hud.status === "ready" ? (
+            <button type="button" className="hockey-secondary-action" onClick={startMultiplayer}>
+              Play multiplayer
+            </button>
+          ) : null}
+        </section>
+      ) : null}
+
+      {mode === "multiplayer" && (multiplayer.status === "connecting" || multiplayer.status === "offline") ? (
+        <section className="hockey-start-card">
+          <p>Online Pond Hockey</p>
+          <h1>{multiplayer.status === "connecting" ? "Finding a rink…" : "Rink unavailable"}</h1>
+          <span>{multiplayer.status === "connecting" ? "Connecting you to a quick match." : "The multiplayer server could not be reached. Solo play is still available."}</span>
+          {multiplayer.status === "offline" ? <button type="button" onClick={() => void multiplayer.connect()}>Try again</button> : null}
+          <button type="button" className="hockey-secondary-action" onClick={leaveMultiplayer}>Play solo instead</button>
+        </section>
+      ) : null}
+
+      {mode === "multiplayer" && multiplayer.status === "live" && multiplayerMatch.phase === "lobby" ? (
+        <section className="hockey-start-card hockey-lobby-card">
+          <p>Online Pond Hockey</p>
+          <h1>Locker room</h1>
+          <span>At least two turtles are needed. The match starts when everyone is ready.</span>
+          <div className="hockey-lobby-roster">
+            {multiplayerMatch.players.map((player) => <div key={player.sessionId} className={`is-${player.team}`}><b>{player.name}</b><small>{player.team === "home" ? teamNames.home : teamNames.away}</small><i>{player.ready ? "Ready" : "Waiting"}</i></div>)}
+          </div>
+          <button type="button" disabled={multiplayerMatch.players.find((player) => player.sessionId === multiplayer.sessionId)?.ready} onClick={multiplayer.ready}>Ready up</button>
+          <button type="button" className="hockey-secondary-action" onClick={leaveMultiplayer}>Leave lobby</button>
+        </section>
+      ) : null}
+
+      {mode === "multiplayer" && multiplayer.status === "live" && multiplayerMatch.phase === "finished" ? (
+        <section className="hockey-start-card">
+          <p>Online Pond Hockey · Final</p>
+          <h1>{multiplayerMatch.winner === "home" ? teamNames.home : teamNames.away} win{multiplayerMatch.overtime ? " in OT" : ""}</h1>
+          <span>Rematch begins when every remaining turtle votes to play again.</span>
+          <div className="hockey-matchup"><b>{multiplayerMatch.homeScore}</b><i>final</i><b>{multiplayerMatch.awayScore}</b></div>
+          <button type="button" onClick={multiplayer.rematch}>Vote rematch</button>
+          <button type="button" className="hockey-secondary-action" onClick={leaveMultiplayer}>Leave rink</button>
         </section>
       ) : null}
     </main>

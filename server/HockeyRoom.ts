@@ -172,6 +172,7 @@ export class HockeyRoom extends Room<{
     if (this.state.overtime) {
       this.state.winner = team;
       finishMatch(this.lifecycle);
+      for (const player of this.state.players.values()) player.ready = false;
     } else {
       beginGoalPause(this.lifecycle);
       this.resetPositions();
@@ -193,6 +194,7 @@ export class HockeyRoom extends Room<{
       } else {
         this.state.winner = this.state.homeScore > this.state.awayScore ? "home" : "away";
         finishMatch(this.lifecycle);
+        for (const player of this.state.players.values()) player.ready = false;
       }
     }
     this.syncLifecycle();

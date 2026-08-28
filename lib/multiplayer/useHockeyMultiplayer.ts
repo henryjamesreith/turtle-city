@@ -63,13 +63,17 @@ const emptySummary: HockeyMatchSummary = {
 
 export function useHockeyMultiplayer() {
   const roomRef = useRef<Room<HockeyMatchState> | null>(null);
+  const stateRef = useRef<HockeyMatchState | null>(null);
   const sequenceRef = useRef(0);
+  const [sessionId, setSessionId] = useState("");
   const [status, setStatus] = useState<HockeyConnectionStatus>("idle");
   const [match, setMatch] = useState<HockeyMatchSummary>(emptySummary);
 
   const disconnect = useCallback(() => {
     const room = roomRef.current;
     roomRef.current = null;
+    stateRef.current = null;
+    setSessionId("");
     setStatus("idle");
     setMatch(emptySummary);
     if (room) void room.leave();
@@ -90,11 +94,19 @@ export function useHockeyMultiplayer() {
       client.auth.token = accessToken;
       const room = await client.joinOrCreate("hockey", {}, HockeyMatchState);
       roomRef.current = room;
+      stateRef.current = room.state;
+      setSessionId(room.sessionId);
       setStatus("live");
-      room.onStateChange((state) => setMatch(summarize(state)));
+      setMatch(summarize(room.state));
+      room.onStateChange((state) => {
+        stateRef.current = state;
+        setMatch(summarize(state));
+      });
       room.onLeave(() => {
         if (roomRef.current === room) {
           roomRef.current = null;
+          stateRef.current = null;
+          setSessionId("");
           setStatus("offline");
         }
       });
@@ -113,5 +125,5 @@ export function useHockeyMultiplayer() {
 
   useEffect(() => disconnect, [disconnect]);
 
-  return { connect, disconnect, match, ready, rematch, sendInput, status };
+  return { connect, disconnect, match, ready, rematch, sendInput, sessionId, stateRef, status };
 }
