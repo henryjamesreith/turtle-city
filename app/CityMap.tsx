@@ -5,8 +5,10 @@ import { BikeRaceGame } from "./BikeRaceGame";
 import { CentralParkMap } from "./CentralParkMap";
 import { ChelseaApartment } from "./ChelseaApartment";
 import { ChelseaDistrict } from "./ChelseaDistrict";
+import { FallingItemsGame } from "./FallingItemsGame";
 import { HockeyGame } from "./HockeyGame";
 import { JazzClub } from "./JazzClub";
+import { MidtownDistrict } from "./MidtownDistrict";
 import { PressureWashingGame } from "./PressureWashingGame";
 import { RhythmGame } from "./RhythmGame";
 import { SnowShovelingGame } from "./SnowShovelingGame";
@@ -14,6 +16,7 @@ import { SubwayPlatform } from "./SubwayPlatform";
 import { SubwayTrain } from "./SubwayTrain";
 import { TurtleAuth } from "./TurtleAuth";
 import { TurtleOnboarding } from "./TurtleOnboarding";
+import { TrashPickupGame } from "./TrashPickupGame";
 import { WestVillageDistrict } from "./WestVillageDistrict";
 import {
   defaultTurtleAppearance,
@@ -60,16 +63,24 @@ type Screen =
   | "chelsea"
   | "city"
   | "central-park"
+  | "falling-items"
   | "hockey"
   | "jazz-club"
+  | "midtown"
   | "pressure-washing"
   | "rhythm-game"
   | "snow-shoveling"
   | "subway-platform"
   | "subway-train"
+  | "trash-pickup"
   | "west-village";
 type ParkSpawn = "south-gate" | "frozen-pond" | "snow-crew";
 type ChelseaSpawn = "apartment" | "pressure-washing" | "subway";
+type MidtownSpawn =
+  | "falling-items"
+  | "plaza"
+  | "subway"
+  | "trash-pickup";
 type WestVillageSpawn =
   | "jazz-club"
   | "neighborhood"
@@ -128,6 +139,7 @@ function isPersistedScreen(screen: Screen): screen is PersistedLocation {
     screen === "apartment" ||
     screen === "chelsea" ||
     screen === "central-park" ||
+    screen === "midtown" ||
     screen === "west-village"
   );
 }
@@ -163,6 +175,8 @@ export function CityMap() {
   const [parkSpawn, setParkSpawn] = useState<ParkSpawn>("south-gate");
   const [chelseaSpawn, setChelseaSpawn] =
     useState<ChelseaSpawn>("apartment");
+  const [midtownSpawn, setMidtownSpawn] =
+    useState<MidtownSpawn>("plaza");
   const [westVillageSpawn, setWestVillageSpawn] =
     useState<WestVillageSpawn>("neighborhood");
   const [selectedId, setSelectedId] = useState<District["id"] | null>(null);
@@ -183,6 +197,8 @@ export function CityMap() {
       setParkSpawn("south-gate");
     } else if (destination === "chelsea") {
       setChelseaSpawn("subway");
+    } else if (destination === "midtown") {
+      setMidtownSpawn("subway");
     } else {
       setWestVillageSpawn("subway");
     }
@@ -319,6 +335,14 @@ export function CityMap() {
         if (screen === "hockey" || screen === "snow-shoveling") {
           setParkSpawn(screen === "hockey" ? "frozen-pond" : "snow-crew");
           setScreen("central-park");
+        } else if (
+          screen === "falling-items" ||
+          screen === "trash-pickup"
+        ) {
+          setMidtownSpawn(
+            screen === "falling-items" ? "falling-items" : "trash-pickup",
+          );
+          setScreen("midtown");
         } else if (screen === "pressure-washing") {
           setChelseaSpawn("pressure-washing");
           setScreen("chelsea");
@@ -540,6 +564,30 @@ export function CityMap() {
     );
   }
 
+  if (screen === "falling-items") {
+    return (
+      <FallingItemsGame
+        turtleName={turtleName}
+        onExit={() => {
+          setMidtownSpawn("falling-items");
+          setScreen("midtown");
+        }}
+      />
+    );
+  }
+
+  if (screen === "trash-pickup") {
+    return (
+      <TrashPickupGame
+        turtleName={turtleName}
+        onExit={() => {
+          setMidtownSpawn("trash-pickup");
+          setScreen("midtown");
+        }}
+      />
+    );
+  }
+
   if (screen === "bike-race") {
     return (
       <BikeRaceGame
@@ -607,6 +655,18 @@ export function CityMap() {
           setParkSpawn("snow-crew");
           setScreen("snow-shoveling");
         }}
+      />
+    );
+  }
+
+  if (screen === "midtown") {
+    return (
+      <MidtownDistrict
+        turtleName={turtleName}
+        spawn={midtownSpawn}
+        onEnterFallingItems={() => setScreen("falling-items")}
+        onEnterTrashPickup={() => setScreen("trash-pickup")}
+        onEnterSubway={() => enterSubway("midtown")}
       />
     );
   }

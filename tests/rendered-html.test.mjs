@@ -322,16 +322,104 @@ test("West Village connects its streets, music venue, and Hudson waterfront", as
   assert.match(styles, /\.rhythm-note/);
 });
 
-test("West Village has authenticated shared multiplayer presence", async () => {
-  const [village, hook, schema, room, server, persistence, packageJson, styles] =
+test("Midtown connects its night streets, subway, and two activities", async () => {
+  const [
+    map,
+    district,
+    fallingItems,
+    trashPickup,
+    persistence,
+    migration,
+    subway,
+    train,
+    styles,
+  ] = await Promise.all([
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/MidtownDistrict.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/FallingItemsGame.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/TrashPickupGame.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../lib/persistence/playerPersistence.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../supabase/migrations/20260824000000_midtown_location.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(new URL("../lib/world/subway.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/SubwayTrain.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(map, /<MidtownDistrict/);
+  assert.match(map, /screen === "midtown"/);
+  assert.match(map, /screen === "falling-items"/);
+  assert.match(map, /screen === "trash-pickup"/);
+  assert.match(map, /enterSubway\("midtown"\)/);
+  assert.match(map, /setMidtownSpawn\("falling-items"\)/);
+  assert.match(map, /setMidtownSpawn\("trash-pickup"\)/);
+  assert.match(district, /data-testid="midtown-district"/);
+  assert.match(district, /EMPIRE SHELL/);
+  assert.match(district, /MIDTOWN CLEAN TEAM/);
+  assert.match(district, /Times Square/);
+  assert.match(district, /useDistrictMultiplayer\("midtown", spawn\)/);
+  assert.match(district, /RemoteDistrictPlayers/);
+  assert.match(fallingItems, /data-testid="falling-items-game"/);
+  assert.match(fallingItems, /const CHALLENGE_LENGTH = 45/);
+  assert.match(fallingItems, /state\.lives -= 1/);
+  assert.match(fallingItems, /requestAnimationFrame/);
+  assert.match(trashPickup, /data-testid="trash-pickup-game"/);
+  assert.match(trashPickup, /const SHIFT_LENGTH = 60/);
+  assert.match(trashPickup, /event\.code === "Space"/);
+  assert.match(trashPickup, /state\.collected\.add/);
+  assert.match(trashPickup, /requestAnimationFrame/);
+  assert.match(persistence, /\| "midtown"/);
+  assert.match(migration, /'midtown'/);
+  assert.match(subway, /id: "midtown-times-square"/);
+  assert.match(train, /<small>Midtown<\/small>/);
+  assert.match(styles, /\.midtown-stage/);
+  assert.match(styles, /\.falling-game-stage/);
+  assert.match(styles, /\.trash-game-stage/);
+});
+
+test("outdoor districts have authenticated shared multiplayer presence", async () => {
+  const [
+    park,
+    chelsea,
+    midtown,
+    village,
+    players,
+    districts,
+    hook,
+    schema,
+    room,
+    server,
+    persistence,
+    packageJson,
+    styles,
+  ] =
     await Promise.all([
+      readFile(new URL("../app/CentralParkMap.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/ChelseaDistrict.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/MidtownDistrict.tsx", import.meta.url), "utf8"),
       readFile(
         new URL("../app/WestVillageDistrict.tsx", import.meta.url),
         "utf8",
       ),
       readFile(
+        new URL("../app/MultiplayerDistrictPlayers.tsx", import.meta.url),
+        "utf8",
+      ),
+      readFile(
+        new URL("../lib/multiplayer/districts.ts", import.meta.url),
+        "utf8",
+      ),
+      readFile(
         new URL(
-          "../lib/multiplayer/useWestVillageMultiplayer.ts",
+          "../lib/multiplayer/useDistrictMultiplayer.ts",
           import.meta.url,
         ),
         "utf8",
@@ -341,7 +429,7 @@ test("West Village has authenticated shared multiplayer presence", async () => {
         "utf8",
       ),
       readFile(
-        new URL("../server/WestVillageRoom.ts", import.meta.url),
+        new URL("../server/DistrictRoom.ts", import.meta.url),
         "utf8",
       ),
       readFile(new URL("../server/index.ts", import.meta.url), "utf8"),
@@ -353,19 +441,36 @@ test("West Village has authenticated shared multiplayer presence", async () => {
       readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
     ]);
 
-  assert.match(village, /useWestVillageMultiplayer/);
-  assert.match(village, /className="village-remote-player"/);
+  assert.match(park, /useDistrictMultiplayer\("central-park", spawn\)/);
+  assert.match(chelsea, /useDistrictMultiplayer\("chelsea", spawn\)/);
+  assert.match(midtown, /useDistrictMultiplayer\("midtown", spawn\)/);
+  assert.match(village, /useDistrictMultiplayer\("west-village", spawn\)/);
+  assert.match(park, /RemoteDistrictPlayers/);
+  assert.match(chelsea, /RemoteDistrictPlayers/);
+  assert.match(midtown, /RemoteDistrictPlayers/);
+  assert.match(village, /RemoteDistrictPlayers/);
+  assert.match(players, /className="district-remote-player"/);
+  assert.match(players, /DistrictLiveStatus/);
+  assert.match(park, /remoteSmoothing/);
+  assert.match(chelsea, /remoteSmoothing/);
+  assert.match(midtown, /remoteSmoothing/);
   assert.match(village, /remoteSmoothing/);
+  assert.match(park, /sendMovement/);
+  assert.match(chelsea, /sendMovement/);
+  assert.match(midtown, /sendMovement/);
   assert.match(village, /sendMovement/);
-  assert.match(village, /village-live-status/);
   assert.match(hook, /client\.auth\.token = accessToken/);
   assert.match(hook, /joinOrCreate\(/);
   assert.match(hook, /Callbacks\.get\(room\)/);
   assert.match(hook, /callbacks\.onAdd/);
   assert.match(hook, /callbacks\.onChange/);
   assert.match(hook, /callbacks\.onRemove/);
-  assert.match(schema, /class WestVillagePlayer extends Schema/);
+  assert.match(schema, /class DistrictPlayer extends Schema/);
   assert.match(schema, /players = new MapSchema/);
+  assert.match(districts, /roomName: "central_park"/);
+  assert.match(districts, /roomName: "chelsea"/);
+  assert.match(districts, /roomName: "midtown"/);
+  assert.match(districts, /roomName: "west_village"/);
   assert.match(room, /maxClients = 20/);
   assert.match(room, /authClient\.auth\.getUser\(token\)/);
   assert.match(room, /from\("profiles"\)/);
@@ -373,6 +478,9 @@ test("West Village has authenticated shared multiplayer presence", async () => {
   assert.match(room, /requestedX/);
   assert.match(room, /requestedY/);
   assert.match(room, /this\.state\.players\.delete/);
+  assert.match(server, /central_park: defineRoom\(CentralParkRoom\)/);
+  assert.match(server, /chelsea: defineRoom\(ChelseaRoom\)/);
+  assert.match(server, /midtown: defineRoom\(MidtownRoom\)/);
   assert.match(server, /west_village: defineRoom\(WestVillageRoom\)/);
   assert.match(server, /TURTLE_CITY_WEB_ORIGIN/);
   assert.match(server, /\/health/);
@@ -382,8 +490,8 @@ test("West Village has authenticated shared multiplayer presence", async () => {
   assert.match(packageJson, /"@colyseus\/ws-transport"/);
   assert.match(packageJson, /"multiplayer:dev"/);
   assert.match(packageJson, /"multiplayer:build"/);
-  assert.match(styles, /\.village-remote-player/);
-  assert.match(styles, /\.village-live-status/);
+  assert.match(styles, /\.district-remote-player/);
+  assert.match(styles, /\.district-live-status/);
 });
 
 test("the subway is the only route to the onboard city map", async () => {

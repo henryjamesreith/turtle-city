@@ -7,11 +7,11 @@ import {
 } from "./MultiplayerDistrictPlayers";
 import { useDistrictMultiplayer } from "@/lib/multiplayer/useDistrictMultiplayer";
 
-type ChelseaDistrictProps = {
-  spawn: "apartment" | "pressure-washing" | "subway";
-  onEnterApartment: () => void;
-  onEnterPressureWashing: () => void;
+type MidtownDistrictProps = {
+  onEnterFallingItems: () => void;
   onEnterSubway: () => void;
+  onEnterTrashPickup: () => void;
+  spawn: "falling-items" | "plaza" | "subway" | "trash-pickup";
   turtleName: string;
 };
 
@@ -50,66 +50,68 @@ function cameraOffset(
   );
 }
 
-export function ChelseaDistrict({
-  spawn,
-  onEnterApartment,
-  onEnterPressureWashing,
+export function MidtownDistrict({
+  onEnterFallingItems,
   onEnterSubway,
+  onEnterTrashPickup,
+  spawn,
   turtleName,
-}: ChelseaDistrictProps) {
+}: MidtownDistrictProps) {
   const worldRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
   const remotePlayerRefs = useRef(new Map<string, HTMLDivElement>());
-  const [nearBuilding, setNearBuilding] = useState(false);
-  const [nearPressureWashing, setNearPressureWashing] = useState(false);
+  const [nearFallingItems, setNearFallingItems] = useState(false);
   const [nearSubway, setNearSubway] = useState(false);
+  const [nearTrashPickup, setNearTrashPickup] = useState(false);
   const {
     remotePlayers,
     remoteTargetsRef,
     sendMovement,
     status: multiplayerStatus,
-  } = useDistrictMultiplayer("chelsea", spawn);
+  } = useDistrictMultiplayer("midtown", spawn);
 
   useEffect(() => {
     const pressed = new Set<string>();
     const position = { x: 0, y: 0 };
     const camera = { x: 0, y: 0 };
     let initialized = false;
-    let nearEntrance = false;
-    let nearWashCrew = false;
-    let nearSubwayEntrance = false;
+    let isNearFallingItems = false;
+    let isNearSubway = false;
+    let isNearTrashPickup = false;
     let previousTime = performance.now();
     let lastNetworkUpdate = 0;
-    let facing: "left" | "right" = "left";
+    let facing: "left" | "right" = "right";
     let animationFrame = 0;
 
+    function isEditableTarget(target: EventTarget | null) {
+      return (
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT")
+      );
+    }
+
     function handleKeyDown(event: KeyboardEvent) {
-      if (
-        event.target instanceof HTMLElement &&
-        (event.target.isContentEditable ||
-          event.target.tagName === "INPUT" ||
-          event.target.tagName === "TEXTAREA" ||
-          event.target.tagName === "SELECT")
-      ) {
+      if (isEditableTarget(event.target)) {
         return;
       }
 
-      if (event.key === "Enter" && nearWashCrew && !event.repeat) {
-        event.preventDefault();
-        onEnterPressureWashing();
-      } else if (event.key === "Enter" && nearEntrance && !event.repeat) {
-        event.preventDefault();
-        onEnterApartment();
-      } else if (
-        event.key === "Enter" &&
-        nearSubwayEntrance &&
-        !event.repeat
-      ) {
-        event.preventDefault();
-        onEnterSubway();
-      } else if (movementKeys.has(event.key)) {
+      if (movementKeys.has(event.key)) {
         event.preventDefault();
         pressed.add(event.key.toLowerCase());
+      } else if (event.key === "Enter" && !event.repeat) {
+        if (isNearSubway) {
+          event.preventDefault();
+          onEnterSubway();
+        } else if (isNearFallingItems) {
+          event.preventDefault();
+          onEnterFallingItems();
+        } else if (isNearTrashPickup) {
+          event.preventDefault();
+          onEnterTrashPickup();
+        }
       } else if (event.key === "Shift") {
         pressed.add("shift");
       }
@@ -137,11 +139,14 @@ export function ChelseaDistrict({
 
       if (!initialized) {
         position.x =
-          spawn === "pressure-washing"
-            ? worldWidth * 0.2 + 140
-            : spawn === "subway"
-              ? worldWidth * 0.86
-            : worldWidth * 0.5 + 210;
+          worldWidth *
+          (spawn === "subway"
+            ? 0.1
+            : spawn === "falling-items"
+              ? 0.43
+              : spawn === "trash-pickup"
+                ? 0.78
+                : 0.58);
         position.y = worldHeight * 0.72;
         camera.x = cameraOffset(window.innerWidth, worldWidth, position.x);
         camera.y = cameraOffset(window.innerHeight, worldHeight, position.y);
@@ -161,47 +166,42 @@ export function ChelseaDistrict({
 
       position.x = clamp(
         position.x + (horizontal / magnitude) * speed * elapsed,
-        110,
-        worldWidth - 110,
+        105,
+        worldWidth - 105,
       );
       position.y = clamp(
         position.y + (vertical / magnitude) * speed * elapsed,
-        worldHeight * 0.58,
-        worldHeight * 0.88,
+        worldHeight * 0.56,
+        worldHeight * 0.89,
       );
 
-      const entranceX = worldWidth * 0.5;
-      const entranceY = worldHeight * 0.68;
-      const pressureEntranceX = worldWidth * 0.2;
-      const pressureEntranceY = worldHeight * 0.68;
-      const subwayEntranceX = worldWidth * 0.86;
-      const subwayEntranceY = worldHeight * 0.68;
-      const isNearApartment =
-        Math.hypot(position.x - entranceX, position.y - entranceY) < 175;
-      const isNearPressureWashing =
+      const nearStation =
         Math.hypot(
-          position.x - pressureEntranceX,
-          position.y - pressureEntranceY,
-        ) < 175;
-      const isNearSubway =
+          position.x - worldWidth * 0.1,
+          position.y - worldHeight * 0.7,
+        ) < 185;
+      const nearTower =
         Math.hypot(
-          position.x - subwayEntranceX,
-          position.y - subwayEntranceY,
-        ) < 175;
+          position.x - worldWidth * 0.43,
+          position.y - worldHeight * 0.67,
+        ) < 205;
+      const nearCleanup =
+        Math.hypot(
+          position.x - worldWidth * 0.78,
+          position.y - worldHeight * 0.7,
+        ) < 205;
 
-      nearEntrance = isNearApartment;
-      nearWashCrew = isNearPressureWashing;
-      nearSubwayEntrance = isNearSubway;
-      setNearBuilding((current) =>
-        current === isNearApartment ? current : isNearApartment,
-      );
-      setNearPressureWashing((current) =>
-        current === isNearPressureWashing
-          ? current
-          : isNearPressureWashing,
-      );
+      isNearSubway = nearStation;
+      isNearFallingItems = nearTower;
+      isNearTrashPickup = nearCleanup;
       setNearSubway((current) =>
-        current === isNearSubway ? current : isNearSubway,
+        current === nearStation ? current : nearStation,
+      );
+      setNearFallingItems((current) =>
+        current === nearTower ? current : nearTower,
+      );
+      setNearTrashPickup((current) =>
+        current === nearCleanup ? current : nearCleanup,
       );
 
       const targetX = cameraOffset(window.innerWidth, worldWidth, position.x);
@@ -262,19 +262,20 @@ export function ChelseaDistrict({
       window.removeEventListener("blur", clearInput);
     };
   }, [
-    onEnterApartment,
-    onEnterPressureWashing,
+    onEnterFallingItems,
     onEnterSubway,
+    onEnterTrashPickup,
     remoteTargetsRef,
     sendMovement,
     spawn,
   ]);
 
   return (
-    <main className="chelsea-stage" data-testid="chelsea-district">
-      <header className="chelsea-title">
+    <main className="midtown-stage" data-testid="midtown-district">
+      <header className="midtown-title">
         <p>Turtle City</p>
-        <h1>Chelsea</h1>
+        <h1>Midtown</h1>
+        <span>Electric nights, busy blocks</span>
       </header>
 
       <DistrictLiveStatus
@@ -284,77 +285,75 @@ export function ChelseaDistrict({
 
       <p className="sr-only">
         Move with the arrow keys or W, A, S, and D. Hold Shift to run. Press
-        Enter near the apartment building to go home or near the Wash Crew
-        entrance to pressure wash the neighboring facade. Enter the subway from
-        the stairway at the east end of the block.
+        Enter near the Empire Shell Building, Clean Team cart, or subway.
       </p>
 
-      <section className="chelsea-viewport" aria-label="Chelsea street">
-        <div className="chelsea-world" ref={worldRef}>
-          <div className="chelsea-skyline" aria-hidden="true" />
+      <section className="midtown-viewport" aria-label="Midtown streets">
+        <div className="midtown-world" ref={worldRef}>
+          <div className="midtown-sky" aria-hidden="true">
+            <span className="midtown-moon" />
+            <span className="midtown-cloud cloud-one" />
+            <span className="midtown-cloud cloud-two" />
+          </div>
 
-          <section
-            className="chelsea-building chelsea-building-west"
-            aria-label="Lettuce and Company pressure-washing job"
-          >
-            <div className="chelsea-building-sign">LETTUCE &amp; CO.</div>
-            <div className="chelsea-store-window" aria-hidden="true" />
-            <div className="chelsea-store-awning" aria-hidden="true" />
-            <div className="chelsea-wash-grime" aria-hidden="true">
-              <span />
-              <span />
-              <span />
+          <section className="midtown-block midtown-block-west">
+            <div className="midtown-billboard billboard-news">
+              <small>THE DAILY SHELL</small>
+              <strong>CITY NEVER NAPS</strong>
             </div>
-            <button
-              type="button"
-              className="chelsea-pressure-marker"
-              onClick={onEnterPressureWashing}
-            >
-              <strong>Wash Crew</strong>
-              <small>Pressure-washing job</small>
-            </button>
-          </section>
-
-          <section
-            className="chelsea-apartment-building"
-            aria-label="West 22 Apartments"
-          >
-            <div className="chelsea-roofline" aria-hidden="true" />
-            <div className="chelsea-building-plaque">
-              <strong>WEST 22</strong>
-              <span>APARTMENTS</span>
-            </div>
-            <div className="chelsea-window-grid" aria-hidden="true">
-              {Array.from({ length: 12 }, (_, index) => (
+            <div className="midtown-window-grid" aria-hidden="true">
+              {Array.from({ length: 18 }, (_, index) => (
                 <span key={index} />
               ))}
             </div>
-            <div className="chelsea-fire-escape" aria-hidden="true">
-              <span />
-              <span />
-              <span />
+            <div className="midtown-storefront">
+              <strong>48TH STREET DELI</strong>
+              <small>open all night</small>
             </div>
-            <button
-              type="button"
-              className="chelsea-building-door"
-              aria-label="Enter West 22 Apartments and go to your apartment"
-              onClick={onEnterApartment}
-            >
-              <span>4B</span>
-              <small>Enter</small>
+          </section>
+
+          <section
+            className="midtown-empire-building"
+            aria-label="Empire Shell Building falling-items activity"
+          >
+            <div className="midtown-spire" aria-hidden="true" />
+            <div className="midtown-empire-sign">
+              <small>OBSERVATION DECK</small>
+              <strong>EMPIRE SHELL</strong>
+            </div>
+            <div className="midtown-empire-windows" aria-hidden="true">
+              {Array.from({ length: 24 }, (_, index) => (
+                <span key={index} />
+              ))}
+            </div>
+            <button type="button" onClick={onEnterFallingItems}>
+              Dodge the drop
             </button>
           </section>
 
-          <section className="chelsea-building chelsea-building-east" aria-hidden="true">
-            <div className="chelsea-building-sign">SHELL REPAIR</div>
-            <div className="chelsea-store-window" />
-            <div className="chelsea-store-awning" />
+          <section className="midtown-block midtown-block-east">
+            <div className="midtown-billboard billboard-show">
+              <strong>SHELL SHOCKED!</strong>
+              <small>an original musical</small>
+            </div>
+            <div className="midtown-window-grid compact" aria-hidden="true">
+              {Array.from({ length: 15 }, (_, index) => (
+                <span key={index} />
+              ))}
+            </div>
+            <div className="midtown-clean-team">
+              <strong>MIDTOWN CLEAN TEAM</strong>
+              <small>Keep the crossroads sparkling</small>
+              <button type="button" onClick={onEnterTrashPickup}>
+                Start cleanup
+              </button>
+            </div>
           </section>
 
-          <section className="chelsea-subway-entrance" aria-label="West 23 Street subway">
+          <section className="midtown-subway-entrance" aria-label="Times Square subway">
             <span className="subway-line-badge">T</span>
             <div>
-              <strong>West 23 Street</strong>
+              <strong>Times Square</strong>
               <small>Subway</small>
             </div>
             <button type="button" onClick={onEnterSubway}>
@@ -362,41 +361,39 @@ export function ChelseaDistrict({
             </button>
           </section>
 
-          <div className="chelsea-sidewalk" aria-hidden="true">
-            <span className="chelsea-hydrant" />
-            <span className="chelsea-trash-bags" />
+          <div className="midtown-sidewalk" aria-hidden="true">
+            <span className="midtown-newsstand" />
+            <span className="midtown-hotdog-cart" />
+            <span className="midtown-planter planter-one" />
+            <span className="midtown-planter planter-two" />
           </div>
-          <span
-            className="chelsea-tree street-tree-one"
-            aria-hidden="true"
-          />
-          <span
-            className="chelsea-tree street-tree-two"
-            aria-hidden="true"
-          />
-          <div className="chelsea-curb" aria-hidden="true" />
-          <div className="chelsea-road" aria-hidden="true">
-            <span className="chelsea-parked-car" />
-          </div>
-
-          <div
-            className={`chelsea-door-zone${nearBuilding ? " is-nearby" : ""}`}
-            aria-hidden="true"
-          >
+          <div className="midtown-road" aria-hidden="true">
             <span />
+            <span />
+            <i className="midtown-taxi taxi-one" />
+            <i className="midtown-taxi taxi-two" />
           </div>
 
           <div
-            className={`chelsea-pressure-zone${
-              nearPressureWashing ? " is-nearby" : ""
+            className={`midtown-activity-zone falling-zone${
+              nearFallingItems ? " is-nearby" : ""
             }`}
             aria-hidden="true"
           >
             <span />
           </div>
-
           <div
-            className={`chelsea-subway-zone${nearSubway ? " is-nearby" : ""}`}
+            className={`midtown-activity-zone trash-zone${
+              nearTrashPickup ? " is-nearby" : ""
+            }`}
+            aria-hidden="true"
+          >
+            <span />
+          </div>
+          <div
+            className={`midtown-activity-zone subway-zone${
+              nearSubway ? " is-nearby" : ""
+            }`}
             aria-hidden="true"
           >
             <span />
@@ -408,11 +405,11 @@ export function ChelseaDistrict({
           />
 
           <div
-            className="chelsea-player"
+            className="midtown-player"
             ref={playerRef}
             role="img"
             aria-label="Turtle City player character"
-            data-facing="left"
+            data-facing="right"
           >
             <span className="turtle-sprite" aria-hidden="true" />
             <span className="turtle-nameplate">{turtleName}</span>
@@ -421,33 +418,33 @@ export function ChelseaDistrict({
       </section>
 
       {nearSubway ? (
-        <aside className="chelsea-enter-prompt" aria-live="polite">
+        <aside className="midtown-enter-prompt" aria-live="polite">
           <div>
-            <strong>West 23 Street</strong>
+            <strong>Times Square</strong>
             <small>Enter the Turtle City subway.</small>
           </div>
           <button type="button" onClick={onEnterSubway}>
             Enter station
           </button>
         </aside>
-      ) : nearPressureWashing ? (
-        <aside className="chelsea-enter-prompt" aria-live="polite">
+      ) : nearFallingItems ? (
+        <aside className="midtown-enter-prompt" aria-live="polite">
           <div>
-            <strong>Chelsea Wash Crew</strong>
-            <small>Pressure wash Lettuce &amp; Co.</small>
+            <strong>Empire Shell Building</strong>
+            <small>Dodge everything falling from above.</small>
           </div>
-          <button type="button" onClick={onEnterPressureWashing}>
-            Start job
+          <button type="button" onClick={onEnterFallingItems}>
+            Start challenge
           </button>
         </aside>
-      ) : nearBuilding ? (
-        <aside className="chelsea-enter-prompt" aria-live="polite">
+      ) : nearTrashPickup ? (
+        <aside className="midtown-enter-prompt" aria-live="polite">
           <div>
-            <strong>West 22 Apartments</strong>
-            <small>Your apartment · 4B</small>
+            <strong>Midtown Clean Team</strong>
+            <small>Clear the busiest block in town.</small>
           </div>
-          <button type="button" onClick={onEnterApartment}>
-            Enter
+          <button type="button" onClick={onEnterTrashPickup}>
+            Start cleanup
           </button>
         </aside>
       ) : null}

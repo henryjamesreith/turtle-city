@@ -36,9 +36,11 @@ export function SubwayTrain({
         <span className="is-current" />
         <span />
         <span />
+        <span />
         <div>
           <small>West Village</small>
           <small>Chelsea</small>
+          <small>Midtown</small>
           <small>Central Park</small>
           <small>Choose stop</small>
         </div>

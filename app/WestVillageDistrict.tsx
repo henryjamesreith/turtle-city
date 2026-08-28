@@ -4,12 +4,12 @@ import {
   useEffect,
   useRef,
   useState,
-  type CSSProperties,
 } from "react";
 import {
-  useWestVillageMultiplayer,
-} from "@/lib/multiplayer/useWestVillageMultiplayer";
-import { getTurtleImage, isTurtleVariant } from "@/lib/turtles";
+  DistrictLiveStatus,
+  RemoteDistrictPlayers,
+} from "./MultiplayerDistrictPlayers";
+import { useDistrictMultiplayer } from "@/lib/multiplayer/useDistrictMultiplayer";
 
 type WestVillageDistrictProps = {
   onEnterBikeRace: () => void;
@@ -72,7 +72,7 @@ export function WestVillageDistrict({
     remoteTargetsRef,
     sendMovement,
     status: multiplayerStatus,
-  } = useWestVillageMultiplayer(spawn);
+  } = useDistrictMultiplayer("west-village", spawn);
 
   useEffect(() => {
     const pressed = new Set<string>();
@@ -281,21 +281,10 @@ export function WestVillageDistrict({
         <span>Quiet corners · late afternoon</span>
       </header>
 
-      <aside
-        className={`village-live-status is-${multiplayerStatus}`}
-        aria-live="polite"
-      >
-        <span aria-hidden="true" />
-        <strong>
-          {multiplayerStatus === "live"
-            ? `${remotePlayers.length + 1} ${
-                remotePlayers.length === 0 ? "turtle" : "turtles"
-              } here`
-            : multiplayerStatus === "connecting"
-              ? "Joining the city"
-              : "Solo mode"}
-        </strong>
-      </aside>
+      <DistrictLiveStatus
+        remotePlayerCount={remotePlayers.length}
+        status={multiplayerStatus}
+      />
 
       <p className="sr-only">
         Move with the arrow keys or W, A, S, and D. Hold Shift to run. Travel
@@ -444,39 +433,10 @@ export function WestVillageDistrict({
             <span />
           </div>
 
-          {remotePlayers.map((remotePlayer) => {
-            const variant = isTurtleVariant(remotePlayer.variant)
-              ? remotePlayer.variant
-              : "clover";
-
-            return (
-              <div
-                key={remotePlayer.sessionId}
-                className="village-remote-player"
-                ref={(element) => {
-                  if (element) {
-                    remotePlayerRefs.current.set(
-                      remotePlayer.sessionId,
-                      element,
-                    );
-                  } else {
-                    remotePlayerRefs.current.delete(remotePlayer.sessionId);
-                  }
-                }}
-                data-facing="left"
-                style={
-                  {
-                    "--remote-turtle-image": `url("${getTurtleImage(variant)}")`,
-                  } as CSSProperties
-                }
-              >
-                <span className="turtle-sprite" aria-hidden="true" />
-                <span className="turtle-nameplate">
-                  {remotePlayer.turtleName}
-                </span>
-              </div>
-            );
-          })}
+          <RemoteDistrictPlayers
+            playerRefs={remotePlayerRefs}
+            remotePlayers={remotePlayers}
+          />
 
           <div
             className="village-player"

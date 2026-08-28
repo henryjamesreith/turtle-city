@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  DistrictLiveStatus,
+  RemoteDistrictPlayers,
+} from "./MultiplayerDistrictPlayers";
+import { useDistrictMultiplayer } from "@/lib/multiplayer/useDistrictMultiplayer";
 
 type CentralParkMapProps = {
   onEnterHockey: () => void;
@@ -214,9 +219,16 @@ export function CentralParkMap({
   const viewportRef = useRef<HTMLElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<HTMLDivElement>(null);
+  const remotePlayerRefs = useRef(new Map<string, HTMLDivElement>());
   const targetZoomRef = useRef(1);
   const [nearbyZoneId, setNearbyZoneId] =
     useState<InteractionZoneId | null>(null);
+  const {
+    remotePlayers,
+    remoteTargetsRef,
+    sendMovement,
+    status: multiplayerStatus,
+  } = useDistrictMultiplayer("central-park", spawn);
 
   const nearbyZone =
     interactionZones.find((zone) => zone.id === nearbyZoneId) ?? null;
@@ -234,6 +246,8 @@ export function CentralParkMap({
     let initialized = false;
     let animationFrame = 0;
     let previousTime = performance.now();
+    let lastNetworkUpdate = 0;
+    let facing: "left" | "right" = "right";
     let activeZoneId: InteractionZoneId | null = null;
 
     function handleKeyDown(event: KeyboardEvent) {
@@ -381,13 +395,40 @@ export function CentralParkMap({
       camera.y += (targetY - camera.y) * smoothing;
 
       if (horizontal < 0) {
+        facing = "left";
         marker.dataset.facing = "left";
       } else if (horizontal > 0) {
+        facing = "right";
         marker.dataset.facing = "right";
       }
       marker.style.transform = `translate3d(${position.x - 55}px, ${
         position.y - 124
       }px, 0)`;
+
+      if (time - lastNetworkUpdate >= 65) {
+        sendMovement({
+          facing,
+          x: position.x / worldWidth,
+          y: position.y / worldHeight,
+        });
+        lastNetworkUpdate = time;
+      }
+
+      remotePlayerRefs.current.forEach((remotePlayer, sessionId) => {
+        const target = remoteTargetsRef.current.get(sessionId);
+        if (!target) {
+          return;
+        }
+
+        const remoteSmoothing = Math.min(1, elapsed * 10);
+        target.currentX += (target.x - target.currentX) * remoteSmoothing;
+        target.currentY += (target.y - target.currentY) * remoteSmoothing;
+        remotePlayer.dataset.facing = target.facing;
+        remotePlayer.style.transform = `translate3d(${
+          target.currentX * worldWidth - 55
+        }px, ${target.currentY * worldHeight - 124}px, 0)`;
+      });
+
       world.style.transform = `translate3d(${camera.x}px, ${
         camera.y
       }px, 0) scale(${zoom})`;
@@ -408,7 +449,14 @@ export function CentralParkMap({
       window.removeEventListener("blur", handleBlur);
       viewport?.removeEventListener("wheel", handleWheel);
     };
-  }, [onEnterHockey, onEnterShoveling, onEnterSubway, spawn]);
+  }, [
+    onEnterHockey,
+    onEnterShoveling,
+    onEnterSubway,
+    remoteTargetsRef,
+    sendMovement,
+    spawn,
+  ]);
 
   return (
     <main className="park-camera-stage" data-testid="central-park-map">
@@ -416,6 +464,11 @@ export function CentralParkMap({
         <p>Turtle City</p>
         <h1>Central Park</h1>
       </header>
+
+      <DistrictLiveStatus
+        remotePlayerCount={remotePlayers.length}
+        status={multiplayerStatus}
+      />
 
       <div className="park-zoom-controls" role="group" aria-label="Camera zoom">
         <button
@@ -621,6 +674,11 @@ export function CentralParkMap({
               ) : null}
             </section>
           ))}
+
+          <RemoteDistrictPlayers
+            playerRefs={remotePlayerRefs}
+            remotePlayers={remotePlayers}
+          />
 
           <div
             className="player-turtle"

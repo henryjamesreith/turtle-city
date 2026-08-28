@@ -1,6 +1,6 @@
 import { MapSchema, Schema, type as schemaType } from "@colyseus/schema";
 
-export class WestVillagePlayer extends Schema {
+export class DistrictPlayer extends Schema {
   @schemaType("string")
   userId = "";
 
@@ -20,7 +20,7 @@ export class WestVillagePlayer extends Schema {
   facing = "left";
 }
 
-export class WestVillageState extends Schema {
-  @schemaType({ map: WestVillagePlayer })
-  players = new MapSchema<WestVillagePlayer>();
+export class DistrictState extends Schema {
+  @schemaType({ map: DistrictPlayer })
+  players = new MapSchema<DistrictPlayer>();
 }
