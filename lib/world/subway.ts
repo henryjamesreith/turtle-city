@@ -1,6 +1,7 @@
 export type TransitDistrict =
   | "central-park"
   | "chelsea"
+  | "fidi"
   | "midtown"
   | "west-village";
 
@@ -44,6 +45,14 @@ export const subwayStations: Record<TransitDistrict, SubwayStation> = {
     name: "Times Square",
     neighborhood: "Midtown",
     platformDirection: "Uptown & Downtown",
+    terminus: "Central Park",
+  },
+  fidi: {
+    district: "fidi",
+    id: "fidi-fulton",
+    name: "Fulton Street",
+    neighborhood: "Financial District",
+    platformDirection: "Uptown",
     terminus: "Central Park",
   },
 };

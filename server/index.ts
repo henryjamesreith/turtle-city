@@ -4,9 +4,11 @@ import type { NextFunction, Request, Response } from "express";
 import {
   CentralParkRoom,
   ChelseaRoom,
+  FidiRoom,
   MidtownRoom,
   WestVillageRoom,
 } from "./DistrictRoom.js";
+import { HockeyRoom } from "./HockeyRoom.js";
 
 const webOrigin =
   process.env.TURTLE_CITY_WEB_ORIGIN ?? "http://localhost:3000";
@@ -18,6 +20,8 @@ const gameServer = defineServer({
   rooms: {
     central_park: defineRoom(CentralParkRoom),
     chelsea: defineRoom(ChelseaRoom),
+    fidi: defineRoom(FidiRoom),
+    hockey: defineRoom(HockeyRoom),
     midtown: defineRoom(MidtownRoom),
     west_village: defineRoom(WestVillageRoom),
   },
@@ -44,7 +48,14 @@ const gameServer = defineServer({
 
     app.get("/health", (_request: Request, response: Response) => {
       response.json({
-        districts: ["central-park", "chelsea", "midtown", "west-village"],
+        districts: [
+          "central-park",
+          "chelsea",
+          "fidi",
+          "midtown",
+          "west-village",
+        ],
+        games: ["hockey"],
         status: "ok",
       });
     });

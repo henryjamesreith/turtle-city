@@ -10,6 +10,7 @@ export type PersistedLocation =
   | "apartment"
   | "chelsea"
   | "central-park"
+  | "fidi"
   | "midtown"
   | "west-village";
 
@@ -43,6 +44,7 @@ function isPersistedLocation(value: string): value is PersistedLocation {
     value === "apartment" ||
     value === "chelsea" ||
     value === "central-park" ||
+    value === "fidi" ||
     value === "midtown" ||
     value === "west-village"
   );
@@ -257,6 +259,7 @@ export async function saveLastLocation(location: PersistedLocation) {
 
   const lastDistrict =
     location === "central-park" ||
+    location === "fidi" ||
     location === "midtown" ||
     location === "west-village"
       ? location

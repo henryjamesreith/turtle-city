@@ -15,6 +15,8 @@
     "server/**/*.ts",
     "lib/multiplayer/districts.ts",
     "lib/multiplayer/schema.ts",
+    "lib/multiplayer/hockeySchema.ts",
+    "lib/multiplayer/matchLifecycle.ts",
     "lib/turtles.ts"
   ],
   "exclude": ["node_modules"]

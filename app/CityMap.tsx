@@ -2,22 +2,28 @@
 
 import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { BikeRaceGame } from "./BikeRaceGame";
-import { CentralParkMap } from "./CentralParkMap";
-import { ChelseaApartment } from "./ChelseaApartment";
-import { ChelseaDistrict } from "./ChelseaDistrict";
+import { ChelseaDistrict3D } from "./ChelseaDistrict3D";
 import { FallingItemsGame } from "./FallingItemsGame";
 import { HockeyGame } from "./HockeyGame";
 import { JazzClub } from "./JazzClub";
-import { MidtownDistrict } from "./MidtownDistrict";
+import {
+  ChelseaApartment3D,
+  SubwayPlatform3D,
+  SubwayTrain3D,
+} from "./InteriorScenes3D";
+import {
+  CentralParkDistrict3D,
+  FidiDistrict3D,
+  MidtownDistrict3D,
+  WestVillageDistrict3D,
+} from "./OtherDistricts3D";
 import { PressureWashingGame } from "./PressureWashingGame";
 import { RhythmGame } from "./RhythmGame";
+import { ShellExpressGame } from "./ShellExpressGame";
 import { SnowShovelingGame } from "./SnowShovelingGame";
-import { SubwayPlatform } from "./SubwayPlatform";
-import { SubwayTrain } from "./SubwayTrain";
 import { TurtleAuth } from "./TurtleAuth";
 import { TurtleOnboarding } from "./TurtleOnboarding";
 import { TrashPickupGame } from "./TrashPickupGame";
-import { WestVillageDistrict } from "./WestVillageDistrict";
 import {
   defaultTurtleAppearance,
   getPersistedLocation,
@@ -64,11 +70,13 @@ type Screen =
   | "city"
   | "central-park"
   | "falling-items"
+  | "fidi"
   | "hockey"
   | "jazz-club"
   | "midtown"
   | "pressure-washing"
   | "rhythm-game"
+  | "shell-express"
   | "snow-shoveling"
   | "subway-platform"
   | "subway-train"
@@ -81,6 +89,7 @@ type MidtownSpawn =
   | "plaza"
   | "subway"
   | "trash-pickup";
+type FidiSpawn = "delivery" | "harbor" | "subway";
 type WestVillageSpawn =
   | "jazz-club"
   | "neighborhood"
@@ -139,6 +148,7 @@ function isPersistedScreen(screen: Screen): screen is PersistedLocation {
     screen === "apartment" ||
     screen === "chelsea" ||
     screen === "central-park" ||
+    screen === "fidi" ||
     screen === "midtown" ||
     screen === "west-village"
   );
@@ -177,6 +187,7 @@ export function CityMap() {
     useState<ChelseaSpawn>("apartment");
   const [midtownSpawn, setMidtownSpawn] =
     useState<MidtownSpawn>("plaza");
+  const [fidiSpawn, setFidiSpawn] = useState<FidiSpawn>("harbor");
   const [westVillageSpawn, setWestVillageSpawn] =
     useState<WestVillageSpawn>("neighborhood");
   const [selectedId, setSelectedId] = useState<District["id"] | null>(null);
@@ -199,6 +210,8 @@ export function CityMap() {
       setChelseaSpawn("subway");
     } else if (destination === "midtown") {
       setMidtownSpawn("subway");
+    } else if (destination === "fidi") {
+      setFidiSpawn("subway");
     } else {
       setWestVillageSpawn("subway");
     }
@@ -343,6 +356,9 @@ export function CityMap() {
             screen === "falling-items" ? "falling-items" : "trash-pickup",
           );
           setScreen("midtown");
+        } else if (screen === "shell-express") {
+          setFidiSpawn("delivery");
+          setScreen("fidi");
         } else if (screen === "pressure-washing") {
           setChelseaSpawn("pressure-washing");
           setScreen("chelsea");
@@ -504,9 +520,10 @@ export function CityMap() {
 
   if (screen === "subway-platform") {
     return (
-      <SubwayPlatform
+      <SubwayPlatform3D
         origin={subwayOrigin}
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         onExit={exitSubwayToOrigin}
         onBoard={() => setScreen("subway-train")}
       />
@@ -515,9 +532,10 @@ export function CityMap() {
 
   if (screen === "subway-train") {
     return (
-      <SubwayTrain
+      <SubwayTrain3D
         origin={subwayOrigin}
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         onChooseStop={() => {
           setSelectedId(null);
           setScreen("city");
@@ -588,6 +606,18 @@ export function CityMap() {
     );
   }
 
+  if (screen === "shell-express") {
+    return (
+      <ShellExpressGame
+        turtleName={turtleName}
+        onExit={() => {
+          setFidiSpawn("delivery");
+          setScreen("fidi");
+        }}
+      />
+    );
+  }
+
   if (screen === "bike-race") {
     return (
       <BikeRaceGame
@@ -619,8 +649,9 @@ export function CityMap() {
 
   if (screen === "apartment") {
     return (
-      <ChelseaApartment
+      <ChelseaApartment3D
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         onExitToChelsea={() => {
           setChelseaSpawn("apartment");
           setScreen("chelsea");
@@ -631,8 +662,9 @@ export function CityMap() {
 
   if (screen === "chelsea") {
     return (
-      <ChelseaDistrict
+      <ChelseaDistrict3D
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         spawn={chelseaSpawn}
         onEnterApartment={() => setScreen("apartment")}
         onEnterPressureWashing={() => setScreen("pressure-washing")}
@@ -643,8 +675,9 @@ export function CityMap() {
 
   if (screen === "central-park") {
     return (
-      <CentralParkMap
+      <CentralParkDistrict3D
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         spawn={parkSpawn}
         onEnterSubway={() => enterSubway("central-park")}
         onEnterHockey={() => {
@@ -661,8 +694,9 @@ export function CityMap() {
 
   if (screen === "midtown") {
     return (
-      <MidtownDistrict
+      <MidtownDistrict3D
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         spawn={midtownSpawn}
         onEnterFallingItems={() => setScreen("falling-items")}
         onEnterTrashPickup={() => setScreen("trash-pickup")}
@@ -671,10 +705,23 @@ export function CityMap() {
     );
   }
 
+  if (screen === "fidi") {
+    return (
+      <FidiDistrict3D
+        turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
+        spawn={fidiSpawn}
+        onEnterDelivery={() => setScreen("shell-express")}
+        onEnterSubway={() => enterSubway("fidi")}
+      />
+    );
+  }
+
   if (screen === "west-village") {
     return (
-      <WestVillageDistrict
+      <WestVillageDistrict3D
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         spawn={westVillageSpawn}
         onEnterBikeRace={() => setScreen("bike-race")}
         onEnterJazzClub={() => setScreen("jazz-club")}
