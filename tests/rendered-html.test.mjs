@@ -369,6 +369,7 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
     map,
     district,
     delivery,
+    railRush,
     persistence,
     migration,
     subway,
@@ -378,6 +379,7 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ShellExpressGame.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/RailRushGame.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../lib/persistence/playerPersistence.ts", import.meta.url),
       "utf8",
@@ -397,10 +399,12 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
   assert.match(map, /<FidiDistrict/);
   assert.match(map, /screen === "fidi"/);
   assert.match(map, /screen === "shell-express"/);
+  assert.match(map, /screen === "rail-rush"/);
   assert.match(map, /enterSubway\("fidi"\)/);
   assert.match(map, /setFidiSpawn\("delivery"\)/);
   assert.match(district, /districtId="fidi"/);
   assert.match(district, /Shell Express/);
+  assert.match(district, /Rail Rush/);
   assert.match(district, /Fulton Street/);
   assert.match(delivery, /data-testid="shell-express-game"/);
   assert.match(delivery, /<Canvas/);
@@ -420,7 +424,24 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
   assert.match(styles, /\.fidi-stage/);
   assert.match(styles, /\.shell-express-stage/);
   assert.match(styles, /\.shell-express-canvas/);
-  assert.match(styles, /\.delivery-drop-label/);
+  assert.match(delivery, /Pick up\. Drop off\. Move!/);
+  assert.match(delivery, /Do this now/);
+  assert.match(delivery, /timeLeft <= 15/);
+  assert.match(delivery, /isBoosting \? 150 : 105/);
+  assert.match(delivery, /isBoosting \? 68 : 52/);
+  assert.match(styles, /\.delivery-item-label/);
+  assert.match(styles, /\.delivery-objective/);
+  assert.match(styles, /\.shell-express-stage\.is-urgent/);
+  assert.match(railRush, /data-testid="rail-rush-game"/);
+  assert.match(railRush, /const MAX_SPEED = 85/);
+  assert.match(railRush, /function spawnPattern/);
+  assert.match(railRush, /type: "ramp"/);
+  assert.match(railRush, /run\.roofTime = 4\.2/);
+  assert.doesNotMatch(railRush, /Shield saved you/);
+  assert.match(railRush, /run\.jumpVelocity/);
+  assert.match(railRush, /run\.rollTime/);
+  assert.match(railRush, /localStorage\.setItem/);
+  assert.match(styles, /\.rail-rush-stage/);
 });
 
 test("outdoor districts have authenticated shared multiplayer presence", async () => {
@@ -597,6 +618,9 @@ test("the map is universally viewable but subway travel stays onboard-only", asy
   assert.match(train, /setStopIndex/);
   assert.match(train, /doorsOpen/);
   assert.match(train, /onExitAtStop/);
+  assert.match(train, /TRAIN_TURNAROUND_TIME = 60000/);
+  assert.match(train, /setActiveDirection/);
+  assert.match(train, /Turning around · stay aboard or exit/);
   assert.match(train, /TrainCar/);
   assert.match(subway, /central-park/);
   assert.match(subway, /west-village/);
@@ -610,7 +634,7 @@ test("the map is universally viewable but subway travel stays onboard-only", asy
   assert.match(train, /train-route-card/);
 });
 
-test("Chelsea pressure washing clears a facade in a session-only shift", async () => {
+test("Chelsea pressure washing clears the full facade with sustained spraying", async () => {
   const [map, district, pressureWashing, styles] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/ChelseaDistrict3D.tsx", import.meta.url), "utf8"),
@@ -628,9 +652,11 @@ test("Chelsea pressure washing clears a facade in a session-only shift", async (
   assert.match(district, /Chelsea Wash Crew/);
   assert.match(district, /Pressure wash Lettuce/);
   assert.match(pressureWashing, /data-testid="pressure-washing-game"/);
-  assert.match(pressureWashing, /const SHIFT_LENGTH = 75/);
-  assert.match(pressureWashing, /const CLEAN_TARGET = 85/);
-  assert.match(pressureWashing, /const SPRAY_RADIUS = 68/);
+  assert.match(pressureWashing, /const WASH_SECONDS_PER_CELL = 0\.65/);
+  assert.doesNotMatch(pressureWashing, /CLEAN_TARGET/);
+  assert.match(pressureWashing, /const SPRAY_RADIUS = 54/);
+  assert.match(pressureWashing, /state\.dirt\.size === 0/);
+  assert.match(pressureWashing, /<small>Time<\/small>/);
   assert.match(pressureWashing, /washAtAim/);
   assert.match(pressureWashing, /pointerdown/);
   assert.match(pressureWashing, /event\.code === "Space"/);

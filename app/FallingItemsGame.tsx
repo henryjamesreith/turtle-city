@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useGameReward } from "./GameEconomy";
 
 type FallingItemsGameProps = {
   onExit: () => void;
@@ -84,6 +85,7 @@ export function FallingItemsGame({
   const [view, setView] = useState<ChallengeView>(() =>
     createChallengeView(createChallengeState()),
   );
+  useGameReward("falling-items", view.status === "finished" && view.lives > 0);
 
   function startChallenge() {
     const nextState = createChallengeState("playing");

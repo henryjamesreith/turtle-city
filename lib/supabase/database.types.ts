@@ -206,7 +206,10 @@ export type Database = {
       >;
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      award_game_win: { Args: { p_activity_key: string; p_run_id: string }; Returns: number };
+      upgrade_apartment: { Args: Record<string, never>; Returns: { shells: number; tier: number }[] };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
