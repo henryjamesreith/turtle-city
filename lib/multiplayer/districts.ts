@@ -38,9 +38,9 @@ export const districtMultiplayerConfigs: Record<
     maximumMovementPerSecond: { x: 0.5, y: 0.34 },
     roomName: "central_park",
     spawns: {
-      "frozen-pond": { x: 0.7, y: 0.707 },
-      "snow-crew": { x: 0.7, y: 0.332 },
-      "south-gate": { x: 0.5, y: 0.905 },
+      "frozen-pond": { x: 0.733, y: 0.485 },
+      "snow-crew": { x: 0.29, y: 0.697 },
+      "south-gate": { x: 0.71, y: 0.864 },
     },
   },
   chelsea: {

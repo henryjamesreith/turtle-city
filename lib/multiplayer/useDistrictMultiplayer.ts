@@ -27,12 +27,14 @@ export type RemotePlayerTarget = {
   currentX: number;
   currentY: number;
   facing: string;
+  riding: boolean;
   x: number;
   y: number;
 };
 
 type MovementMessage = {
   facing: "left" | "right";
+  riding?: boolean;
   x: number;
   y: number;
 };
@@ -130,6 +132,7 @@ export function useDistrictMultiplayer(
               currentX: player.x,
               currentY: player.y,
               facing: player.facing,
+              riding: player.riding,
               x: player.x,
               y: player.y,
             });
@@ -147,6 +150,7 @@ export function useDistrictMultiplayer(
               target.x = player.x;
               target.y = player.y;
               target.facing = player.facing;
+              target.riding = player.riding;
             });
             playerUnbinds.set(sessionId, unbindChange);
           },

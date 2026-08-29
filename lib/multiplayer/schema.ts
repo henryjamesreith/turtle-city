@@ -18,6 +18,9 @@ export class DistrictPlayer extends Schema {
 
   @schemaType("string")
   facing = "left";
+
+  @schemaType("boolean")
+  riding = false;
 }
 
 export class DistrictState extends Schema {

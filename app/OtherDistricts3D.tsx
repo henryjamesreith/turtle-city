@@ -71,9 +71,9 @@ export function CentralParkDistrict3D({
   onEnterSubway: () => void;
   spawn?: "south-gate" | "frozen-pond" | "snow-crew";
 }) {
-  return <OutdoorDistrict3D {...player} districtId="central-park" title="Central Park" theme="park" spawn={spawn} spawnPositions={{ "south-gate": [0, 7], "frozen-pond": [12, 1], "snow-crew": [-14, -3] }} actions={[
-    { id: "snow-crew", label: "Snow Crew", detail: "Help clear the park paths.", button: "Start shoveling", onEnter: onEnterShoveling, position: [-14, -5], type: "activity" },
-    { id: "frozen-pond", label: "Frozen Pond", detail: "Join a pond hockey match.", button: "Play hockey", onEnter: onEnterHockey, position: [13, 1], type: "activity" },
-    { id: "south-gate", label: "South Gate Station", detail: "Enter the Turtle City subway.", button: "Enter station", onEnter: onEnterSubway, position: [0, 9], type: "subway" },
+  return <OutdoorDistrict3D {...player} districtId="central-park" title="Central Park" theme="park" spawn={spawn} spawnPositions={{ "south-gate": [9, 24], "frozen-pond": [10, -1], "snow-crew": [-9, 13] }} actions={[
+    { id: "snow-crew", label: "Snow Crew", detail: "Help clear the park paths.", button: "Start shoveling", onEnter: onEnterShoveling, position: [-9, 9], type: "activity" },
+    { id: "frozen-pond", label: "Wollman Frozen Pond Hockey", detail: "Skate onto the rink and join the match.", button: "Play hockey", onEnter: onEnterHockey, position: [10, -5], radius: 5, type: "activity" },
+    { id: "south-gate", label: "South Gate Station", detail: "Enter the Turtle City subway.", button: "Enter station", onEnter: onEnterSubway, position: [14, 27], type: "subway" },
   ]} />;
 }

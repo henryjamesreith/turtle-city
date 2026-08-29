@@ -562,6 +562,52 @@ function drawPuckTrail(
   }
 }
 
+function playerAimDirection(player: HockeyPlayer) {
+  const speed = Math.hypot(player.vx, player.vy);
+  if (speed > 24) {
+    return { x: player.vx / speed, y: player.vy / speed };
+  }
+  const facingMagnitude = Math.hypot(player.facingX, player.facingY) || 1;
+  return {
+    x: player.facingX / facingMagnitude,
+    y: player.facingY / facingMagnitude,
+  };
+}
+
+function drawShotArrow(
+  context: CanvasRenderingContext2D,
+  player: HockeyPlayer,
+  puck: HockeyPuck,
+) {
+  if (distanceSquared(player, puck) > 92 * 92) return;
+  const direction = playerAimDirection(player);
+  const startX = puck.x + direction.x * 18;
+  const startY = puck.y + direction.y * 18;
+  const endX = startX + direction.x * 126;
+  const endY = startY + direction.y * 126;
+  const sideX = -direction.y;
+  const sideY = direction.x;
+
+  context.save();
+  context.strokeStyle = "rgb(190 107 104 / 82%)";
+  context.fillStyle = "rgb(190 107 104 / 92%)";
+  context.lineWidth = 7;
+  context.lineCap = "round";
+  context.setLineDash([13, 10]);
+  context.beginPath();
+  context.moveTo(startX, startY);
+  context.lineTo(endX, endY);
+  context.stroke();
+  context.setLineDash([]);
+  context.beginPath();
+  context.moveTo(endX + direction.x * 10, endY + direction.y * 10);
+  context.lineTo(endX - direction.x * 22 + sideX * 16, endY - direction.y * 22 + sideY * 16);
+  context.lineTo(endX - direction.x * 22 - sideX * 16, endY - direction.y * 22 - sideY * 16);
+  context.closePath();
+  context.fill();
+  context.restore();
+}
+
 function formatTime(time: number) {
   const seconds = Math.max(0, Math.ceil(time));
   const minutes = Math.floor(seconds / 60);
@@ -849,7 +895,7 @@ export function HockeyGame({
 
       const puckDistance = Math.sqrt(distanceSquared(player, game.puck));
       const puckSpeed = Math.hypot(game.puck.vx, game.puck.vy);
-      if (!game.actionQueued && puckDistance < 62 && puckSpeed < 430) {
+      if (puckDistance < 62 && puckSpeed < 430) {
         const stickX = player.x + player.facingX * (player.radius + 19);
         const stickY = player.y + player.facingY * (player.radius + 19);
         const control = Math.min(1, elapsed * 9);
@@ -860,7 +906,7 @@ export function HockeyGame({
       if (
         game.actionQueued &&
         player.kickCooldown <= 0 &&
-        distanceSquared(player, game.puck) < 78 * 78
+        distanceSquared(player, game.puck) < 92 * 92
       ) {
         let targetX =
           player.x + player.facingX * (player.radius + PUCK_RADIUS + 8);
@@ -898,14 +944,9 @@ export function HockeyGame({
           }
           puckSpeed = 480;
         } else {
-          const goalX = player.team === "home" ? ICE_RIGHT + 30 : ICE_LEFT - 30;
-          const aimedGoalY = clamp(
-            RINK_HEIGHT / 2 + player.facingY * 105,
-            GOAL_TOP + 22,
-            GOAL_BOTTOM - 22,
-          );
-          targetX = goalX;
-          targetY = aimedGoalY;
+          const direction = playerAimDirection(player);
+          targetX = player.x + direction.x * 160;
+          targetY = player.y + direction.y * 160;
         }
 
         const aimX = targetX - player.x;
@@ -1247,6 +1288,11 @@ export function HockeyGame({
       drawRink(activeContext);
       drawPuckTrail(activeContext, game.puckTrail);
 
+      const controlledPlayer = game.players.find((player) => player.controlled);
+      if (game.status === "playing" && controlledPlayer) {
+        drawShotArrow(activeContext, controlledPlayer, game.puck);
+      }
+
       const playersByDepth = [...game.players].sort(
         (first, second) => first.y - second.y,
       );
@@ -1281,6 +1327,10 @@ export function HockeyGame({
         x: player.x,
         y: player.y,
       }));
+      const controlledPlayer = players.find((player) => player.controlled);
+      if (state.phase === "playing" && controlledPlayer) {
+        drawShotArrow(activeContext, controlledPlayer, state.puck);
+      }
       for (const player of players.sort((first, second) => first.y - second.y)) {
         const networkName = state.players.get(player.id)?.turtleName ?? turtleName;
         drawPlayer(activeContext, player, turtleImage, networkName);

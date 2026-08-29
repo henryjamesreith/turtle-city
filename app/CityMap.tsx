@@ -166,6 +166,54 @@ function applyTurtleAppearance(appearance: TurtleAppearance) {
   document.documentElement.dataset.turtleVariant = appearance.variant;
 }
 
+function MobileMovementControls() {
+  function sendKey(type: "keydown" | "keyup", code: string) {
+    window.dispatchEvent(new KeyboardEvent(type, { code, bubbles: true }));
+  }
+
+  function movementButton(label: string, code: string, className = "") {
+    return (
+      <button
+        type="button"
+        className={className}
+        aria-label={label}
+        onPointerDown={(event) => {
+          event.preventDefault();
+          event.currentTarget.setPointerCapture(event.pointerId);
+          sendKey("keydown", code);
+        }}
+        onPointerUp={() => sendKey("keyup", code)}
+        onPointerCancel={() => sendKey("keyup", code)}
+        onContextMenu={(event) => event.preventDefault()}
+      >
+        <span aria-hidden="true">{label}</span>
+      </button>
+    );
+  }
+
+  return (
+    <nav className="mobile-movement-controls" aria-label="Movement controls">
+      <div className="mobile-dpad">
+        {movementButton("↑", "KeyW", "mobile-up")}
+        {movementButton("←", "KeyA", "mobile-left")}
+        {movementButton("↓", "KeyS", "mobile-down")}
+        {movementButton("→", "KeyD", "mobile-right")}
+      </div>
+      <button
+        type="button"
+        className="mobile-action"
+        aria-label="Interact"
+        onClick={() => {
+          sendKey("keydown", "Enter");
+          sendKey("keyup", "Enter");
+        }}
+      >
+        GO
+      </button>
+    </nav>
+  );
+}
+
 export function CityMap() {
   const [screen, setScreen] = useState<Screen>("apartment");
   const [entryMode, setEntryMode] = useState<EntryMode>("welcome");
@@ -206,6 +254,15 @@ export function CityMap() {
   const [selectedId, setSelectedId] = useState<District["id"] | null>(null);
   const selectedDistrict =
     districts.find((district) => district.id === selectedId) ?? null;
+  const showsMobileMovement = [
+    "apartment",
+    "central-park",
+    "chelsea",
+    "fidi",
+    "midtown",
+    "subway-platform",
+    "west-village",
+  ].includes(screen);
 
   function enterSubway(origin: TransitDistrict) {
     setSubwayOrigin(origin);
@@ -619,6 +676,7 @@ export function CityMap() {
           </div>
         </section>
       ) : null}
+      {showsMobileMovement ? <MobileMovementControls /> : null}
     </SkateboardOwnershipContext.Provider>
   );
 

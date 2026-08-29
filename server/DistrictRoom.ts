@@ -20,6 +20,7 @@ type DistrictClient = Client<{
 
 type MovementMessage = {
   facing?: unknown;
+  riding?: unknown;
   x?: unknown;
   y?: unknown;
 };
@@ -94,6 +95,10 @@ abstract class DistrictRoom extends Room<{
 
       if (message.facing === "left" || message.facing === "right") {
         player.facing = message.facing;
+      }
+
+      if (typeof message.riding === "boolean") {
+        player.riding = message.riding;
       }
 
       this.movementLimits.set(client.sessionId, { lastMoveAt: now });

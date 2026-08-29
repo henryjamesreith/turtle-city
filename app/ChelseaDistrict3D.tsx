@@ -277,7 +277,7 @@ type PlayerControllerProps = {
   onEnterApartment: () => void;
   onEnterPressureWashing: () => void;
   onEnterSubway: () => void;
-  sendMovement: (movement: { facing: "left" | "right"; x: number; y: number }) => void;
+  sendMovement: (movement: { facing: "left" | "right"; riding?: boolean; x: number; y: number }) => void;
   spawn: ChelseaSpawn;
   turtleName: string;
   turtleVariant: TurtleVariant;
@@ -393,7 +393,7 @@ function PlayerController(props: PlayerControllerProps) {
     camera.lookAt(target);
 
     if (state.clock.elapsedTime * 1000 - lastNetworkUpdate.current >= 65) {
-      props.sendMovement({ facing: facing.current, x: toNetworkX(player.position.x), y: toNetworkY(player.position.z) });
+      props.sendMovement({ facing: facing.current, riding, x: toNetworkX(player.position.x), y: toNetworkY(player.position.z) });
       lastNetworkUpdate.current = state.clock.elapsedTime * 1000;
     }
   });
@@ -415,7 +415,7 @@ function RemotePlayers({
   remoteTargetsRef,
 }: {
   remotePlayers: Array<{ sessionId: string; turtleName: string; variant: string }>;
-  remoteTargetsRef: MutableRefObject<Map<string, { currentX: number; currentY: number; facing: string; x: number; y: number }>>;
+  remoteTargetsRef: MutableRefObject<Map<string, { currentX: number; currentY: number; facing: string; riding: boolean; x: number; y: number }>>;
 }) {
   const refs = useRef(new Map<string, THREE.Group>());
   useFrame((_, delta) => {
@@ -427,6 +427,10 @@ function RemotePlayers({
       target.currentY += (target.y - target.currentY) * smoothing;
       group.position.x = fromNetworkX(target.currentX);
       group.position.z = fromNetworkY(target.currentY);
+      const skateboard = group.getObjectByName("remote-skateboard");
+      const turtle = group.getObjectByName("remote-turtle");
+      if (skateboard) skateboard.visible = target.riding;
+      if (turtle) turtle.position.y = target.riding ? 0.43 : 0;
     });
   });
 
@@ -438,11 +442,16 @@ function RemotePlayers({
         else refs.current.delete(player.sessionId);
       }}
     >
-      <TurtleBillboard
-        name={player.turtleName}
-        scale={0.84}
-        variant={isTurtleVariant(player.variant) ? player.variant : "clover"}
-      />
+      <group name="remote-skateboard" visible={remoteTargetsRef.current.get(player.sessionId)?.riding ?? false}>
+        <Skateboard />
+      </group>
+      <group name="remote-turtle" position-y={remoteTargetsRef.current.get(player.sessionId)?.riding ? 0.43 : 0}>
+        <TurtleBillboard
+          name={player.turtleName}
+          scale={0.84}
+          variant={isTurtleVariant(player.variant) ? player.variant : "clover"}
+        />
+      </group>
     </group>
   ));
 }
@@ -459,8 +468,8 @@ function ChelseaWorld({
   onInteractionChange: (interaction: InteractionId | null) => void;
   props: ChelseaDistrict3DProps;
   remotePlayers: Array<{ sessionId: string; turtleName: string; variant: string }>;
-  remoteTargetsRef: MutableRefObject<Map<string, { currentX: number; currentY: number; facing: string; x: number; y: number }>>;
-  sendMovement: (movement: { facing: "left" | "right"; x: number; y: number }) => void;
+  remoteTargetsRef: MutableRefObject<Map<string, { currentX: number; currentY: number; facing: string; riding: boolean; x: number; y: number }>>;
+  sendMovement: (movement: { facing: "left" | "right"; riding?: boolean; x: number; y: number }) => void;
 }) {
   return (
     <>

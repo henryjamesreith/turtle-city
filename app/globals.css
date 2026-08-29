@@ -127,31 +127,6 @@ body {
     "Avenir Next", Avenir, "Trebuchet MS", system-ui, sans-serif;
 }
 
-.mobile-only-message {
-  display: none;
-}
-
-@media (max-width: 767px) {
-  .desktop-game {
-    display: none;
-  }
-
-  .mobile-only-message {
-    display: grid;
-    min-height: 100dvh;
-    margin: 0;
-    padding: 2rem;
-    place-items: center;
-    text-align: center;
-  }
-
-  .mobile-only-message p {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-  }
-}
-
 button {
   font: inherit;
 }
@@ -5185,7 +5160,7 @@ html[data-turtle-variant="rosie"] {
 .district-live-status,
 .midtown-game-exit,
 .fidi-game-exit {
-  top: clamp(78px, 10vh, 104px) !important;
+  top: calc(clamp(18px, 3vh, 34px) + 52px) !important;
   right: clamp(18px, 3vw, 42px) !important;
 }
 
@@ -7765,7 +7740,7 @@ html[data-turtle-variant="rosie"] {
 .district-live-status {
   position: absolute;
   z-index: 72;
-  top: clamp(78px, 10vh, 104px);
+  top: calc(clamp(18px, 3vh, 34px) + 52px);
   right: clamp(24px, 3.5vw, 58px);
   display: flex;
   align-items: center;
@@ -8524,7 +8499,7 @@ html[data-turtle-variant="rosie"] {
 .midtown-game-exit {
   position: absolute;
   z-index: 72;
-  top: clamp(78px, 10vh, 104px);
+  top: calc(clamp(18px, 3vh, 34px) + 52px);
   right: 42px;
   display: flex;
   align-items: center;
@@ -9731,7 +9706,7 @@ html[data-turtle-variant="rosie"] {
 .fidi-game-exit {
   position: absolute;
   z-index: 72;
-  top: clamp(78px, 10vh, 104px);
+  top: calc(clamp(18px, 3vh, 34px) + 52px);
   right: 42px;
   display: flex;
   align-items: center;
@@ -11449,3 +11424,150 @@ html[data-turtle-variant="rosie"] {
 .subway-map-line-one b { display: grid; width: 24px; height: 24px; place-items: center; border: 3px solid #e83b36; border-radius: 50%; background: white; color: #e83b36; font: 900 11px/1 system-ui; }
 .subway-map-line-one small { padding: 3px 5px; border-radius: 4px; background: rgb(255 255 255 / 82%); font: 800 8px/1 system-ui; }
 .subway-map-line-one .is-future { opacity: .55; }
+
+/* Touch controls are kept out of the desktop UI. */
+.mobile-movement-controls { display: none; }
+
+@media (max-width: 767px), (pointer: coarse) {
+  html, body { height: 100%; overscroll-behavior: none; }
+
+  button, input, textarea { touch-action: manipulation; }
+  button { min-height: 44px; }
+
+  .map-stage::after,
+  .onboarding-stage::after,
+  .auth-stage::after { border-width: 4px; }
+
+  .map-wordmark {
+    top: max(14px, env(safe-area-inset-top));
+    left: max(16px, env(safe-area-inset-left));
+  }
+  .map-wordmark p { font-size: 9px; }
+  .map-wordmark h1 { font-size: 32px; }
+  .map-world { width: min(88vw, 390px); height: min(76dvh, 720px); }
+  .map-key { right: 16px; bottom: max(14px, env(safe-area-inset-bottom)); left: 16px; font-size: 9px; }
+  .map-toolbar {
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    gap: 6px;
+  }
+  .map-toolbar .map-close,
+  .map-toolbar .city-return,
+  .map-toolbar .map-logout { position: static; min-height: 42px; padding: 8px 11px; font-size: 0; }
+  .map-toolbar .map-close span,
+  .map-toolbar .city-return span,
+  .map-toolbar .map-logout span { margin: 0; font-size: 18px; }
+  .district-caption {
+    right: 14px;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    left: 14px;
+    width: auto;
+    padding: 15px 18px 17px;
+  }
+  .district-caption h2 { font-size: 27px; }
+
+  .welcome-card {
+    width: calc(100vw - 24px);
+    height: auto;
+    max-height: calc(100dvh - 24px);
+    grid-template-columns: 1fr;
+    gap: 12px;
+    overflow-y: auto;
+    padding: 24px 20px 30px;
+    border-radius: 24px;
+  }
+  .welcome-portrait { display: none; }
+  .welcome-wordmark h1 { font-size: clamp(38px, 14vw, 58px); }
+  .welcome-copy h2 { font-size: clamp(28px, 9vw, 42px); }
+  .welcome-actions { gap: 9px; }
+  .welcome-privacy { position: static; margin-top: 4px; }
+
+  .creator-stage { height: 100dvh; overflow-y: auto; }
+  .creator-shell { overflow: visible; }
+  .creator-preview-panel { min-height: 410px; padding: 26px 20px; }
+  .creator-preview-panel .turtle-preview { min-height: 245px; }
+  .creator-form { padding: 26px 20px calc(30px + env(safe-area-inset-bottom)); }
+  .creator-options > div { grid-template-columns: 1fr 1fr; }
+  .creator-options button { min-width: 0; }
+
+  .auth-stage { align-items: start; overflow-y: auto; padding: max(70px, calc(env(safe-area-inset-top) + 58px)) 12px 24px; }
+  .auth-back { top: max(14px, env(safe-area-inset-top)); left: 14px; }
+  .auth-card { width: 100%; gap: 20px; padding: 27px 20px; border-radius: 22px; }
+  .auth-card header h1 { font-size: 38px; }
+
+  .settings-dialog,
+  .logout-dialog { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; }
+  .universal-settings-button {
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+  }
+
+  .interior3d-stage,
+  .outdoor3d-stage,
+  .chelsea3d-stage { height: 100dvh !important; }
+  .interior3d-title,
+  .outdoor3d-title,
+  .chelsea3d-title { top: max(14px, env(safe-area-inset-top)) !important; left: 14px !important; }
+  .interior3d-title h1,
+  .outdoor3d-title h1,
+  .chelsea3d-title h1 { font-size: 27px !important; }
+  .interior3d-controls,
+  .outdoor3d-controls,
+  .chelsea3d-controls { display: none !important; }
+  .interior3d-prompt,
+  .outdoor3d-prompt,
+  .chelsea3d-prompt {
+    right: 12px !important;
+    bottom: calc(104px + env(safe-area-inset-bottom)) !important;
+    left: 12px !important;
+    min-width: 0 !important;
+    gap: 10px !important;
+    transform: none !important;
+  }
+
+  .mobile-movement-controls {
+    position: fixed;
+    z-index: 150;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: max(14px, env(safe-area-inset-bottom));
+    left: max(14px, env(safe-area-inset-left));
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    pointer-events: none;
+  }
+  .mobile-movement-controls button {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    min-height: 48px;
+    place-items: center;
+    border: 2px solid rgb(255 255 255 / 48%);
+    border-radius: 14px;
+    background: rgb(21 53 48 / 78%);
+    box-shadow: 0 5px 15px rgb(0 0 0 / 18%);
+    color: white;
+    font-size: 21px;
+    font-weight: 900;
+    pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .mobile-movement-controls button:active { background: rgb(232 189 95 / 92%); color: var(--ink); }
+  .mobile-dpad { display: grid; grid-template: repeat(2, 48px) / repeat(3, 48px); gap: 4px; }
+  .mobile-up { grid-area: 1 / 2; }
+  .mobile-left { grid-area: 2 / 1; }
+  .mobile-down { grid-area: 2 / 2; }
+  .mobile-right { grid-area: 2 / 3; }
+  .mobile-movement-controls .mobile-action { width: 58px; height: 58px; border-radius: 50%; font-size: 13px; }
+}
+
+@media (max-width: 767px) and (orientation: landscape) {
+  .map-world { height: 92dvh; }
+  .map-wordmark p, .map-key { display: none; }
+  .map-wordmark h1 { font-size: 25px; }
+  .welcome-card { grid-template-columns: 1fr 1fr; }
+  .welcome-copy h2 { font-size: 29px; }
+  .creator-preview-panel { min-height: 330px; }
+  .mobile-dpad { transform: scale(.88); transform-origin: bottom left; }
+}

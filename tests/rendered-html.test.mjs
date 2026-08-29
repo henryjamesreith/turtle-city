@@ -476,6 +476,8 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
   assert.match(chelsea, /useDistrictMultiplayer\("chelsea", props\.spawn\)/);
   assert.match(park, /RemotePlayers/);
   assert.match(chelsea, /RemotePlayers/);
+  assert.match(chelsea, /riding, x: toNetworkX/);
+  assert.match(chelsea, /name="remote-skateboard"/);
   assert.match(players, /className="district-remote-player"/);
   assert.match(players, /DistrictLiveStatus/);
   assert.match(park, /remoteTargetsRef/);
@@ -489,6 +491,7 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
   assert.match(hook, /callbacks\.onChange/);
   assert.match(hook, /callbacks\.onRemove/);
   assert.match(schema, /class DistrictPlayer extends Schema/);
+  assert.match(schema, /riding = false/);
   assert.match(schema, /players = new MapSchema/);
   assert.match(districts, /roomName: "central_park"/);
   assert.match(districts, /roomName: "chelsea"/);
@@ -500,6 +503,7 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
   assert.match(room, /elapsedMilliseconds < 40/);
   assert.match(room, /requestedX/);
   assert.match(room, /requestedY/);
+  assert.match(room, /player\.riding = message\.riding/);
   assert.match(room, /this\.state\.players\.delete/);
   assert.match(server, /central_park: defineRoom\(CentralParkRoom\)/);
   assert.match(server, /chelsea: defineRoom\(ChelseaRoom\)/);
@@ -518,7 +522,7 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
   assert.match(styles, /\.district-live-status/);
   assert.match(
     styles,
-    /\.district-live-status\s*\{[^}]*top:\s*clamp\(78px, 10vh, 104px\)/s,
+    /\.district-live-status\s*\{[^}]*top:\s*calc\(clamp\(18px, 3vh, 34px\) \+ 52px\)/s,
   );
 });
 

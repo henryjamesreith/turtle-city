@@ -228,7 +228,8 @@ export class HockeyRoom extends Room<{
       const distance = Math.hypot(dx, dy) || 1;
       input.actionBuffer = Math.max(0, input.actionBuffer - step);
       if (input.actionBuffer === 0) input.action = null;
-      if (distance < PLAYER_RADIUS + PUCK_RADIUS + 8) {
+      const canStrike = Boolean(input.action) && distance < 92;
+      if (canStrike || distance < PLAYER_RADIUS + PUCK_RADIUS + 8) {
         const hasAim = Math.hypot(input.x, input.y) > 0.05;
         const nx = input.action ? (hasAim ? input.x : player.facingX) : dx / distance;
         const ny = input.action ? (hasAim ? input.y : player.facingY) : dy / distance;
