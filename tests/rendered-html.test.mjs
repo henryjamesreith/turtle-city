@@ -516,6 +516,10 @@ test("outdoor districts have authenticated shared multiplayer presence", async (
   assert.match(packageJson, /"multiplayer:build"/);
   assert.match(styles, /\.district-remote-player/);
   assert.match(styles, /\.district-live-status/);
+  assert.match(
+    styles,
+    /\.district-live-status\s*\{[^}]*top:\s*clamp\(78px, 10vh, 104px\)/s,
+  );
 });
 
 test("hockey has a reusable server-authoritative multiplayer match", async () => {
