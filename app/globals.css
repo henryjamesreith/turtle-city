@@ -564,7 +564,6 @@ button {
   filter: brightness(1.06) saturate(1.08);
 }
 
-.map-key,
 .map-scale {
   position: absolute;
   z-index: 50;
@@ -579,24 +578,12 @@ button {
     transform 350ms ease;
 }
 
-.map-key {
-  left: clamp(24px, 4vw, 68px);
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-
 .key-mark {
   width: 13px;
   height: 13px;
   border: 3px solid var(--ink);
   border-radius: 50%;
   background: var(--midtown);
-}
-
-.is-focused .map-key {
-  opacity: 0;
-  transform: translateY(8px);
 }
 
 .map-scale {
@@ -5034,8 +5021,7 @@ html[data-turtle-variant="rosie"] {
 @media (prefers-reduced-motion: reduce) {
   .map-world,
   .context-land,
-  .map-wordmark,
-  .map-key {
+  .map-wordmark {
     transition: none;
   }
 
@@ -5147,6 +5133,103 @@ html[data-turtle-variant="rosie"] {
   font: 900 11px/1 system-ui;
 }
 
+.subway-mini-map {
+  position: fixed;
+  z-index: 189;
+  bottom: 28px;
+  left: 30px;
+  display: grid;
+  width: 210px;
+  gap: 12px;
+  padding: 13px 14px 15px;
+  border: 2px solid rgb(255 240 160 / 72%);
+  border-radius: 15px;
+  background: rgb(8 22 18 / 92%);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 32%);
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  backdrop-filter: blur(10px);
+}
+
+.subway-mini-map:hover,
+.subway-mini-map:focus-visible {
+  border-color: #fff0a0;
+  background: rgb(17 42 34 / 97%);
+  transform: translateY(-2px);
+}
+
+.subway-mini-map-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.subway-mini-map-heading > b {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e83b36;
+  font: 950 16px/1 system-ui;
+}
+
+.subway-mini-map-heading > span {
+  display: grid;
+  gap: 3px;
+}
+
+.subway-mini-map-heading strong { font: 900 12px/1 system-ui; text-transform: uppercase; letter-spacing: .08em; }
+.subway-mini-map-heading small { color: #fff0a0; font: 700 9px/1 system-ui; }
+
+.subway-mini-route {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: start;
+}
+
+.subway-mini-route::before {
+  position: absolute;
+  top: 5px;
+  right: 9%;
+  left: 9%;
+  height: 5px;
+  border-radius: 5px;
+  background: #e83b36;
+  content: "";
+}
+
+.subway-mini-route > i {
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  font-style: normal;
+}
+
+.subway-mini-route > i > b {
+  width: 15px;
+  height: 15px;
+  border: 3px solid #e83b36;
+  border-radius: 50%;
+  background: #f8f2df;
+}
+
+.subway-mini-route > i.is-origin > b {
+  background: #fff0a0;
+  box-shadow: 0 0 0 4px rgb(255 240 160 / 24%);
+}
+
+.subway-mini-route > i > span {
+  width: 38px;
+  color: rgb(255 255 255 / 78%);
+  font: 750 7px/1.15 system-ui;
+  text-align: center;
+}
+
 .universal-settings-button span { font-size: 17px; }
 .universal-settings-button:hover,
 .universal-settings-button:focus-visible { background: #fffaf0; transform: translateY(-1px); }
@@ -5157,6 +5240,7 @@ html[data-turtle-variant="rosie"] {
 .rhythm-exit,
 .bike-race-exit,
 .interior3d-exit,
+.train-route-card,
 .district-live-status,
 .midtown-game-exit,
 .fidi-game-exit {
@@ -10323,6 +10407,22 @@ html[data-turtle-variant="rosie"] {
   font-weight: 950;
 }
 
+/* Shared 3D subway entrance signage (used across every district scene). */
+.world3d-subway-badge {
+  color: white;
+  font: 950 11px/1 system-ui;
+  pointer-events: none;
+}
+
+.world3d-subway-name {
+  white-space: nowrap;
+  color: white;
+  font: 900 10px/1 system-ui;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+
 .subway-stage {
   position: relative;
   width: 100vw;
@@ -11273,8 +11373,7 @@ html[data-turtle-variant="rosie"] {
 
 .platform-directions button.is-active { border-color: #fff0a0; background: #315f4e; box-shadow: inset 4px 0 #fff0a0; }
 .platform-directions b,
-.train-route-card header > b,
-.map-key .subway-line-badge {
+.train-route-card header > b {
   display: grid;
   width: 32px;
   height: 32px;
@@ -11345,7 +11444,7 @@ html[data-turtle-variant="rosie"] {
   top: 26px;
   right: 30px;
   width: min(330px, calc(100vw - 60px));
-  max-height: calc(100vh - 54px);
+  max-height: calc(100vh - 106px);
   overflow: auto;
   padding: 16px;
   border-radius: 16px;
@@ -11408,23 +11507,6 @@ html[data-turtle-variant="rosie"] {
 .train-next-banner { padding: 11px 16px; border-radius: 999px; font: 700 12px/1 system-ui; }
 .train-next-banner strong { color: #fff0a0; }
 
-.subway-map-line-one {
-  position: absolute;
-  z-index: 4;
-  top: 24%;
-  left: 32%;
-  display: flex;
-  height: 68%;
-  flex-direction: column;
-  justify-content: space-between;
-  pointer-events: none;
-}
-.subway-map-line-one > i { position: absolute; top: 10px; bottom: 10px; left: 10px; width: 5px; border-radius: 5px; background: #e83b36; }
-.subway-map-line-one > span { z-index: 1; display: flex; align-items: center; gap: 6px; color: #17392b; }
-.subway-map-line-one b { display: grid; width: 24px; height: 24px; place-items: center; border: 3px solid #e83b36; border-radius: 50%; background: white; color: #e83b36; font: 900 11px/1 system-ui; }
-.subway-map-line-one small { padding: 3px 5px; border-radius: 4px; background: rgb(255 255 255 / 82%); font: 800 8px/1 system-ui; }
-.subway-map-line-one .is-future { opacity: .55; }
-
 /* Touch controls are kept out of the desktop UI. */
 .mobile-movement-controls { display: none; }
 
@@ -11433,6 +11515,12 @@ html[data-turtle-variant="rosie"] {
 
   button, input, textarea { touch-action: manipulation; }
   button { min-height: 44px; }
+
+  .subway-mini-map {
+    bottom: calc(126px + env(safe-area-inset-bottom));
+    left: max(14px, env(safe-area-inset-left));
+    width: min(210px, calc(100vw - 28px));
+  }
 
   .map-stage::after,
   .onboarding-stage::after,
@@ -11445,7 +11533,6 @@ html[data-turtle-variant="rosie"] {
   .map-wordmark p { font-size: 9px; }
   .map-wordmark h1 { font-size: 32px; }
   .map-world { width: min(88vw, 390px); height: min(76dvh, 720px); }
-  .map-key { right: 16px; bottom: max(14px, env(safe-area-inset-bottom)); left: 16px; font-size: 9px; }
   .map-toolbar {
     top: max(12px, env(safe-area-inset-top));
     right: max(12px, env(safe-area-inset-right));
@@ -11564,10 +11651,62 @@ html[data-turtle-variant="rosie"] {
 
 @media (max-width: 767px) and (orientation: landscape) {
   .map-world { height: 92dvh; }
-  .map-wordmark p, .map-key { display: none; }
+  .map-wordmark p { display: none; }
   .map-wordmark h1 { font-size: 25px; }
   .welcome-card { grid-template-columns: 1fr 1fr; }
   .welcome-copy h2 { font-size: 29px; }
   .creator-preview-panel { min-height: 330px; }
   .mobile-dpad { transform: scale(.88); transform-origin: bottom left; }
+}
+
+/* Hard Hat Hustle — 3D falling-items challenge */
+.falling-game-3d { font-family: var(--font-body), system-ui, sans-serif; background: #182947; }
+.falling-game-canvas { position: absolute; z-index: 1; inset: 0; }
+.falling-game-canvas canvas { display: block; }
+.falling-game-3d .falling-game-title { border-left-color: #f4cb55; box-shadow: 0 10px 30px rgb(5 12 25 / 32%); }
+.falling-game-3d .falling-game-title h1 { letter-spacing: -.04em; }
+.falling-game-3d .falling-game-hud { border: 0; border-radius: 16px; background: rgb(12 25 45 / 88%); color: #fff7dc; box-shadow: 0 12px 32px rgb(3 9 19 / 34%); backdrop-filter: blur(12px); }
+.falling-game-3d .falling-game-hud div { min-width: 104px; padding: 10px 16px; }
+.falling-game-3d .falling-game-hud div + div { border-left: 1px solid rgb(255 255 255 / 14%); }
+.falling-game-3d .falling-game-hud small { color: #a9b7c8; letter-spacing: .12em; }
+.falling-game-3d .falling-game-hud strong { font-size: 18px; }
+.falling-lives { display: flex; gap: 5px; color: #536277; }
+.falling-lives i { font-style: normal; }
+.falling-lives .is-full { color: #f4cb55; text-shadow: 0 0 12px rgb(244 203 85 / 55%); }
+.falling-objective { position: absolute; z-index: 55; top: 122px; left: 50%; display: grid; gap: 4px; justify-items: center; padding: 10px 18px; border: 1px solid rgb(255 255 255 / 14%); border-radius: 10px; background: rgb(10 22 39 / 72%); box-shadow: 0 10px 30px rgb(3 9 19 / 28%); text-align: center; transform: translateX(-50%); backdrop-filter: blur(9px); }
+.falling-objective b { color: #ff8070; font-size: 11px; letter-spacing: .12em; }
+.falling-objective span { color: #e4e9ec; font-size: 11px; }
+.falling-touch-controls { position: absolute; z-index: 60; bottom: 28px; left: 50%; display: flex; align-items: center; gap: 12px; transform: translateX(-50%); }
+.falling-touch-controls button { width: 68px; height: 54px; border: 2px solid rgb(255 255 255 / 58%); border-radius: 14px; background: rgb(13 29 50 / 83%); box-shadow: 0 8px 18px rgb(3 9 19 / 30%); color: #fff7dc; cursor: pointer; font-size: 28px; backdrop-filter: blur(8px); }
+.falling-touch-controls button:active { background: #f4cb55; color: #14263f; transform: translateY(2px); }
+.falling-touch-controls span { padding: 7px 10px; border-radius: 8px; background: rgb(13 29 50 / 66%); color: #b9c4cf; font-size: 9px; font-weight: 900; }
+.falling-game-3d .falling-game-message { bottom: 16%; border: 0; border-radius: 10px; background: #ef6657; box-shadow: 0 7px 0 #9d3b35; font-size: 14px; animation: falling-bonk .32s ease both; }
+@keyframes falling-bonk { from { opacity: 0; transform: translate(-50%, 12px) scale(.9); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+.falling-game-3d .midtown-game-overlay { width: min(650px, calc(100vw - 32px)); padding: 28px 30px 30px; border: 0; border-radius: 22px; background: rgb(255 248 220 / 97%); box-shadow: 0 24px 70px rgb(3 9 19 / 50%), 10px 10px 0 rgb(239 102 87 / 70%); }
+.falling-game-3d .midtown-game-overlay p { color: #d45145; letter-spacing: .12em; }
+.falling-game-3d .midtown-game-overlay h2 { margin-top: 8px; font-size: clamp(29px, 4vw, 42px); line-height: 1.05; letter-spacing: -.045em; }
+.falling-game-3d .midtown-game-overlay > button { min-width: 190px; margin-top: 23px; padding: 13px 20px; border: 0; border-radius: 10px; background: #f2c94c; box-shadow: 0 5px 0 #b88d19; color: #102f2b; font-size: 13px; }
+.falling-howto { display: grid; width: 100%; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 22px; }
+.falling-howto > span { display: grid; min-height: 128px; align-content: start; justify-items: center; padding: 14px 12px; border: 1px solid #d8d4bf; border-radius: 12px; background: #fffdf0; box-shadow: none; }
+.falling-howto b { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; background: #173b36; color: #fff7dc; font-size: 13px; }
+.falling-howto em { margin-top: 8px; font-size: 14px; font-style: normal; font-weight: 900; }
+.falling-howto small { margin-top: 5px; color: #66756d; font-size: 10px; line-height: 1.4; }
+.falling-countdown { position: absolute; z-index: 75; top: 50%; left: 50%; display: grid; justify-items: center; color: #fff7dc; text-shadow: 0 5px 20px #050b16; transform: translate(-50%, -50%); }
+.falling-countdown span { color: #f4cb55; font-size: 13px; font-weight: 900; letter-spacing: .2em; }
+.falling-countdown strong { font-size: clamp(100px, 18vw, 190px); line-height: .9; animation: falling-count .7s ease-out both; }
+.falling-countdown small { margin-top: 14px; font-size: 15px; font-weight: 800; }
+@keyframes falling-count { from { opacity: 0; transform: scale(1.5); } to { opacity: 1; transform: scale(1); } }
+.falling-results > strong { color: #df5d50; font-size: 64px; line-height: 1; }
+.falling-results > span { margin-top: 2px; color: #66756d; font-size: 12px; font-weight: 800; }
+@media (max-width: 720px) {
+  .falling-game-3d .falling-game-title { top: 16px; left: 16px; }
+  .falling-game-3d .falling-game-title p { font-size: 7px; }
+  .falling-game-3d .falling-game-title h1 { font-size: 18px; }
+  .falling-game-3d .midtown-game-exit { top: 18px; right: 16px; }
+  .falling-game-3d .falling-game-hud { top: 86px; }
+  .falling-game-3d .falling-game-hud div { min-width: 80px; padding: 8px 9px; }
+  .falling-objective { top: 145px; }
+  .falling-howto { grid-template-columns: 1fr; }
+  .falling-howto > span { min-height: 0; grid-template-columns: 34px 64px 1fr; align-items: center; text-align: left; }
+  .falling-howto em, .falling-howto small { margin-top: 0; }
 }

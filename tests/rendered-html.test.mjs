@@ -175,6 +175,20 @@ test("the map has focus interactions without game dependencies", async () => {
   assert.doesNotMatch(packageJson, /phaser|drizzle/i);
 });
 
+test("the subway map is directly available underground", async () => {
+  const [map, styles] = await Promise.all([
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(map, /screen === "subway-platform" \|\| screen === "subway-train"/);
+  assert.match(map, /aria-label="Expand subway map"/);
+  assert.match(map, /className="subway-mini-map"/);
+  assert.match(map, /oneLineStops\.filter\(\(stop\) => stop\.district\)/);
+  assert.match(styles, /\.subway-mini-map/);
+  assert.match(styles, /\.subway-mini-route/);
+});
+
 test("Chelsea connects the starter apartment, street, and subway", async () => {
   const [map, district, apartment, styles] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
@@ -582,7 +596,8 @@ test("the map is universally viewable but subway travel stays onboard-only", asy
   assert.match(map, /onExitAtStop={arriveInDistrict}/);
   assert.equal([...map.matchAll(/setScreen\("city"\)/g)].length, 1);
   assert.match(map, /subwayDirection/);
-  assert.match(map, /subway-map-line-one/);
+  assert.doesNotMatch(map, /subway-map-line-one/);
+  assert.match(map, /subway-mini-route/);
   assert.match(map, /View only — enter a subway station to travel/);
   assert.match(map, /className="universal-settings-button"/);
   assert.match(map, /Keyboard commands/);

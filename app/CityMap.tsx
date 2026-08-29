@@ -620,6 +620,31 @@ export function CityMap() {
         </button>
       ) : null}
 
+      {screen === "subway-platform" || screen === "subway-train" ? (
+        <button
+          type="button"
+          className="subway-mini-map"
+          aria-label="Expand subway map"
+          onClick={openWorldMap}
+        >
+          <span className="subway-mini-map-heading">
+            <b>1</b>
+            <span><strong>Subway map</strong><small>Tap to expand</small></span>
+          </span>
+          <span className="subway-mini-route" aria-hidden="true">
+            {oneLineStops.filter((stop) => stop.district).map((stop) => (
+              <i
+                key={stop.id}
+                className={stop.district === subwayOrigin ? "is-origin" : ""}
+              >
+                <b />
+                <span>{stop.neighborhood}</span>
+              </i>
+            ))}
+          </span>
+        </button>
+      ) : null}
+
       {showSettings ? (
         <section
           className="settings-dialog"
@@ -749,6 +774,7 @@ export function CityMap() {
     return withGameChrome(
       <FallingItemsGame
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         onExit={() => {
           setMidtownSpawn("falling-items");
           setScreen("midtown");
@@ -912,7 +938,7 @@ export function CityMap() {
       data-testid="city-map"
     >
       <header className="map-wordmark">
-        <p>City guide · subway lines</p>
+        <p>City guide · districts</p>
         <h1>Map</h1>
       </header>
 
@@ -936,14 +962,6 @@ export function CityMap() {
       <section className="map-world" style={mapStyle} aria-label="Manhattan map">
         <div className="island-shadow" aria-hidden="true" />
         <div className="manhattan-island">
-          <div className="subway-map-line subway-map-line-one" aria-label="1 subway line">
-            <i aria-hidden="true" />
-            {oneLineStops.map((stop) => (
-              <span key={stop.id} className={stop.district ? "is-open" : "is-future"}>
-                <b>1</b><small>{stop.neighborhood}</small>
-              </span>
-            ))}
-          </div>
           <div className="future-zone future-inwood">
             <span>UPTOWN</span>
           </div>
@@ -986,12 +1004,8 @@ export function CityMap() {
             <span>TRIBECA</span>
           </div>
         </div>
-      </section>
 
-      <div className="map-key" aria-hidden={selectedDistrict !== null}>
-        <span className="subway-line-badge">1</span>
-        Central Park ↔ FiDi · local
-      </div>
+      </section>
 
       <div className="map-toolbar">
         {!selectedDistrict ? (
