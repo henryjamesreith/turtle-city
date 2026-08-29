@@ -4433,9 +4433,9 @@ html[data-turtle-variant="rosie"] {
   z-index: 2;
   display: grid;
   width: min(1280px, calc(100vw - 8vw));
-  min-height: min(820px, calc(100dvh - 8vh));
+  min-height: min(760px, calc(100dvh - 6vh));
   grid-template-columns: minmax(420px, 0.94fr) minmax(560px, 1.06fr);
-  margin: 4.5vh auto;
+  margin: 3vh auto;
   overflow: hidden;
   border: 4px solid var(--ink);
   border-radius: 38px;
@@ -4446,11 +4446,11 @@ html[data-turtle-variant="rosie"] {
 .creator-preview-panel {
   position: relative;
   display: flex;
-  min-height: 740px;
+  min-height: 700px;
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  padding: clamp(38px, 5vh, 60px);
+  padding: clamp(32px, 4vh, 50px);
   background:
     repeating-radial-gradient(
       ellipse at 50% 82%,
@@ -4484,7 +4484,7 @@ html[data-turtle-variant="rosie"] {
 .creator-preview-panel .turtle-preview {
   z-index: 2;
   width: min(23vw, 350px);
-  min-height: 440px;
+  min-height: 400px;
   flex: 0 0 auto;
   margin-top: auto;
 }
@@ -4522,9 +4522,9 @@ html[data-turtle-variant="rosie"] {
 .creator-form {
   display: flex;
   flex-direction: column;
-  gap: clamp(18px, 2.1vh, 25px);
+  gap: clamp(15px, 1.7vh, 20px);
   justify-content: center;
-  padding: clamp(38px, 5vh, 58px) clamp(38px, 4.2vw, 68px);
+  padding: clamp(32px, 4vh, 48px) clamp(36px, 4vw, 62px);
 }
 
 .creator-field {
