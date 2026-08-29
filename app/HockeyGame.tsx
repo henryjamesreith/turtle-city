@@ -50,6 +50,7 @@ type MatchState = {
   goalPause: number;
   message: string;
   actionQueued: "pass" | "shoot" | null;
+  actionBuffer: number;
   switchQueued: boolean;
   countdown: number;
   stats: Record<Team, TeamStats>;
@@ -168,6 +169,7 @@ function createMatchState(status: MatchStatus = "ready"): MatchState {
     goalPause: 0,
     message: "",
     actionQueued: null,
+    actionBuffer: 0,
     switchQueued: false,
     countdown: status === "countdown" ? COUNTDOWN_LENGTH : 0,
     stats: {
@@ -196,6 +198,7 @@ function resetFaceoff(game: MatchState) {
   game.goalPause = 0;
   game.message = "";
   game.actionQueued = null;
+  game.actionBuffer = 0;
   game.switchQueued = false;
   game.puckTrail = [];
   game.goalFlash = null;
@@ -674,6 +677,7 @@ export function HockeyGame({
 
   function queueAction(action: "pass" | "shoot") {
     gameRef.current.actionQueued = action;
+    gameRef.current.actionBuffer = 0.3;
     canvasRef.current?.focus();
   }
 
@@ -754,8 +758,10 @@ export function HockeyGame({
         gameRef.current.switchQueued = true;
       } else if (event.code === "KeyX" && !event.repeat) {
         gameRef.current.actionQueued = "pass";
+        gameRef.current.actionBuffer = 0.3;
       } else if (event.code === "KeyC" && !event.repeat) {
         gameRef.current.actionQueued = "shoot";
+        gameRef.current.actionBuffer = 0.3;
       } else if (event.code === "KeyP" && !event.repeat) {
         if (modeRef.current === "multiplayer") return;
         const game = gameRef.current;
@@ -780,6 +786,7 @@ export function HockeyGame({
     function clearInput() {
       pressed.clear();
       gameRef.current.actionQueued = null;
+      gameRef.current.actionBuffer = 0;
       gameRef.current.switchQueued = false;
     }
 
@@ -865,7 +872,9 @@ export function HockeyGame({
           const teammates = game.players
             .filter(
               (teammate) =>
-                teammate.team === player.team && teammate.id !== player.id,
+                teammate.team === player.team &&
+                teammate.id !== player.id &&
+                teammate.role === "skater",
             )
             .map((teammate) => {
               const horizontal = teammate.x - player.x;
@@ -889,10 +898,14 @@ export function HockeyGame({
           }
           puckSpeed = 480;
         } else {
-          targetX =
-            player.x + player.facingX * (player.radius + PUCK_RADIUS + 80);
-          targetY =
-            player.y + player.facingY * (player.radius + PUCK_RADIUS + 80);
+          const goalX = player.team === "home" ? ICE_RIGHT + 30 : ICE_LEFT - 30;
+          const aimedGoalY = clamp(
+            RINK_HEIGHT / 2 + player.facingY * 105,
+            GOAL_TOP + 22,
+            GOAL_BOTTOM - 22,
+          );
+          targetX = goalX;
+          targetY = aimedGoalY;
         }
 
         const aimX = targetX - player.x;
@@ -915,6 +928,8 @@ export function HockeyGame({
           game.stats[player.team].shots += 1;
           playSound("shot");
         }
+        game.actionQueued = null;
+        game.actionBuffer = 0;
       }
     }
 
@@ -1066,12 +1081,14 @@ export function HockeyGame({
 
       if (game.status !== "playing") {
         game.actionQueued = null;
+        game.actionBuffer = 0;
         game.switchQueued = false;
         return;
       }
 
       if (game.goalPause > 0) {
         game.actionQueued = null;
+        game.actionBuffer = 0;
         game.switchQueued = false;
         game.goalPause -= elapsed;
         if (game.goalPause <= 0) {
@@ -1088,6 +1105,10 @@ export function HockeyGame({
       }
 
       game.timeLeft = Math.max(0, game.timeLeft - elapsed);
+      if (game.actionQueued) {
+        game.actionBuffer = Math.max(0, game.actionBuffer - elapsed);
+        if (game.actionBuffer === 0) game.actionQueued = null;
+      }
 
       if (game.timeLeft <= 0) {
         if (game.score.home === game.score.away && game.period === "regulation") {
@@ -1158,7 +1179,6 @@ export function HockeyGame({
       }
 
       collidePlayersWithPuck(game);
-      game.actionQueued = null;
 
       game.puck.x += game.puck.vx * elapsed;
       game.puck.y += game.puck.vy * elapsed;

@@ -30,7 +30,13 @@ const PLAYER_SPEED = 340;
 const PLAYER_RADIUS = 25;
 const PUCK_RADIUS = 12;
 
-type PlayerInput = { action: "pass" | "shoot" | null; sequence: number; x: number; y: number };
+type PlayerInput = {
+  action: "pass" | "shoot" | null;
+  actionBuffer: number;
+  sequence: number;
+  x: number;
+  y: number;
+};
 
 function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(Math.max(value, minimum), maximum);
@@ -60,9 +66,13 @@ export class HockeyRoom extends Room<{
       const rawX = typeof message.x === "number" && Number.isFinite(message.x) ? message.x : 0;
       const rawY = typeof message.y === "number" && Number.isFinite(message.y) ? message.y : 0;
       const magnitude = Math.hypot(rawX, rawY);
-      const action = message.action === "pass" || message.action === "shoot" ? message.action : null;
+      const receivedAction = message.action === "pass" || message.action === "shoot"
+        ? message.action
+        : null;
+      const action = receivedAction ?? previous?.action ?? null;
       this.inputs.set(client.sessionId, {
         action,
+        actionBuffer: receivedAction ? 0.3 : previous?.actionBuffer ?? 0,
         sequence,
         x: magnitude > 1 ? rawX / magnitude : rawX,
         y: magnitude > 1 ? rawY / magnitude : rawY,
@@ -101,7 +111,7 @@ export class HockeyRoom extends Room<{
     player.turtleName = auth.turtleName;
     player.variant = auth.variant;
     this.state.players.set(client.sessionId, player);
-    this.inputs.set(client.sessionId, { action: null, sequence: -1, x: 0, y: 0 });
+    this.inputs.set(client.sessionId, { action: null, actionBuffer: 0, sequence: -1, x: 0, y: 0 });
     this.placePlayers();
   }
 
@@ -216,16 +226,22 @@ export class HockeyRoom extends Room<{
       const dx = this.state.puck.x - player.x;
       const dy = this.state.puck.y - player.y;
       const distance = Math.hypot(dx, dy) || 1;
+      input.actionBuffer = Math.max(0, input.actionBuffer - step);
+      if (input.actionBuffer === 0) input.action = null;
       if (distance < PLAYER_RADIUS + PUCK_RADIUS + 8) {
-        const nx = dx / distance;
-        const ny = dy / distance;
+        const hasAim = Math.hypot(input.x, input.y) > 0.05;
+        const nx = input.action ? (hasAim ? input.x : player.facingX) : dx / distance;
+        const ny = input.action ? (hasAim ? input.y : player.facingY) : dy / distance;
         const speed = input.action === "shoot" ? 720 : input.action === "pass" ? 480 : 120;
         this.state.puck.x = player.x + nx * (PLAYER_RADIUS + PUCK_RADIUS);
         this.state.puck.y = player.y + ny * (PLAYER_RADIUS + PUCK_RADIUS);
         this.state.puck.vx = nx * speed + player.vx * 0.35;
         this.state.puck.vy = ny * speed + player.vy * 0.35;
+        if (input.action) {
+          input.action = null;
+          input.actionBuffer = 0;
+        }
       }
-      input.action = null;
     }
     const puck = this.state.puck;
     puck.x += puck.vx * step;

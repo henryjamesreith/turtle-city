@@ -5156,8 +5156,8 @@ html[data-turtle-variant="rosie"] {
 .universal-settings-button {
   position: fixed;
   z-index: 190;
-  top: clamp(18px, 3vh, 34px);
-  right: clamp(18px, 3vw, 42px);
+  bottom: clamp(18px, 3vh, 34px);
+  left: clamp(58px, 5vw, 78px);
   display: flex;
   min-height: 40px;
   align-items: center;
@@ -11252,27 +11252,38 @@ html[data-turtle-variant="rosie"] {
 /* Playable 1 subway line */
 .platform-directions {
   position: absolute;
+  z-index: 30;
   top: 112px;
   right: 30px;
   display: grid;
   gap: 8px;
+  width: 224px;
+  padding: 12px;
+  border: 2px solid rgb(255 240 160 / 70%);
+  border-radius: 15px;
+  background: rgb(8 22 18 / 91%);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 28%);
+  color: white;
 }
+
+.platform-directions > p { margin: 0 2px 2px; color: #fff0a0; font: 900 9px/1 system-ui; letter-spacing: .13em; text-transform: uppercase; }
 
 .platform-directions button {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 190px;
+  width: 100%;
   padding: 10px 12px;
   border: 1px solid rgb(255 255 255 / 22%);
   border-radius: 11px;
-  background: rgb(13 28 24 / 86%);
+  background: rgb(25 48 40 / 92%);
   color: white;
+  cursor: pointer;
   text-align: left;
   text-transform: capitalize;
 }
 
-.platform-directions button.is-active { border-color: #fff0a0; background: #24483c; }
+.platform-directions button.is-active { border-color: #fff0a0; background: #315f4e; box-shadow: inset 4px 0 #fff0a0; }
 .platform-directions b,
 .train-route-card header > b,
 .map-key .subway-line-badge {
@@ -11286,10 +11297,15 @@ html[data-turtle-variant="rosie"] {
   color: white;
   font: 900 17px/1 system-ui;
 }
-.platform-directions span { display: grid; gap: 2px; font: 800 12px/1 system-ui; }
-.platform-directions small { opacity: .68; font-size: 10px; }
+.platform-directions span { display: grid; gap: 3px; font: 800 12px/1 system-ui; }
+.platform-directions span strong { display: flex; align-items: center; justify-content: space-between; gap: 18px; font: inherit; text-transform: uppercase; }
+.platform-directions span i { color: #fff0a0; font-size: 17px; font-style: normal; }
+.platform-directions small { opacity: .76; font-size: 10px; }
+.platform-directions span em { margin-top: 3px; color: #a9dbb4; font: 800 9px/1 system-ui; font-style: normal; }
+.platform-directions .platform-directions-hint { margin: 2px 2px 0; font: 700 9px/1.2 system-ui; letter-spacing: .02em; }
 
 .platform-direction-sign,
+.platform-train-side-sign,
 .platform-train-route {
   display: flex;
   align-items: center;
@@ -11304,6 +11320,7 @@ html[data-turtle-variant="rosie"] {
   letter-spacing: .08em;
 }
 .platform-direction-sign b,
+.platform-train-side-sign b,
 .platform-train-route b {
   display: grid;
   width: 24px;
@@ -11315,9 +11332,11 @@ html[data-turtle-variant="rosie"] {
   font: 950 13px/1 system-ui;
 }
 .platform-train-route { padding: 4px 6px; border-width: 1px; font-size: 8px; text-transform: uppercase; }
+.platform-train-side-sign { padding: 5px 8px; border-color: #fff0a0; font-size: 9px; text-transform: uppercase; }
+.platform-train-side-sign b { width: 21px; height: 21px; font-size: 11px; }
 .platform-train-route b { width: 20px; height: 20px; font-size: 11px; }
 .platform-zone-label {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
@@ -11328,6 +11347,7 @@ html[data-turtle-variant="rosie"] {
   font: 900 9px/1 system-ui;
   letter-spacing: .08em;
   text-transform: uppercase;
+  box-shadow: 0 5px 14px rgb(0 0 0 / 35%);
 }
 .platform-zone-label b { display: grid; width: 21px; height: 21px; place-items: center; border-radius: 50%; background: #e83b36; font-size: 11px; }
 
