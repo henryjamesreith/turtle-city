@@ -76,12 +76,13 @@ Bushwick.
   rooms. Up to 20 authenticated turtles in the same outdoor district can see one
   another's names, appearances, positions, and facing direction. Movement uses
   district-specific server validation and is smoothed in the browser.
-- Subway entrances connect Chelsea, West Village, FiDi, Midtown, and Central Park. Each station
-  has a walkable platform, an arrivals board, and a train that arrives almost
-  immediately. Enter boards while the doors are open.
-- The city map is available only after boarding a train. Players choose an open
-  station from the onboard map and arrive beside that district’s subway
-  entrance.
+- The playable 1 line connects Central Park, Midtown, Chelsea, West Village,
+  Tribeca, and FiDi. Players choose an uptown or downtown platform, board while
+  the doors are open, ride through each stop in order, and can exit only during
+  a station dwell. Tribeca currently appears as a coming-soon pass-through stop.
+- The city map shows the 1 line and its stations but is view-only. Subway travel
+  happens entirely through the platform and train ride rather than a destination
+  picker.
 - Central Park, Chelsea, FiDi, Midtown, and West Village use continuous movement. Collision
   boundaries are intentionally deferred.
 - The turtle currently uses one static character image with no walking
@@ -160,8 +161,9 @@ small interfaces so mobile and desktop-store versions remain possible later.
    saved appearance, and Apartment 4B arrival.
 3. **West Village — complete:** connect restaurant and jazz-club streets to the
    Hudson greenway.
-4. **Subway system — complete:** district entrances, arrivals boards, arriving
-   trains, boarding, and onboard-only map travel.
+4. **Subway system — ongoing:** playable 1 local with direction-aware platforms,
+   sequential station rides, route displays, and station exits is complete; add
+   the 2/3 express and future 4/5/6, L, and F/M corridors as districts open.
 5. **More neighborhoods — ongoing:** Midtown and FiDi are complete; the East
    Village / LES remains next.
 6. **More games — ongoing:** Midtown adds falling-object and trash-pickup

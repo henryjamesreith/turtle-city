@@ -6,6 +6,8 @@ import { Suspense, useEffect, useRef, useState, type MutableRefObject } from "re
 import * as THREE from "three";
 import { DistrictLiveStatus } from "./MultiplayerDistrictPlayers";
 import { TurtleBillboard } from "./world3d/TurtleBillboard";
+import { Skateboard, SKATEBOARD_SPEED } from "./world3d/Skateboard";
+import { SubwayEntrance } from "./world3d/SubwayEntrance";
 import {
   moveWithCollisions,
   updateCharacterMotion,
@@ -15,7 +17,7 @@ import { useDistrictMultiplayer } from "@/lib/multiplayer/useDistrictMultiplayer
 import { isTurtleVariant, type TurtleVariant } from "@/lib/turtles";
 
 type ChelseaSpawn = "apartment" | "pressure-washing" | "subway";
-type InteractionId = ChelseaSpawn;
+type InteractionId = ChelseaSpawn | "skate-shop";
 
 type ChelseaDistrict3DProps = {
   onEnterApartment: () => void;
@@ -24,6 +26,8 @@ type ChelseaDistrict3DProps = {
   spawn: ChelseaSpawn;
   turtleName: string;
   turtleVariant: TurtleVariant;
+  hasSkateboard: boolean;
+  onClaimSkateboard: () => Promise<void>;
 };
 
 const WORLD_HALF_WIDTH = 30;
@@ -45,6 +49,7 @@ const interactions = [
   { id: "pressure-washing", position: [-18, 0, -8], radius: 3.4 },
   { id: "apartment", position: [6, 0, -8], radius: 3.4 },
   { id: "subway", position: [21, 0, 8.3], radius: 3.6 },
+  { id: "skate-shop", position: [23, 0, -8], radius: 3.4 },
 ] as const;
 
 function toNetworkX(x: number) {
@@ -134,71 +139,6 @@ function Building({
       <Html center position={[0, 1.3, 4.45]} distanceFactor={18}>
         <span className="world3d-store-sign">{label}</span>
       </Html>
-    </group>
-  );
-}
-
-function SubwayEntrance({ nearby }: { nearby: boolean }) {
-  return (
-    <group position={[21, 0.1, 9.45]} rotation-y={Math.PI / 2}>
-      {/* Stone curb and dark stairwell */}
-      <mesh position={[0, 0.24, 0]} castShadow receiveShadow>
-        <boxGeometry args={[4.4, 0.48, 3]} />
-        <meshStandardMaterial color="#8d918d" roughness={0.96} />
-      </mesh>
-      <mesh position={[0, 0.5, 0]}>
-        <boxGeometry args={[3.65, 0.55, 2.35]} />
-        <meshStandardMaterial color="#151c1d" roughness={0.94} />
-      </mesh>
-      {Array.from({ length: 6 }, (_, index) => (
-        <mesh key={index} position={[-1.25 + index * 0.43, 0.57 - index * 0.045, 0]} receiveShadow>
-          <boxGeometry args={[0.42, 0.12, 2.05]} />
-          <meshStandardMaterial color="#656b68" roughness={0.98} />
-        </mesh>
-      ))}
-
-      {/* Classic green entrance rails */}
-      {[-1.28, 1.28].map((z) => (
-        <group key={z} position-z={z}>
-          {[-1.72, 1.72].map((x) => (
-            <mesh key={x} position={[x, 1.45, 0]} castShadow>
-              <boxGeometry args={[0.11, 2.35, 0.11]} />
-              <meshStandardMaterial color="#167347" metalness={0.28} roughness={0.52} />
-            </mesh>
-          ))}
-          <mesh position={[0, 2.56, 0]} castShadow>
-            <boxGeometry args={[3.55, 0.12, 0.12]} />
-            <meshStandardMaterial color="#167347" metalness={0.28} roughness={0.52} />
-          </mesh>
-          <mesh position={[0, 1.48, 0]} castShadow>
-            <boxGeometry args={[3.45, 0.08, 0.08]} />
-            <meshStandardMaterial color="#167347" metalness={0.28} roughness={0.52} />
-          </mesh>
-        </group>
-      ))}
-
-      {/* Two globe lamps and station placard */}
-      {[-1.68, 1.68].map((x) => (
-        <group key={x} position={[x, 0, -1.28]}>
-          <mesh position-y={2.95}><cylinderGeometry args={[0.07, 0.09, 0.85, 10]} /><meshStandardMaterial color="#17201f" /></mesh>
-          <mesh position-y={3.42}><sphereGeometry args={[0.22, 14, 10]} /><meshStandardMaterial color="#fff0b8" emissive="#c08a36" emissiveIntensity={nearby ? 2.2 : 0.85} /></mesh>
-        </group>
-      ))}
-      <mesh position={[-0.25, 2.94, -1.34]} castShadow>
-        <boxGeometry args={[2.35, 0.74, 0.14]} />
-        <meshStandardMaterial color="#202625" roughness={0.75} />
-      </mesh>
-      <mesh position={[-1.11, 2.94, -1.43]}>
-        <circleGeometry args={[0.25, 24]} />
-        <meshBasicMaterial color="#2d9b59" />
-      </mesh>
-      <Html center position={[-1.11, 2.94, -1.45]} distanceFactor={10}>
-        <span className="world3d-subway-badge">T</span>
-      </Html>
-      <Html center position={[0.2, 2.94, -1.46]} distanceFactor={10}>
-        <span className="world3d-subway-name">23 ST</span>
-      </Html>
-      {nearby ? <pointLight position={[0, 2.2, 0]} color="#8bffbb" intensity={9} distance={7} /> : null}
     </group>
   );
 }
@@ -331,6 +271,8 @@ function InteractionMarkers({ nearby }: { nearby: InteractionId | null }) {
 }
 
 type PlayerControllerProps = {
+  hasSkateboard: boolean;
+  onClaimSkateboard: () => Promise<void>;
   onInteractionChange: (interaction: InteractionId | null) => void;
   onEnterApartment: () => void;
   onEnterPressureWashing: () => void;
@@ -347,25 +289,29 @@ function PlayerController(props: PlayerControllerProps) {
   const keys = useRef(new Set<string>());
   const activeInteraction = useRef<InteractionId | null>(null);
   const yaw = useRef(0);
-  const distance = useRef(14);
+  const distance = useRef(18);
   const dragging = useRef(false);
   const lastPointerX = useRef(0);
   const lastNetworkUpdate = useRef(0);
   const facing = useRef<"left" | "right">("right");
   const velocity = useRef(new THREE.Vector3());
+  const [riding, setRiding] = useState(props.hasSkateboard);
   const { camera, gl } = useThree();
   const { onEnterApartment, onEnterPressureWashing, onEnterSubway } = props;
 
   useEffect(() => {
     function keyDown(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
-      if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright", "shift"].includes(key)) {
+      if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) {
         event.preventDefault();
         keys.current.add(key);
+      } else if (key === "r" && props.hasSkateboard && !event.repeat) {
+        setRiding((current) => !current);
       } else if (key === "enter" && !event.repeat) {
         if (activeInteraction.current === "apartment") onEnterApartment();
         if (activeInteraction.current === "pressure-washing") onEnterPressureWashing();
         if (activeInteraction.current === "subway") onEnterSubway();
+        if (activeInteraction.current === "skate-shop" && !props.hasSkateboard) void props.onClaimSkateboard();
       }
     }
     function keyUp(event: KeyboardEvent) { keys.current.delete(event.key.toLowerCase()); }
@@ -402,7 +348,7 @@ function PlayerController(props: PlayerControllerProps) {
       gl.domElement.removeEventListener("pointerup", pointerUp);
       gl.domElement.removeEventListener("wheel", wheel);
     };
-  }, [gl, onEnterApartment, onEnterPressureWashing, onEnterSubway]);
+  }, [gl, onEnterApartment, onEnterPressureWashing, onEnterSubway, props.hasSkateboard, props.onClaimSkateboard]);
 
   useFrame((state, delta) => {
     const player = playerRef.current;
@@ -416,7 +362,7 @@ function PlayerController(props: PlayerControllerProps) {
       ? new THREE.Vector3(horizontal, 0, -forward)
         .normalize()
         .applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw.current)
-        .multiplyScalar(keys.current.has("shift") ? 9 : 5.3)
+        .multiplyScalar(riding ? SKATEBOARD_SPEED : 4.2)
       : new THREE.Vector3();
     velocity.current.lerp(targetVelocity, 1 - Math.exp(-delta * (moving ? 10 : 8)));
     moveWithCollisions(
@@ -455,7 +401,10 @@ function PlayerController(props: PlayerControllerProps) {
   return (
     <group ref={playerRef} position={spawnPositions[props.spawn]}>
       <group ref={visualRef}>
-        <TurtleBillboard name={props.turtleName} variant={props.turtleVariant} />
+        {riding ? <Skateboard /> : null}
+        <group position-y={riding ? 0.43 : 0}>
+          <TurtleBillboard name={props.turtleName} variant={props.turtleVariant} />
+        </group>
       </group>
     </group>
   );
@@ -523,10 +472,10 @@ function ChelseaWorld({
       <Street />
       <Building x={-19} width={18} height={16} color="#9b654f" label="LETTUCE & CO. · WASH CREW" />
       <Building x={4} width={20} height={23} color="#a4866e" label="WEST 22 APARTMENTS" />
-      <Building x={23} width={14} height={18} color="#71888c" label="SHELL REPAIR" />
+      <Building x={23} width={14} height={18} color="#71888c" label="SHELL & ROLL · SKATE SHOP" />
       <StreetDetails />
       <ChelseaEntrances nearby={nearby} />
-      <SubwayEntrance nearby={nearby === "subway"} />
+      <SubwayEntrance nearby={nearby === "subway"} position={[21, 9.45]} rotationY={Math.PI / 2} stationName="23 ST" />
       <InteractionMarkers nearby={nearby} />
       <PlayerController
         {...props}
@@ -548,11 +497,15 @@ export function ChelseaDistrict3D(props: ChelseaDistrict3DProps) {
       ? { title: "Chelsea Wash Crew", detail: "Pressure wash Lettuce & Co.", action: props.onEnterPressureWashing, button: "Start job" }
       : nearby === "subway"
         ? { title: "West 23 Street", detail: "Enter the Turtle City subway.", action: props.onEnterSubway, button: "Enter station" }
+        : nearby === "skate-shop"
+          ? props.hasSkateboard
+            ? { title: "Shell & Roll", detail: "Your skateboard is ready. Press R to ride or walk.", action: () => undefined, button: "Owned" }
+            : { title: "Shell & Roll", detail: "Starter skateboard · on the house", action: props.onClaimSkateboard, button: "Pick up free" }
         : null;
 
   return (
     <main className="chelsea3d-stage" data-testid="chelsea-district-3d">
-      <Canvas camera={{ fov: 48, near: 0.1, far: 120, position: [0, 7, 16] }} dpr={[1, 1.5]} gl={{ antialias: true, powerPreference: "high-performance" }} performance={{ min: 0.6 }} shadows>
+      <Canvas camera={{ fov: 48, near: 0.1, far: 120, position: [0, 7, 16] }} dpr={[1, 1.5]} gl={{ antialias: true, powerPreference: "high-performance" }} performance={{ min: 0.6 }} shadows="basic">
         <Suspense fallback={null}>
           <ChelseaWorld
             nearby={nearby}
@@ -566,7 +519,7 @@ export function ChelseaDistrict3D(props: ChelseaDistrict3DProps) {
       </Canvas>
       <header className="chelsea3d-title"><p>Turtle City</p><h1>Chelsea</h1></header>
       <DistrictLiveStatus remotePlayerCount={remotePlayers.length} status={status} />
-      <aside className="chelsea3d-controls"><strong>Explore Chelsea</strong><span>WASD · Shift to run</span><span>Drag camera · Scroll to zoom</span></aside>
+      <aside className="chelsea3d-controls"><strong>Explore Chelsea</strong><span>WASD to move{props.hasSkateboard ? " · R to ride / walk" : " · Find a faster way to travel"}</span><span>Drag camera · Scroll to zoom</span></aside>
       {prompt ? <aside className="chelsea3d-prompt"><div><strong>{prompt.title}</strong><small>{prompt.detail}</small></div><button type="button" onClick={prompt.action}>{prompt.button}</button></aside> : null}
       <style jsx global>{`
         .chelsea3d-stage { position: relative; width: 100vw; height: 100vh; overflow: hidden; background: #c4d9e4; }

@@ -6,6 +6,8 @@ import { Suspense, useEffect, useRef, useState, type MutableRefObject } from "re
 import * as THREE from "three";
 import { DistrictLiveStatus } from "./MultiplayerDistrictPlayers";
 import { TurtleBillboard } from "./world3d/TurtleBillboard";
+import { Skateboard, SKATEBOARD_SPEED } from "./world3d/Skateboard";
+import { SubwayEntrance } from "./world3d/SubwayEntrance";
 import {
   moveWithCollisions,
   updateCharacterMotion,
@@ -37,6 +39,7 @@ type OutdoorDistrict3DProps = {
   title: string;
   turtleName: string;
   turtleVariant: TurtleVariant;
+  hasSkateboard: boolean;
 };
 
 const MIN_X = -30;
@@ -99,17 +102,6 @@ function StreetBase({ color = "#34393b" }: { color?: string }) {
   </group>;
 }
 
-function SubwayMarker({ position }: { position: WorldPoint }) {
-  return <group position={[position[0], 0.1, position[1]]}>
-    <mesh position-y={0.2} castShadow><boxGeometry args={[3.6, 0.4, 2.5]} /><meshStandardMaterial color="#858b88" /></mesh>
-    <mesh position-y={0.45}><boxGeometry args={[3, 0.45, 1.9]} /><meshStandardMaterial color="#131a1b" /></mesh>
-    {[-1.42, 1.42].flatMap((x) => [-1, 1].map((z) => <mesh key={`${x}-${z}`} position={[x, 1.55, z]}><boxGeometry args={[0.1, 2.4, 0.1]} /><meshStandardMaterial color="#167347" metalness={0.25} /></mesh>))}
-    {[-1, 1].map((z) => <mesh key={z} position={[0, 2.7, z]}><boxGeometry args={[2.9, 0.1, 0.1]} /><meshStandardMaterial color="#167347" /></mesh>)}
-    <mesh position={[-1.42, 3.1, -1]}><sphereGeometry args={[0.22, 12, 9]} /><meshStandardMaterial color="#fff0b8" emissive="#b47e2f" emissiveIntensity={1.1} /></mesh>
-    <Html center position={[0.2, 3.08, -1.08]} distanceFactor={11}><span className="outdoor3d-subway">T · SUBWAY</span></Html>
-  </group>;
-}
-
 function WinterPark() {
   const trees = Array.from({ length: 34 }, (_, index) => {
     const side = index % 2 === 0 ? -1 : 1;
@@ -127,7 +119,7 @@ function WinterPark() {
   </group>;
 }
 
-function WestVillageScenery({ actions }: { actions: DistrictAction[] }) {
+function WestVillageScenery({ actions, nearby }: { actions: DistrictAction[]; nearby: string | null }) {
   const bikeStart = actions.find((action) => action.id === "waterfront")?.position ?? [-13, 0];
   return <group>
     {/* Hudson River on the west/left edge */}
@@ -200,13 +192,13 @@ function WestVillageScenery({ actions }: { actions: DistrictAction[] }) {
       <mesh position={[0.55, 0.42, 0.35]} rotation-z={Math.PI / 2}><torusGeometry args={[0.35, 0.07, 10, 20]} /><meshStandardMaterial color="#26302e" /></mesh>
       <mesh position={[0, 0.72, 0.35]} rotation-z={-0.2}><boxGeometry args={[1.2, 0.1, 0.1]} /><meshStandardMaterial color="#e6aa32" /></mesh>
     </group>
-    {actions.filter((action) => action.type === "subway").map((action) => <SubwayMarker key={action.id} position={action.position} />)}
+    {actions.filter((action) => action.type === "subway").map((action) => <SubwayEntrance key={action.id} nearby={nearby === action.id} position={action.position} stationName={action.label} />)}
   </group>;
 }
 
-function DistrictScenery({ actions, theme }: { actions: DistrictAction[]; theme: DistrictTheme }) {
-  if (theme === "park") return <><WinterPark />{actions.filter((action) => action.type === "subway").map((action) => <SubwayMarker key={action.id} position={action.position} />)}</>;
-  if (theme === "village") return <WestVillageScenery actions={actions} />;
+function DistrictScenery({ actions, nearby, theme }: { actions: DistrictAction[]; nearby: string | null; theme: DistrictTheme }) {
+  if (theme === "park") return <><WinterPark />{actions.filter((action) => action.type === "subway").map((action) => <SubwayEntrance key={action.id} nearby={nearby === action.id} position={action.position} stationName={action.label} />)}</>;
+  if (theme === "village") return <WestVillageScenery actions={actions} nearby={nearby} />;
   const palette = theme === "midtown" ? ["#495a68", "#76547c", "#465f63"] : theme === "fidi" ? ["#667579", "#8d8170", "#53696d"] : ["#9a654e", "#bc9169", "#6d7c72"];
   return <group>
     <StreetBase color={theme === "midtown" ? "#252b32" : "#34393b"} />
@@ -215,7 +207,7 @@ function DistrictScenery({ actions, theme }: { actions: DistrictAction[]; theme:
     <BlockBuilding x={15} z={-14} width={21} height={theme === "midtown" ? 31 : 22} color={palette[2]} />
     {theme === "midtown" ? <><Html center position={[-5, 8, -10.7]} distanceFactor={25}><span className="outdoor3d-neon is-midtown">TURTLE SQUARE</span></Html><mesh position={[11, 0.35, -7.3]}><boxGeometry args={[3, 0.7, 1.2]} /><meshStandardMaterial color="#338a57" /></mesh></> : null}
     {theme === "fidi" ? <><mesh position={[0, 0.05, 11.7]}><boxGeometry args={[66, 0.1, 3.8]} /><meshStandardMaterial color="#4a8fa3" /></mesh>{[-26,-18,-10,-2,6,14,22,30].map((x) => <mesh key={x} position={[x,.65,10.2]}><cylinderGeometry args={[.08,.1,1.3,8]} /><meshStandardMaterial color="#304d50" /></mesh>)}<Html center position={[13, 2, -10.7]} distanceFactor={16}><span className="outdoor3d-neon is-fidi">ONE SHELL PLAZA</span></Html></> : null}
-    {actions.filter((action) => action.type === "subway").map((action) => <SubwayMarker key={action.id} position={action.position} />)}
+    {actions.filter((action) => action.type === "subway").map((action) => <SubwayEntrance key={action.id} nearby={nearby === action.id} position={action.position} stationName={action.label} />)}
   </group>;
 }
 
@@ -229,22 +221,23 @@ function RemotePlayers({ districtId, players, targets }: { districtId: Multiplay
   return players.map((player) => <group key={player.sessionId} ref={(group) => { if (group) refs.current.set(player.sessionId, group); else refs.current.delete(player.sessionId); }}><TurtleBillboard name={player.turtleName} scale={0.82} variant={isTurtleVariant(player.variant) ? player.variant : "clover"} /></group>);
 }
 
-function Controller({ actions, districtId, onNearby, sendMovement, spawn, spawnPositions, theme, turtleName, turtleVariant }: OutdoorDistrict3DProps & { onNearby: (id: string | null) => void; sendMovement: (movement: { facing: "left" | "right"; x: number; y: number }) => void }) {
-  const player = useRef<THREE.Group>(null); const visual = useRef<THREE.Group>(null); const keys = useRef(new Set<string>()); const active = useRef<string | null>(null); const yaw = useRef(0); const distance = useRef(14); const dragging = useRef(false); const lastX = useRef(0); const lastSend = useRef(0); const facing = useRef<"left" | "right">("right"); const velocity = useRef(new THREE.Vector3()); const { camera, gl } = useThree();
+function Controller({ actions, districtId, hasSkateboard, onNearby, sendMovement, spawn, spawnPositions, theme, turtleName, turtleVariant }: OutdoorDistrict3DProps & { onNearby: (id: string | null) => void; sendMovement: (movement: { facing: "left" | "right"; x: number; y: number }) => void }) {
+  const player = useRef<THREE.Group>(null); const visual = useRef<THREE.Group>(null); const keys = useRef(new Set<string>()); const active = useRef<string | null>(null); const yaw = useRef(0); const distance = useRef(18); const dragging = useRef(false); const lastX = useRef(0); const lastSend = useRef(0); const facing = useRef<"left" | "right">("right"); const velocity = useRef(new THREE.Vector3()); const { camera, gl } = useThree();
+  const [riding, setRiding] = useState(hasSkateboard);
   const colliders: WorldCollider[] = actions.filter((action) => action.type === "subway").map((action) => ({ minX: action.position[0] - 2, maxX: action.position[0] + 2, minZ: action.position[1] - 1.55, maxZ: action.position[1] + 1.55 }));
   const movementBounds = { minX: theme === "village" ? -24.2 : MIN_X + 1, maxX: MAX_X - 1, minZ: -7.7, maxZ: MAX_Z };
   useEffect(() => {
-    const down = (event: KeyboardEvent) => { const key = event.key.toLowerCase(); if (["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright","shift"].includes(key)) { event.preventDefault(); keys.current.add(key); } else if (key === "enter" && !event.repeat) actions.find((action) => action.id === active.current)?.onEnter(); };
+    const down = (event: KeyboardEvent) => { const key = event.key.toLowerCase(); if (["w","a","s","d","arrowup","arrowdown","arrowleft","arrowright"].includes(key)) { event.preventDefault(); keys.current.add(key); } else if (key === "r" && hasSkateboard && !event.repeat) setRiding((current) => !current); else if (key === "enter" && !event.repeat) actions.find((action) => action.id === active.current)?.onEnter(); };
     const up = (event: KeyboardEvent) => keys.current.delete(event.key.toLowerCase()); const blur = () => keys.current.clear();
     const pointerDown = (event: PointerEvent) => { dragging.current = true; lastX.current = event.clientX; gl.domElement.setPointerCapture(event.pointerId); };
     const pointerMove = (event: PointerEvent) => { if (!dragging.current) return; yaw.current -= (event.clientX - lastX.current) * 0.007; lastX.current = event.clientX; };
     const pointerUp = () => { dragging.current = false; }; const wheel = (event: WheelEvent) => { event.preventDefault(); distance.current = THREE.MathUtils.clamp(distance.current + event.deltaY * 0.012, 9, 22); };
     window.addEventListener("keydown", down, { passive: false }); window.addEventListener("keyup", up); window.addEventListener("blur", blur); gl.domElement.addEventListener("pointerdown", pointerDown); gl.domElement.addEventListener("pointermove", pointerMove); gl.domElement.addEventListener("pointerup", pointerUp); gl.domElement.addEventListener("wheel", wheel, { passive: false });
     return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); window.removeEventListener("blur", blur); gl.domElement.removeEventListener("pointerdown", pointerDown); gl.domElement.removeEventListener("pointermove", pointerMove); gl.domElement.removeEventListener("pointerup", pointerUp); gl.domElement.removeEventListener("wheel", wheel); };
-  }, [actions, gl]);
+  }, [actions, gl, hasSkateboard]);
   useFrame((state, delta) => {
     if (!player.current || !visual.current) return; const horizontal = Number(keys.current.has("d") || keys.current.has("arrowright")) - Number(keys.current.has("a") || keys.current.has("arrowleft")); const forward = Number(keys.current.has("w") || keys.current.has("arrowup")) - Number(keys.current.has("s") || keys.current.has("arrowdown")); const moving = horizontal !== 0 || forward !== 0;
-    const targetVelocity = moving ? new THREE.Vector3(horizontal, 0, -forward).normalize().applyAxisAngle(new THREE.Vector3(0,1,0), yaw.current).multiplyScalar(keys.current.has("shift") ? 9 : 5.3) : new THREE.Vector3();
+    const targetVelocity = moving ? new THREE.Vector3(horizontal, 0, -forward).normalize().applyAxisAngle(new THREE.Vector3(0,1,0), yaw.current).multiplyScalar(riding ? SKATEBOARD_SPEED : 4.2) : new THREE.Vector3();
     velocity.current.lerp(targetVelocity, 1 - Math.exp(-delta * (moving ? 10 : 8)));
     if (Math.abs(velocity.current.x) > 0.05) facing.current = velocity.current.x < 0 ? "left" : "right";
     moveWithCollisions(player.current.position, velocity.current.clone().multiplyScalar(Math.min(delta, 0.05)), movementBounds, colliders);
@@ -253,15 +246,15 @@ function Controller({ actions, districtId, onNearby, sendMovement, spawn, spawnP
     const target = player.current.position.clone().add(new THREE.Vector3(0,1.35,0)); const desired = target.clone().add(new THREE.Vector3(Math.sin(yaw.current) * distance.current, distance.current * 0.52, Math.cos(yaw.current) * distance.current)); camera.position.lerp(desired, 1 - Math.exp(-delta * 6)); camera.lookAt(target);
     if (state.clock.elapsedTime * 1000 - lastSend.current >= 65) { const network = worldToNetwork(districtId, player.current.position.x, player.current.position.z); sendMovement({ facing: facing.current, ...network }); lastSend.current = state.clock.elapsedTime * 1000; }
   });
-  const start = spawnPositions[spawn] ?? [0,0]; return <group ref={player} position={[start[0],0,start[1]]}><group ref={visual}><TurtleBillboard name={turtleName} variant={turtleVariant} /></group></group>;
+  const start = spawnPositions[spawn] ?? [0,0]; return <group ref={player} position={[start[0],0,start[1]]}><group ref={visual}>{riding ? <Skateboard /> : null}<group position-y={riding ? 0.43 : 0}><TurtleBillboard name={turtleName} variant={turtleVariant} /></group></group></group>;
 }
 
 export function OutdoorDistrict3D(props: OutdoorDistrict3DProps) {
   const [nearby, setNearby] = useState<string | null>(null); const multiplayer = useDistrictMultiplayer(props.districtId, props.spawn); const prompt = props.actions.find((action) => action.id === nearby) ?? null;
   const sky = props.theme === "midtown" ? "#18213a" : props.theme === "park" ? "#cbdce4" : "#bed6df";
   return <main className={`outdoor3d-stage theme-${props.theme}`} data-testid={`${props.districtId}-district-3d`}>
-    <Canvas camera={{ fov: 48, near: 0.1, far: 130, position: [0,7,16] }} dpr={[1,1.5]} gl={{ antialias: true, powerPreference: "high-performance" }} performance={{ min: 0.6 }} shadows><Suspense fallback={null}><color attach="background" args={[sky]} /><fog attach="fog" args={[sky,38,82]} /><Sky sunPosition={props.theme === "midtown" ? [-8,4,-5] : [8,11,5]} turbidity={8} rayleigh={2.2} /><hemisphereLight args={["#e9f4f7", "#4d5350", props.theme === "midtown" ? 0.85 : 1.6]} /><directionalLight castShadow intensity={props.theme === "midtown" ? 1.2 : 2.1} position={[12,18,8]} shadow-mapSize={[1024,1024]} shadow-camera-left={-36} shadow-camera-right={36} shadow-camera-top={28} shadow-camera-bottom={-28} /><DistrictScenery actions={props.actions} theme={props.theme} />{props.actions.map((action) => <mesh key={action.id} position={[action.position[0],0.14,action.position[1]]} rotation-x={-Math.PI/2}><ringGeometry args={[1.1,1.28,36]} /><meshBasicMaterial color={nearby === action.id ? "#fff2a3" : "#74c787"} opacity={nearby === action.id ? 1 : 0.5} transparent /></mesh>)}<Controller {...props} onNearby={setNearby} sendMovement={multiplayer.sendMovement} /><RemotePlayers districtId={props.districtId} players={multiplayer.remotePlayers} targets={multiplayer.remoteTargetsRef} /></Suspense></Canvas>
-    <header className="outdoor3d-title"><p>Turtle City</p><h1>{props.title}</h1></header><DistrictLiveStatus remotePlayerCount={multiplayer.remotePlayers.length} status={multiplayer.status} /><aside className="outdoor3d-controls"><strong>Explore {props.title}</strong><span>WASD · Shift to run</span><span>Drag camera · Scroll to zoom</span></aside>{prompt ? <aside className="outdoor3d-prompt"><div><strong>{prompt.label}</strong><small>{prompt.detail}</small></div><button type="button" onClick={prompt.onEnter}>{prompt.button}</button></aside> : null}
+    <Canvas camera={{ fov: 48, near: 0.1, far: 130, position: [0,7,16] }} dpr={[1,1.5]} gl={{ antialias: true, powerPreference: "high-performance" }} performance={{ min: 0.6 }} shadows="basic"><Suspense fallback={null}><color attach="background" args={[sky]} /><fog attach="fog" args={[sky,38,82]} /><Sky sunPosition={props.theme === "midtown" ? [-8,4,-5] : [8,11,5]} turbidity={8} rayleigh={2.2} /><hemisphereLight args={["#e9f4f7", "#4d5350", props.theme === "midtown" ? 0.85 : 1.6]} /><directionalLight castShadow intensity={props.theme === "midtown" ? 1.2 : 2.1} position={[12,18,8]} shadow-mapSize={[1024,1024]} shadow-camera-left={-36} shadow-camera-right={36} shadow-camera-top={28} shadow-camera-bottom={-28} /><DistrictScenery actions={props.actions} nearby={nearby} theme={props.theme} />{props.actions.map((action) => <mesh key={action.id} position={[action.position[0],0.14,action.position[1]]} rotation-x={-Math.PI/2}><ringGeometry args={[1.1,1.28,36]} /><meshBasicMaterial color={nearby === action.id ? "#fff2a3" : "#74c787"} opacity={nearby === action.id ? 1 : 0.5} transparent /></mesh>)}<Controller {...props} onNearby={setNearby} sendMovement={multiplayer.sendMovement} /><RemotePlayers districtId={props.districtId} players={multiplayer.remotePlayers} targets={multiplayer.remoteTargetsRef} /></Suspense></Canvas>
+    <header className="outdoor3d-title"><p>Turtle City</p><h1>{props.title}</h1></header><DistrictLiveStatus remotePlayerCount={multiplayer.remotePlayers.length} status={multiplayer.status} /><aside className="outdoor3d-controls"><strong>Explore {props.title}</strong><span>WASD to move{props.hasSkateboard ? " · R to ride / walk" : ""}</span><span>Drag camera · Scroll to zoom</span></aside>{prompt ? <aside className="outdoor3d-prompt"><div><strong>{prompt.label}</strong><small>{prompt.detail}</small></div><button type="button" onClick={prompt.onEnter}>{prompt.button}</button></aside> : null}
     <style jsx global>{`.outdoor3d-stage{position:relative;width:100vw;height:100vh;overflow:hidden}.outdoor3d-stage canvas{display:block;cursor:grab;touch-action:none}.outdoor3d-title{position:absolute;top:26px;left:30px;color:#18392a;text-shadow:0 2px rgba(255,255,255,.4);pointer-events:none}.theme-midtown .outdoor3d-title{color:#f3e7ff;text-shadow:0 2px #171326}.outdoor3d-title p{margin:0 0 2px;font:850 12px/1.2 system-ui;letter-spacing:.16em;text-transform:uppercase}.outdoor3d-title h1{margin:0;font:900 clamp(30px,4vw,48px)/1 system-ui;letter-spacing:-.045em}.outdoor3d-controls{position:absolute;left:30px;bottom:28px;display:grid;gap:3px;padding:13px 16px;color:#efffe9;background:rgba(20,52,35,.86);border:1px solid rgba(255,255,255,.22);border-radius:13px;backdrop-filter:blur(10px);font:650 12px/1.4 system-ui}.outdoor3d-controls strong{font-size:14px}.outdoor3d-controls span{opacity:.78}.outdoor3d-prompt{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);display:flex;align-items:center;gap:24px;min-width:330px;padding:13px 14px 13px 17px;color:white;background:rgba(20,52,35,.92);border:1px solid rgba(255,255,255,.25);border-radius:14px;backdrop-filter:blur(12px)}.outdoor3d-prompt div{display:grid;gap:3px;flex:1}.outdoor3d-prompt strong{font:800 14px/1.1 system-ui}.outdoor3d-prompt small{opacity:.75;font:600 11px/1.2 system-ui}.outdoor3d-prompt button{padding:10px 13px;color:#173b29;background:#fff2a3;border:0;border-radius:9px;cursor:pointer;font:800 12px/1 system-ui}.outdoor3d-subway,.outdoor3d-neon,.outdoor3d-road-sign,.outdoor3d-bike-start,.outdoor3d-activity-sign{white-space:nowrap;padding:5px 7px;color:white;background:#202625;border-radius:5px;font:900 9px/1 system-ui;letter-spacing:.08em;pointer-events:none}.outdoor3d-neon{color:#ffb8ef;background:#38203e;box-shadow:0 0 12px #d769c4}.outdoor3d-neon.is-midtown{color:#8ef8ff;background:#182d44;box-shadow:0 0 16px #4adce8}.outdoor3d-neon.is-fidi{color:#fff1b5;background:#314b50;box-shadow:none}.outdoor3d-road-sign{color:#fff3c8;background:#335646}.outdoor3d-bike-start{color:#17372b;background:#f2d45c;border:1px solid #8c7624}.outdoor3d-activity-sign{color:#17382b;background:#f3dc7d}.outdoor3d-activity-sign.is-neon{color:#9af8ff;background:#20314a;box-shadow:0 0 12px #58dce3}.outdoor3d-activity-sign.is-jazz{color:#ffb7ef;background:#38203f;box-shadow:0 0 10px #d86bc5}`}</style>
   </main>;
 }

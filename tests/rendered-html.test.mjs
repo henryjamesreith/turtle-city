@@ -134,7 +134,7 @@ test("accounts receive unique turtle tags and can log out safely", async () => {
   assert.match(park, /CentralParkDistrict3D/);
   assert.match(pressureWashing, /className="turtle-nameplate"/);
   assert.match(hockey, /strokeText\(turtleName/);
-  assert.match(shoveling, /strokeText\(turtleName/);
+  assert.match(shoveling, /TurtleBillboard/);
   assert.match(styles, /\.turtle-nameplate/);
   assert.match(styles, /bottom: calc\(100% \+ 5px\)/);
   assert.match(styles, /\.map-toolbar/);
@@ -186,7 +186,7 @@ test("Chelsea connects the starter apartment, street, and subway", async () => {
   assert.match(map, /useState<Screen>\("apartment"\)/);
   assert.match(map, /<ChelseaApartment3D/);
   assert.match(map, /<ChelseaDistrict3D/);
-  assert.doesNotMatch(map, /mapReturn|openWorldMap/);
+  assert.match(map, /openWorldMap/);
   assert.match(map, /enterSubway\("chelsea"\)/);
   assert.match(district, /data-testid="chelsea-district-3d"/);
   assert.match(district, /West 22 Apartments/);
@@ -271,9 +271,14 @@ test("West Village connects its streets, music venue, and Hudson waterfront", as
   assert.match(styles, /\.village-waterfront/);
   assert.match(styles, /\.village-greenway/);
   assert.match(styles, /\.bike-race-stage/);
-  assert.match(styles, /\.bike-race-track/);
-  assert.match(styles, /\.bike-racer/);
+  assert.match(styles, /\.bike-race-canvas/);
+  assert.match(styles, /\.bike-finish-label/);
   assert.match(bikeRace, /data-testid="bike-race-game"/);
+  assert.match(bikeRace, /<Canvas/);
+  assert.match(bikeRace, /BikeRaceWorld/);
+  assert.match(bikeRace, /TurtleBillboard/);
+  assert.match(bikeRace, /useBikeRaceMultiplayer/);
+  assert.match(bikeRace, /Multiplayer/);
   assert.match(bikeRace, /const COURSE_LENGTH = 6200/);
   assert.match(bikeRace, /Use W\/S or ↑\/↓ to change lanes/);
   assert.match(bikeRace, /event\.code === "Space"/);
@@ -343,6 +348,9 @@ test("Midtown connects its night streets, subway, and two activities", async () 
   assert.match(fallingItems, /state\.lives -= 1/);
   assert.match(fallingItems, /requestAnimationFrame/);
   assert.match(trashPickup, /data-testid="trash-pickup-game"/);
+  assert.match(trashPickup, /<Canvas/);
+  assert.match(trashPickup, /CleanupWorld/);
+  assert.match(trashPickup, /TurtleBillboard/);
   assert.match(trashPickup, /const SHIFT_LENGTH = 60/);
   assert.match(trashPickup, /event\.code === "Space"/);
   assert.match(trashPickup, /state\.collected\.add/);
@@ -350,7 +358,7 @@ test("Midtown connects its night streets, subway, and two activities", async () 
   assert.match(persistence, /\| "midtown"/);
   assert.match(migration, /'midtown'/);
   assert.match(subway, /id: "midtown-times-square"/);
-  assert.match(train, /Open subway map/);
+  assert.match(train, /Next stop/);
   assert.match(styles, /\.midtown-stage/);
   assert.match(styles, /\.falling-game-stage/);
   assert.match(styles, /\.trash-game-stage/);
@@ -395,6 +403,11 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
   assert.match(district, /Shell Express/);
   assert.match(district, /Fulton Street/);
   assert.match(delivery, /data-testid="shell-express-game"/);
+  assert.match(delivery, /<Canvas/);
+  assert.match(delivery, /DeliveryWorld/);
+  assert.match(delivery, /TurtleBillboard/);
+  assert.match(delivery, /useDeliveryMultiplayer/);
+  assert.match(delivery, /Online dispatch/);
   assert.match(delivery, /const ROUTE_TIME = 60/);
   assert.match(delivery, /const DELIVERY_TARGET = 6/);
   assert.match(delivery, /state\.cargo = Math\.min/);
@@ -403,10 +416,11 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
   assert.match(persistence, /\| "fidi"/);
   assert.match(migration, /'fidi'/);
   assert.match(subway, /id: "fidi-fulton"/);
-  assert.match(train, /Open subway map/);
+  assert.match(train, /Exit train/);
   assert.match(styles, /\.fidi-stage/);
   assert.match(styles, /\.shell-express-stage/);
-  assert.match(styles, /\.delivery-route-item/);
+  assert.match(styles, /\.shell-express-canvas/);
+  assert.match(styles, /\.delivery-drop-label/);
 });
 
 test("outdoor districts have authenticated shared multiplayer presence", async () => {
@@ -540,7 +554,7 @@ test("hockey has a reusable server-authoritative multiplayer match", async () =>
   assert.match(hook, /send\("rematch"\)/);
 });
 
-test("the subway is the only route to the onboard city map", async () => {
+test("the map is universally viewable but subway travel stays onboard-only", async () => {
   const [map, park, platform, train, subway, apartment, district, village] =
     await Promise.all([
       readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
@@ -557,10 +571,13 @@ test("the subway is the only route to the onboard city map", async () => {
   assert.match(map, /screen === "subway-train"/);
   assert.match(map, /<SubwayPlatform3D/);
   assert.match(map, /<SubwayTrain3D/);
-  assert.match(map, /onChooseStop/);
+  assert.match(map, /onExitAtStop={arriveInDistrict}/);
   assert.equal([...map.matchAll(/setScreen\("city"\)/g)].length, 1);
-  assert.match(map, /Back to train/);
-  assert.match(map, /Ride to/);
+  assert.match(map, /subwayDirection/);
+  assert.match(map, /subway-map-line-one/);
+  assert.match(map, /View only — enter a subway station to travel/);
+  assert.match(map, /className="universal-settings-button"/);
+  assert.match(map, /Keyboard commands/);
   assert.match(map, /arriveInDistrict/);
   assert.match(platform, /data-testid="subway-platform-3d"/);
   assert.match(platform, /FIRST_ARRIVAL_TIME = 1/);
@@ -568,7 +585,10 @@ test("the subway is the only route to the onboard city map", async () => {
   assert.match(platform, /PlatformTrain/);
   assert.match(platform, /onBoard/);
   assert.match(train, /data-testid="subway-train-3d"/);
-  assert.match(train, /Open subway map/);
+  assert.match(train, /oneLineStops\.map/);
+  assert.match(train, /setStopIndex/);
+  assert.match(train, /doorsOpen/);
+  assert.match(train, /onExitAtStop/);
   assert.match(train, /TrainCar/);
   assert.match(subway, /central-park/);
   assert.match(subway, /west-village/);
@@ -579,7 +599,7 @@ test("the subway is the only route to the onboard city map", async () => {
   assert.doesNotMatch(apartment, /City map|onOpenMap/);
   assert.doesNotMatch(district, /City map|onOpenMap/);
   assert.doesNotMatch(village, /City map|onOpenMap/);
-  assert.match(train, /train3d-map-card/);
+  assert.match(train, /train-route-card/);
 });
 
 test("Chelsea pressure washing clears a facade in a session-only shift", async () => {
@@ -736,13 +756,16 @@ test("snow shoveling clears the Snow Crew paths in a session-only shift", async 
   assert.match(park, /onEnterShoveling/);
   assert.match(park, /snow-crew/);
   assert.match(shoveling, /data-testid="snow-shoveling-game"/);
+  assert.match(shoveling, /<Canvas/);
+  assert.match(shoveling, /SnowField/);
+  assert.match(shoveling, /InstancedMesh/);
   assert.match(shoveling, /const SHIFT_LENGTH = 90/);
   assert.match(shoveling, /const CLEAR_TARGET = 72/);
   assert.match(shoveling, /event\.code === "Space"/);
   assert.match(shoveling, /collectSnow/);
   assert.match(shoveling, /dumpShovel/);
   assert.match(shoveling, /refillSnowAt/);
-  assert.match(shoveling, /turtleImageSrc/);
+  assert.match(shoveling, /turtleVariant/);
   assert.match(shoveling, /requestAnimationFrame/);
   assert.match(shoveling, /WASD/);
   assert.match(styles, /\.shoveling-stage/);

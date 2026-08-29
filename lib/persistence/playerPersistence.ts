@@ -277,6 +277,25 @@ export async function saveLastLocation(location: PersistedLocation) {
   }
 }
 
+export async function claimFreeSkateboard() {
+  const client = getSupabaseBrowserClient();
+  const user = await loadPlayerSession();
+
+  if (!client) throw new Error("Supabase is not configured.");
+  if (!user) throw new Error("Your session has expired. Sign in again.");
+
+  const { error } = await client.from("inventory_items").insert({
+    equipped: true,
+    item_key: "chelsea-skateboard",
+    metadata: { color: "sunset-yellow", source: "shell-and-roll" },
+    quantity: 1,
+    user_id: user.id,
+  });
+
+  // Claiming an already-owned free board is a successful no-op.
+  if (error && error.code !== "23505") throw error;
+}
+
 export async function saveTurtleProfile(input: {
   appearance: TurtleAppearance;
   personality?: string;

@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { BikeRaceGame } from "./BikeRaceGame";
 import { ChelseaDistrict3D } from "./ChelseaDistrict3D";
 import { FallingItemsGame } from "./FallingItemsGame";
@@ -24,8 +30,10 @@ import { SnowShovelingGame } from "./SnowShovelingGame";
 import { TurtleAuth } from "./TurtleAuth";
 import { TurtleOnboarding } from "./TurtleOnboarding";
 import { TrashPickupGame } from "./TrashPickupGame";
+import { SkateboardOwnershipContext } from "./world3d/Skateboard";
 import {
   defaultTurtleAppearance,
+  claimFreeSkateboard,
   getPersistedLocation,
   getTurtleAppearance,
   hasCompletedOnboarding,
@@ -44,8 +52,8 @@ import {
 } from "@/lib/persistence/playerPersistence";
 import { getTurtleImage } from "@/lib/turtles";
 import {
-  isTransitDistrict,
-  subwayStations,
+  oneLineStops,
+  type SubwayDirection,
   type TransitDistrict,
 } from "@/lib/world/subway";
 
@@ -174,14 +182,19 @@ export function CityMap() {
     turtleName: string;
   } | null>(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [mapReturnScreen, setMapReturnScreen] = useState<Screen>("apartment");
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [logoutError, setLogoutError] = useState("");
   const [turtleName, setTurtleName] = useState("");
   const [turtlePersonality, setTurtlePersonality] = useState("");
+  const [hasSkateboard, setHasSkateboard] = useState(false);
   const [turtleAppearance, setTurtleAppearance] =
     useState<TurtleAppearance>(defaultTurtleAppearance);
   const [subwayOrigin, setSubwayOrigin] =
     useState<TransitDistrict>("chelsea");
+  const [subwayDirection, setSubwayDirection] =
+    useState<SubwayDirection>("downtown");
   const [parkSpawn, setParkSpawn] = useState<ParkSpawn>("south-gate");
   const [chelseaSpawn, setChelseaSpawn] =
     useState<ChelseaSpawn>("apartment");
@@ -199,6 +212,18 @@ export function CityMap() {
     setSelectedId(null);
     setScreen("subway-platform");
   }
+
+  function openWorldMap() {
+    setMapReturnScreen(screen);
+    setSelectedId(null);
+    setShowSettings(false);
+    setScreen("city");
+  }
+
+  const closeWorldMap = useCallback(() => {
+    setSelectedId(null);
+    setScreen(mapReturnScreen);
+  }, [mapReturnScreen]);
 
   const arriveInDistrict = useCallback((destination: TransitDistrict) => {
     setSelectedId(null);
@@ -234,6 +259,8 @@ export function CityMap() {
     setReturningPlayer(hasTurtle);
     setHasPlayerSession(true);
     setPlayerIsAnonymous(snapshot.isAnonymous);
+    const ownsSkateboard = snapshot.inventory.some((item) => item.item_key === "chelsea-skateboard");
+    setHasSkateboard(ownsSkateboard);
     applyTurtleAppearance(appearance);
 
     return hasTurtle;
@@ -245,6 +272,7 @@ export function CityMap() {
     setPlayerIsAnonymous(false);
     setTurtleName("");
     setTurtlePersonality("");
+    setHasSkateboard(false);
     setTurtleAppearance(defaultTurtleAppearance);
     applyTurtleAppearance(defaultTurtleAppearance);
     setSelectedId(null);
@@ -345,7 +373,11 @@ export function CityMap() {
       }
 
       if (event.key === "Escape") {
-        if (screen === "hockey" || screen === "snow-shoveling") {
+        if (showLogoutConfirm) {
+          if (!logoutLoading) setShowLogoutConfirm(false);
+        } else if (showSettings) {
+          setShowSettings(false);
+        } else if (screen === "hockey" || screen === "snow-shoveling") {
           setParkSpawn(screen === "hockey" ? "frozen-pond" : "snow-crew");
           setScreen("central-park");
         } else if (
@@ -374,20 +406,17 @@ export function CityMap() {
           setScreen("chelsea");
         } else if (screen === "subway-platform") {
           exitSubwayToOrigin();
-        } else if (screen === "subway-train") {
-          setScreen("subway-platform");
         } else if (screen === "city" && selectedId) {
           setSelectedId(null);
         } else if (screen === "city") {
-          setSelectedId(null);
-          setScreen("subway-train");
+          closeWorldMap();
         }
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [entryMode, exitSubwayToOrigin, screen, selectedId]);
+  }, [closeWorldMap, entryMode, exitSubwayToOrigin, logoutLoading, screen, selectedId, showLogoutConfirm, showSettings]);
 
   const mapStyle = {
     "--focus-x": selectedDistrict?.focusX ?? "0vw",
@@ -518,34 +547,110 @@ export function CityMap() {
     );
   }
 
+  const withGameChrome = (content: ReactNode) => (
+    <SkateboardOwnershipContext.Provider value={hasSkateboard}>
+      {content}
+      {screen !== "city" ? (
+        <button
+          type="button"
+          className="universal-settings-button"
+          aria-label="Open settings"
+          aria-expanded={showSettings}
+          onClick={() => setShowSettings(true)}
+        >
+          <span aria-hidden="true">⚙</span>
+          Settings
+        </button>
+      ) : null}
+
+      {showSettings ? (
+        <section
+          className="settings-dialog"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-title"
+        >
+          <button
+            type="button"
+            className="settings-dialog-close"
+            aria-label="Close settings"
+            onClick={() => setShowSettings(false)}
+          >
+            ×
+          </button>
+          <p>Turtle City</p>
+          <h2 id="settings-title">Settings</h2>
+          <div className="settings-shortcuts">
+            <h3>Keyboard commands</h3>
+            <dl>
+              <div><dt>WASD / Arrows</dt><dd>Move</dd></div>
+              <div><dt>E / Enter</dt><dd>Interact</dd></div>
+              <div><dt>Esc</dt><dd>Back / close</dd></div>
+            </dl>
+          </div>
+          <div className="settings-actions">
+            {screen !== "city" ? (
+              <button type="button" className="settings-map-action" onClick={openWorldMap}>View city map</button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => {
+                setLogoutError("");
+                setShowSettings(false);
+                setShowLogoutConfirm(true);
+              }}
+            >
+              Log out
+            </button>
+          </div>
+          <small>Travel is available only after boarding the subway.</small>
+        </section>
+      ) : null}
+
+      {showLogoutConfirm ? (
+        <section className="logout-dialog" role="dialog" aria-modal="true" aria-labelledby="logout-title">
+          <p>Leaving Turtle City?</p>
+          <h2 id="logout-title">Log out</h2>
+          <span>{playerIsAnonymous ? `${turtleName} is not connected to an email account. If you log out, this turtle cannot be recovered.` : `You can sign back in as ${turtleName} anytime with your email and password.`}</span>
+          {logoutError ? <strong role="alert">{logoutError}</strong> : null}
+          <div>
+            <button type="button" onClick={() => setShowLogoutConfirm(false)} disabled={logoutLoading}>Keep playing</button>
+            <button type="button" onClick={() => void logOutCurrentPlayer()} disabled={logoutLoading}>{logoutLoading ? "Logging out…" : "Log out"}</button>
+          </div>
+        </section>
+      ) : null}
+    </SkateboardOwnershipContext.Provider>
+  );
+
   if (screen === "subway-platform") {
-    return (
+    return withGameChrome(
       <SubwayPlatform3D
         origin={subwayOrigin}
         turtleName={turtleName}
         turtleVariant={turtleAppearance.variant}
         onExit={exitSubwayToOrigin}
-        onBoard={() => setScreen("subway-train")}
-      />
-    );
-  }
-
-  if (screen === "subway-train") {
-    return (
-      <SubwayTrain3D
-        origin={subwayOrigin}
-        turtleName={turtleName}
-        turtleVariant={turtleAppearance.variant}
-        onChooseStop={() => {
-          setSelectedId(null);
-          setScreen("city");
+        onBoard={(direction) => {
+          setSubwayDirection(direction);
+          setScreen("subway-train");
         }}
       />
     );
   }
 
+  if (screen === "subway-train") {
+    return withGameChrome(
+      <SubwayTrain3D
+        direction={subwayDirection}
+        origin={subwayOrigin}
+        turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
+        onExitAtStop={arriveInDistrict}
+      />
+    );
+  }
+
   if (screen === "hockey") {
-    return (
+    return withGameChrome(
       <HockeyGame
         turtleName={turtleName}
         turtleImage={getTurtleImage(turtleAppearance.variant)}
@@ -558,10 +663,10 @@ export function CityMap() {
   }
 
   if (screen === "snow-shoveling") {
-    return (
+    return withGameChrome(
       <SnowShovelingGame
         turtleName={turtleName}
-        turtleImage={getTurtleImage(turtleAppearance.variant)}
+        turtleVariant={turtleAppearance.variant}
         onExit={() => {
           setParkSpawn("snow-crew");
           setScreen("central-park");
@@ -571,7 +676,7 @@ export function CityMap() {
   }
 
   if (screen === "pressure-washing") {
-    return (
+    return withGameChrome(
       <PressureWashingGame
         turtleName={turtleName}
         onExit={() => {
@@ -583,7 +688,7 @@ export function CityMap() {
   }
 
   if (screen === "falling-items") {
-    return (
+    return withGameChrome(
       <FallingItemsGame
         turtleName={turtleName}
         onExit={() => {
@@ -595,9 +700,10 @@ export function CityMap() {
   }
 
   if (screen === "trash-pickup") {
-    return (
+    return withGameChrome(
       <TrashPickupGame
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         onExit={() => {
           setMidtownSpawn("trash-pickup");
           setScreen("midtown");
@@ -607,9 +713,10 @@ export function CityMap() {
   }
 
   if (screen === "shell-express") {
-    return (
+    return withGameChrome(
       <ShellExpressGame
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         onExit={() => {
           setFidiSpawn("delivery");
           setScreen("fidi");
@@ -619,9 +726,10 @@ export function CityMap() {
   }
 
   if (screen === "bike-race") {
-    return (
+    return withGameChrome(
       <BikeRaceGame
         turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
         onExit={() => {
           setWestVillageSpawn("waterfront");
           setScreen("west-village");
@@ -631,7 +739,7 @@ export function CityMap() {
   }
 
   if (screen === "jazz-club") {
-    return (
+    return withGameChrome(
       <JazzClub
         turtleName={turtleName}
         onExit={() => {
@@ -644,12 +752,13 @@ export function CityMap() {
   }
 
   if (screen === "rhythm-game") {
-    return <RhythmGame onExit={() => setScreen("jazz-club")} />;
+    return withGameChrome(<RhythmGame onExit={() => setScreen("jazz-club")} />);
   }
 
   if (screen === "apartment") {
-    return (
+    return withGameChrome(
       <ChelseaApartment3D
+        hasSkateboard={hasSkateboard}
         turtleName={turtleName}
         turtleVariant={turtleAppearance.variant}
         onExitToChelsea={() => {
@@ -661,21 +770,27 @@ export function CityMap() {
   }
 
   if (screen === "chelsea") {
-    return (
+    return withGameChrome(
       <ChelseaDistrict3D
+        hasSkateboard={hasSkateboard}
         turtleName={turtleName}
         turtleVariant={turtleAppearance.variant}
         spawn={chelseaSpawn}
         onEnterApartment={() => setScreen("apartment")}
         onEnterPressureWashing={() => setScreen("pressure-washing")}
         onEnterSubway={() => enterSubway("chelsea")}
+        onClaimSkateboard={async () => {
+          await claimFreeSkateboard();
+          setHasSkateboard(true);
+        }}
       />
     );
   }
 
   if (screen === "central-park") {
-    return (
+    return withGameChrome(
       <CentralParkDistrict3D
+        hasSkateboard={hasSkateboard}
         turtleName={turtleName}
         turtleVariant={turtleAppearance.variant}
         spawn={parkSpawn}
@@ -693,8 +808,9 @@ export function CityMap() {
   }
 
   if (screen === "midtown") {
-    return (
+    return withGameChrome(
       <MidtownDistrict3D
+        hasSkateboard={hasSkateboard}
         turtleName={turtleName}
         turtleVariant={turtleAppearance.variant}
         spawn={midtownSpawn}
@@ -706,8 +822,9 @@ export function CityMap() {
   }
 
   if (screen === "fidi") {
-    return (
+    return withGameChrome(
       <FidiDistrict3D
+        hasSkateboard={hasSkateboard}
         turtleName={turtleName}
         turtleVariant={turtleAppearance.variant}
         spawn={fidiSpawn}
@@ -718,8 +835,9 @@ export function CityMap() {
   }
 
   if (screen === "west-village") {
-    return (
+    return withGameChrome(
       <WestVillageDistrict3D
+        hasSkateboard={hasSkateboard}
         turtleName={turtleName}
         turtleVariant={turtleAppearance.variant}
         spawn={westVillageSpawn}
@@ -730,13 +848,13 @@ export function CityMap() {
     );
   }
 
-  return (
+  return withGameChrome(
     <main
       className={`map-stage${selectedDistrict ? " is-focused" : ""}`}
       data-testid="city-map"
     >
       <header className="map-wordmark">
-        <p>T train · onboard map</p>
+        <p>City guide · subway lines</p>
         <h1>Map</h1>
       </header>
 
@@ -760,6 +878,14 @@ export function CityMap() {
       <section className="map-world" style={mapStyle} aria-label="Manhattan map">
         <div className="island-shadow" aria-hidden="true" />
         <div className="manhattan-island">
+          <div className="subway-map-line subway-map-line-one" aria-label="1 subway line">
+            <i aria-hidden="true" />
+            {oneLineStops.map((stop) => (
+              <span key={stop.id} className={stop.district ? "is-open" : "is-future"}>
+                <b>1</b><small>{stop.neighborhood}</small>
+              </span>
+            ))}
+          </div>
           <div className="future-zone future-inwood">
             <span>UPTOWN</span>
           </div>
@@ -805,8 +931,8 @@ export function CityMap() {
       </section>
 
       <div className="map-key" aria-hidden={selectedDistrict !== null}>
-        <span className="key-mark" />
-        Choose your stop
+        <span className="subway-line-badge">1</span>
+        Central Park ↔ FiDi · local
       </div>
 
       <div className="map-toolbar">
@@ -814,10 +940,10 @@ export function CityMap() {
           <button
             type="button"
             className="map-close"
-            onClick={() => setScreen("subway-train")}
+            onClick={closeWorldMap}
           >
             <span aria-hidden="true">←</span>
-            Back to train
+            Back to game
           </button>
         ) : null}
 
@@ -835,13 +961,10 @@ export function CityMap() {
         <button
           type="button"
           className="map-logout"
-          onClick={() => {
-            setLogoutError("");
-            setShowLogoutConfirm(true);
-          }}
+          onClick={() => setShowSettings(true)}
         >
-          <span aria-hidden="true">↻</span>
-          Log out
+          <span aria-hidden="true">⚙</span>
+          Settings
         </button>
       </div>
 
@@ -851,26 +974,9 @@ export function CityMap() {
             <p>District overview</p>
             <h2>{selectedDistrict.name}</h2>
             <span>{selectedDistrict.mapNote}</span>
-            {isTransitDistrict(selectedDistrict.id) &&
-            selectedDistrict.id !== subwayOrigin ? (
-              <button
-                type="button"
-                className="district-enter"
-                onClick={() => {
-                  if (isTransitDistrict(selectedDistrict.id)) {
-                    arriveInDistrict(selectedDistrict.id);
-                  }
-                }}
-              >
-                Ride to {subwayStations[selectedDistrict.id].name}
-              </button>
-            ) : (
-              <small className="district-transit-note">
-                {selectedDistrict.id === subwayOrigin
-                  ? "You boarded here."
-                  : "No station is open here yet."}
-              </small>
-            )}
+            <small className="district-transit-note">
+              View only — enter a subway station to travel.
+            </small>
           </section>
         </>
       ) : null}
@@ -880,41 +986,6 @@ export function CityMap() {
         <small>MANHATTAN · NOT TO SCALE</small>
       </div>
 
-      {showLogoutConfirm ? (
-        <section
-          className="logout-dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="logout-title"
-        >
-          <p>Leaving Turtle City?</p>
-          <h2 id="logout-title">Log out</h2>
-          <span>
-            {playerIsAnonymous
-              ? `${turtleName} is not connected to an email account. If you log out, this turtle cannot be recovered.`
-              : `You can sign back in as ${turtleName} anytime with your email and password.`}
-          </span>
-          {logoutError ? (
-            <strong role="alert">{logoutError}</strong>
-          ) : null}
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowLogoutConfirm(false)}
-              disabled={logoutLoading}
-            >
-              Keep playing
-            </button>
-            <button
-              type="button"
-              onClick={() => void logOutCurrentPlayer()}
-              disabled={logoutLoading}
-            >
-              {logoutLoading ? "Logging out…" : "Log out"}
-            </button>
-          </div>
-        </section>
-      ) : null}
     </main>
   );
 }

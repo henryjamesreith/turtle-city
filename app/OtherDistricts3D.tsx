@@ -3,7 +3,7 @@
 import { OutdoorDistrict3D } from "./OutdoorDistrict3D";
 import type { TurtleVariant } from "@/lib/turtles";
 
-type SharedProps = { turtleName: string; turtleVariant: TurtleVariant };
+type SharedProps = { hasSkateboard: boolean; turtleName: string; turtleVariant: TurtleVariant };
 
 export function WestVillageDistrict3D({
   onEnterBikeRace,

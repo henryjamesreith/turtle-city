@@ -5153,6 +5153,68 @@ html[data-turtle-variant="rosie"] {
   transform: translateY(-1px);
 }
 
+.universal-settings-button {
+  position: fixed;
+  z-index: 190;
+  top: clamp(18px, 3vh, 34px);
+  right: clamp(18px, 3vw, 42px);
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: rgb(248 242 223 / 94%);
+  box-shadow: 0 7px 20px rgb(21 53 48 / 16%);
+  color: var(--ink);
+  cursor: pointer;
+  font: 900 11px/1 system-ui;
+}
+
+.universal-settings-button span { font-size: 17px; }
+.universal-settings-button:hover,
+.universal-settings-button:focus-visible { background: #fffaf0; transform: translateY(-1px); }
+
+.settings-dialog {
+  position: fixed;
+  z-index: 210;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: min(480px, calc(100vw - 36px));
+  padding: 28px 30px 26px;
+  border: 4px solid var(--ink);
+  border-radius: 22px;
+  background: var(--paper);
+  box-shadow: 0 0 0 100vmax rgb(21 53 48 / 48%), 14px 16px 0 rgb(21 53 48 / 18%);
+  color: var(--ink);
+  transform: translate(-50%, -50%);
+}
+
+.settings-dialog > p,
+.settings-dialog > h2 { margin: 0; text-align: center; }
+.settings-dialog > p { color: rgb(21 53 48 / 58%); font-size: 10px; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+.settings-dialog > h2 { margin-top: 4px; font-size: 34px; letter-spacing: -.05em; }
+.settings-dialog-close { position: absolute; top: 12px; right: 14px; border: 0; background: transparent; color: var(--ink); cursor: pointer; font-size: 28px; line-height: 1; }
+.settings-shortcuts { margin-top: 20px; padding: 16px; border: 2px solid rgb(21 53 48 / 22%); border-radius: 14px; background: rgb(255 250 240 / 68%); }
+.settings-shortcuts h3 { margin: 0 0 10px; font-size: 13px; }
+.settings-shortcuts dl { display: grid; gap: 8px; margin: 0; }
+.settings-shortcuts dl div { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.settings-shortcuts dt { padding: 4px 7px; border: 1px solid rgb(21 53 48 / 28%); border-radius: 6px; background: white; font-size: 11px; font-weight: 900; }
+.settings-shortcuts dd { margin: 0; color: rgb(21 53 48 / 68%); font: 13px Georgia, serif; }
+.settings-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.settings-actions button { padding: 11px 14px; border: 3px solid var(--ink); border-radius: 999px; background: #fffaf0; color: var(--ink); cursor: pointer; font-size: 12px; font-weight: 900; }
+.settings-actions .settings-map-action { background: var(--midtown); }
+.settings-dialog > small { margin-top: 13px; color: rgb(21 53 48 / 62%); font-family: Georgia, serif; text-align: center; }
+
+@media (max-width: 560px) {
+  .universal-settings-button { padding: 9px 11px; }
+  .universal-settings-button { font-size: 0; }
+  .settings-dialog { padding: 25px 20px 22px; }
+  .settings-actions { grid-template-columns: 1fr; }
+}
+
 .auth-stage {
   position: relative;
   display: grid;
@@ -7092,6 +7154,30 @@ html[data-turtle-variant="rosie"] {
   pointer-events: none;
 }
 
+.bike-race-canvas {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+}
+
+.bike-race-canvas canvas { display: block; }
+
+.bike-finish-label {
+  display: block;
+  padding: 4px 14px;
+  color: #f8f2df;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+}
+
+.bike-race-lobby { width: min(520px, calc(100vw - 40px)); }
+.bike-race-roster { display: grid; width: 100%; gap: 7px; margin: 18px 0 2px; }
+.bike-race-roster > div { display: flex; justify-content: space-between; padding: 8px 11px; border: 2px solid var(--ink); border-radius: 8px; background: #eef0df; }
+.bike-race-countdown { position: absolute; z-index: 75; top: 50%; left: 50%; display: grid; justify-items: center; padding: 18px 28px; border: 4px solid var(--ink); border-radius: 18px; background: rgb(248 242 223 / 96%); transform: translate(-50%, -50%); }
+.bike-race-countdown small { font-weight: 900; text-transform: uppercase; }
+.bike-race-countdown strong { font-size: 64px; line-height: 1; }
+
 .bike-race-header {
   position: absolute;
   z-index: 65;
@@ -7531,7 +7617,7 @@ html[data-turtle-variant="rosie"] {
   position: absolute;
   z-index: 40;
   top: 38%;
-  left: 27%;
+  left: 50%;
   padding: 8px 13px;
   border: 3px solid var(--ink);
   border-radius: 999px;
@@ -8381,6 +8467,14 @@ html[data-turtle-variant="rosie"] {
   content: "";
   pointer-events: none;
 }
+
+.trash-game-canvas {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+}
+
+.trash-game-canvas canvas { display: block; }
 
 .falling-game-title,
 .trash-game-title {
@@ -9567,6 +9661,32 @@ html[data-turtle-variant="rosie"] {
   content: "";
   pointer-events: none;
 }
+
+.shell-express-canvas {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+}
+
+.shell-express-canvas canvas { display: block; }
+
+.delivery-drop-label {
+  display: block;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #174d43;
+  color: #f8f0d6;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+}
+
+.delivery-lobby { width: min(520px, calc(100vw - 40px)); }
+.delivery-lobby-roster { display: grid; width: 100%; gap: 7px; margin: 18px 0 2px; }
+.delivery-lobby-roster > div { display: flex; justify-content: space-between; padding: 8px 11px; border: 2px solid #143739; border-radius: 7px; background: #eef0df; }
+.delivery-countdown { position: absolute; z-index: 75; top: 50%; left: 50%; display: grid; justify-items: center; padding: 18px 28px; border: 4px solid #143739; border-radius: 12px; background: #f8f0d6; color: #143739; transform: translate(-50%, -50%); }
+.delivery-countdown small { font-weight: 900; text-transform: uppercase; }
+.delivery-countdown strong { font-size: 64px; line-height: 1; }
 
 .shell-express-title {
   position: absolute;
@@ -11128,3 +11248,171 @@ html[data-turtle-variant="rosie"] {
     height: 62px;
   }
 }
+
+/* Playable 1 subway line */
+.platform-directions {
+  position: absolute;
+  top: 112px;
+  right: 30px;
+  display: grid;
+  gap: 8px;
+}
+
+.platform-directions button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 190px;
+  padding: 10px 12px;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 11px;
+  background: rgb(13 28 24 / 86%);
+  color: white;
+  text-align: left;
+  text-transform: capitalize;
+}
+
+.platform-directions button.is-active { border-color: #fff0a0; background: #24483c; }
+.platform-directions b,
+.train-route-card header > b,
+.map-key .subway-line-badge {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e83b36;
+  color: white;
+  font: 900 17px/1 system-ui;
+}
+.platform-directions span { display: grid; gap: 2px; font: 800 12px/1 system-ui; }
+.platform-directions small { opacity: .68; font-size: 10px; }
+
+.platform-direction-sign,
+.platform-train-route {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  padding: 7px 10px;
+  border: 2px solid rgb(255 255 255 / 25%);
+  border-radius: 6px;
+  background: rgb(12 23 21 / 94%);
+  color: white;
+  font: 900 10px/1 system-ui;
+  letter-spacing: .08em;
+}
+.platform-direction-sign b,
+.platform-train-route b {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e83b36;
+  color: white;
+  font: 950 13px/1 system-ui;
+}
+.platform-train-route { padding: 4px 6px; border-width: 1px; font-size: 8px; text-transform: uppercase; }
+.platform-train-route b { width: 20px; height: 20px; font-size: 11px; }
+.platform-zone-label {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgb(17 42 34 / 92%);
+  color: white;
+  font: 900 9px/1 system-ui;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.platform-zone-label b { display: grid; width: 21px; height: 21px; place-items: center; border-radius: 50%; background: #e83b36; font-size: 11px; }
+
+.train-route-card {
+  position: absolute;
+  z-index: 40;
+  top: 26px;
+  right: 30px;
+  width: min(330px, calc(100vw - 60px));
+  max-height: calc(100vh - 54px);
+  overflow: auto;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgb(20 42 35 / 94%);
+  color: white;
+  box-shadow: 0 14px 35px rgb(0 0 0 / 25%);
+}
+.train-route-card header { display: flex; align-items: center; gap: 11px; }
+.train-route-card header span { display: grid; gap: 3px; }
+.train-route-card header small { opacity: .7; text-transform: capitalize; }
+.train-route-card ol { display: grid; margin: 15px 0; padding: 0; list-style: none; }
+.train-route-card li { position: relative; display: flex; min-height: 43px; gap: 12px; opacity: .54; }
+.train-route-card li::before { position: absolute; top: 0; bottom: 0; left: 6px; width: 4px; background: #e83b36; content: ""; }
+.train-route-card li:first-child::before { top: 8px; }
+.train-route-card li:last-child::before { bottom: 34px; }
+.train-route-card li i { z-index: 1; width: 16px; height: 16px; flex: 0 0 16px; border: 3px solid #e83b36; border-radius: 50%; background: #f5f0dd; }
+.train-route-card li span { display: grid; gap: 2px; font: 800 12px/1 system-ui; }
+.train-route-card li small { opacity: .68; font-size: 10px; }
+.train-route-card li.is-current { opacity: 1; color: #fff0a0; }
+.train-route-card li.is-current i { background: #fff0a0; box-shadow: 0 0 0 4px rgb(255 240 160 / 22%); }
+.train-route-card li.is-next { opacity: .9; }
+.train-route-card > button { width: 100%; padding: 11px; border: 0; border-radius: 9px; background: #fff0a0; color: #17392b; font-weight: 900; }
+.train-status { display: block; text-align: center; opacity: .72; }
+
+.train-stop-banner,
+.train-next-banner {
+  position: absolute;
+  z-index: 50;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  background: rgb(18 42 34 / 96%);
+  box-shadow: 0 12px 35px rgb(0 0 0 / 28%);
+}
+.train-stop-banner {
+  display: flex;
+  width: min(540px, calc(100vw - 48px));
+  align-items: center;
+  gap: 24px;
+  padding: 16px;
+  border: 3px solid #fff0a0;
+  border-radius: 16px;
+}
+.train-stop-banner div { display: grid; flex: 1; gap: 3px; }
+.train-stop-banner small { color: #fff0a0; font: 900 10px/1 system-ui; letter-spacing: .15em; }
+.train-stop-banner strong { font: 950 24px/1 system-ui; }
+.train-stop-banner span { opacity: .75; font: 700 11px/1.2 system-ui; }
+.train-stop-banner button {
+  min-width: 150px;
+  padding: 15px 18px;
+  border: 0;
+  border-radius: 11px;
+  background: #fff0a0;
+  color: #17392b;
+  cursor: pointer;
+  font: 950 15px/1 system-ui;
+}
+.train-stop-banner > b { max-width: 180px; color: #fff0a0; font: 800 12px/1.25 system-ui; text-align: right; }
+.train-next-banner { padding: 11px 16px; border-radius: 999px; font: 700 12px/1 system-ui; }
+.train-next-banner strong { color: #fff0a0; }
+
+.subway-map-line-one {
+  position: absolute;
+  z-index: 4;
+  top: 24%;
+  left: 32%;
+  display: flex;
+  height: 68%;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.subway-map-line-one > i { position: absolute; top: 10px; bottom: 10px; left: 10px; width: 5px; border-radius: 5px; background: #e83b36; }
+.subway-map-line-one > span { z-index: 1; display: flex; align-items: center; gap: 6px; color: #17392b; }
+.subway-map-line-one b { display: grid; width: 24px; height: 24px; place-items: center; border: 3px solid #e83b36; border-radius: 50%; background: white; color: #e83b36; font: 900 11px/1 system-ui; }
+.subway-map-line-one small { padding: 3px 5px; border-radius: 4px; background: rgb(255 255 255 / 82%); font: 800 8px/1 system-ui; }
+.subway-map-line-one .is-future { opacity: .55; }
