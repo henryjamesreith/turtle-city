@@ -100,9 +100,10 @@ Bushwick.
   goalie.
 - **Snow shoveling:** 90-second shift. Push collected snow off the path and
   clear at least 72%.
-- **Pressure washing:** 90-second Chelsea shift. Hold the mouse button and sweep
-  across the facade, or aim with WASD/arrows and spray with Space. The 90-second
-  clock is a pace target; overtime continues until the entire facade is clean.
+- **Pressure washing:** Restore a grime-covered Chelsea community mural to
+  reveal a colorful Turtle City skyline and subway scene. Hold the mouse button
+  and sweep, or aim with WASD/arrows and spray with Space. The 90-second clock
+  is a pace target; overtime continues until the entire mural is clean.
 - **Hudson bike race:** Change lanes with W/S or the arrow keys, hold Space to
   sprint, avoid obstacles, and race two riders to the Greenway finish.
 - **Cellar Note rhythm set:** Enter the West Village jazz club and play a

@@ -62,35 +62,10 @@ function clamp(value: number, minimum: number, maximum: number) {
   return Math.min(Math.max(value, minimum), maximum);
 }
 
-function isInsideRectangle(
-  x: number,
-  y: number,
-  rectangle: { x: number; y: number; width: number; height: number },
-) {
-  return (
-    x >= rectangle.x &&
-    x <= rectangle.x + rectangle.width &&
-    y >= rectangle.y &&
-    y <= rectangle.y + rectangle.height
-  );
-}
-
-const protectedAreas = [
-  { x: 125, y: 170, width: 190, height: 135 },
-  { x: 392, y: 170, width: 190, height: 135 },
-  { x: 658, y: 170, width: 190, height: 135 },
-  { x: 925, y: 170, width: 150, height: 135 },
-  { x: 470, y: 455, width: 260, height: 265 },
-];
-
 const dirtCells: DirtCell[] = [];
 
-for (let y = 62; y < WALL_HEIGHT - 34; y += CELL_SIZE) {
-  for (let x = 66; x < WALL_WIDTH - 66; x += CELL_SIZE) {
-    if (protectedAreas.some((area) => isInsideRectangle(x, y, area))) {
-      continue;
-    }
-
+for (let y = 54; y < WALL_HEIGHT - 34; y += CELL_SIZE) {
+  for (let x = 54; x < WALL_WIDTH - 54; x += CELL_SIZE) {
     const id = dirtCells.length;
     const seed = (x * 17 + y * 29 + id * 13) % 101;
     dirtCells.push({
@@ -142,113 +117,67 @@ function roundedRectangle(
   context.roundRect(x, y, width, height, radius);
 }
 
-function drawWindow(
-  context: CanvasRenderingContext2D,
-  rectangle: { x: number; y: number; width: number; height: number },
-) {
-  context.fillStyle = "#153530";
-  context.fillRect(
-    rectangle.x - 7,
-    rectangle.y - 7,
-    rectangle.width + 14,
-    rectangle.height + 14,
-  );
-
-  const reflection = context.createLinearGradient(
-    rectangle.x,
-    rectangle.y,
-    rectangle.x + rectangle.width,
-    rectangle.y + rectangle.height,
-  );
-  reflection.addColorStop(0, "#9fc9cf");
-  reflection.addColorStop(0.46, "#668f94");
-  reflection.addColorStop(0.48, "#dce2d3");
-  reflection.addColorStop(0.57, "#789fa2");
-  reflection.addColorStop(1, "#51787a");
-  context.fillStyle = reflection;
-  context.fillRect(
-    rectangle.x,
-    rectangle.y,
-    rectangle.width,
-    rectangle.height,
-  );
-
-  context.fillStyle = "rgb(248 242 223 / 72%)";
-  context.fillRect(
-    rectangle.x + rectangle.width * 0.48,
-    rectangle.y,
-    6,
-    rectangle.height,
-  );
-  context.fillRect(
-    rectangle.x,
-    rectangle.y + rectangle.height * 0.48,
-    rectangle.width,
-    6,
-  );
-}
-
 function drawFacade(context: CanvasRenderingContext2D) {
-  const wall = context.createLinearGradient(0, 0, 0, WALL_HEIGHT);
-  wall.addColorStop(0, "#a96353");
-  wall.addColorStop(1, "#8f554a");
-  context.fillStyle = wall;
+  const sky = context.createLinearGradient(0, 0, 0, WALL_HEIGHT);
+  sky.addColorStop(0, "#163c52");
+  sky.addColorStop(0.58, "#2c7880");
+  sky.addColorStop(1, "#ef9d57");
+  context.fillStyle = sky;
   context.fillRect(0, 0, WALL_WIDTH, WALL_HEIGHT);
 
-  context.strokeStyle = "rgb(248 242 223 / 19%)";
-  context.lineWidth = 3;
-  for (let y = 36; y < WALL_HEIGHT; y += 44) {
-    context.beginPath();
-    context.moveTo(0, y);
-    context.lineTo(WALL_WIDTH, y);
-    context.stroke();
-  }
-  for (let row = 0; row < 17; row += 1) {
-    const offset = row % 2 === 0 ? 0 : 54;
-    for (let x = offset; x < WALL_WIDTH; x += 108) {
-      context.beginPath();
-      context.moveTo(x, row * 44);
-      context.lineTo(x, row * 44 + 44);
-      context.stroke();
+  // The reward for cleaning: a bold, hand-painted Chelsea community mural.
+  context.fillStyle = "#f5cf58";
+  context.beginPath();
+  context.arc(1030, 125, 70, 0, Math.PI * 2);
+  context.fill();
+  context.strokeStyle = "#173b43";
+  context.lineWidth = 12;
+  context.beginPath();
+  context.arc(1030, 125, 45, 0.25, Math.PI * 1.75);
+  context.stroke();
+  context.fillStyle = "#173b43";
+  context.beginPath(); context.arc(1013, 111, 5, 0, Math.PI * 2); context.fill();
+  context.beginPath(); context.arc(1046, 111, 5, 0, Math.PI * 2); context.fill();
+
+  const buildings = [
+    [35, 315, 120, 330, "#69445f"], [140, 245, 115, 400, "#d45d52"],
+    [240, 360, 100, 285, "#315b72"], [326, 205, 125, 440, "#794c75"],
+    [435, 295, 120, 350, "#df6b4e"], [545, 170, 105, 475, "#31566f"],
+    [635, 330, 130, 315, "#9e5264"], [750, 230, 125, 415, "#d96450"],
+    [860, 350, 115, 295, "#3b6170"], [960, 285, 110, 360, "#94536b"],
+    [1060, 380, 110, 265, "#d76b4f"],
+  ] as const;
+  for (const [x, y, width, height, color] of buildings) {
+    context.fillStyle = color; context.fillRect(x, y, width, height);
+    context.fillStyle = "#f7ce69";
+    for (let wy = y + 30; wy < y + height - 28; wy += 48) {
+      for (let wx = x + 20; wx < x + width - 15; wx += 36) context.fillRect(wx, wy, 13, 20);
     }
   }
 
-  context.fillStyle = "#153530";
-  roundedRectangle(context, 368, 48, 464, 88, 8);
-  context.fill();
-  context.fillStyle = "#e7c15f";
-  context.font = "900 35px Arial, sans-serif";
+  context.fillStyle = "rgb(14 47 55 / 82%)";
+  roundedRectangle(context, 185, 48, 830, 112, 18); context.fill();
+  context.fillStyle = "#f8e8b0";
+  context.font = "900 54px Arial, sans-serif";
   context.textAlign = "center";
-  context.fillText("LETTUCE & CO.", WALL_WIDTH / 2, 103);
+  context.fillText("TURTLE CITY", WALL_WIDTH / 2, 122);
+  context.font = "800 17px Arial, sans-serif";
+  context.letterSpacing = "6px";
+  context.fillText("SLOW DOWN · LOOK AROUND", WALL_WIDTH / 2, 148);
+  context.letterSpacing = "0px";
 
-  for (const area of protectedAreas.slice(0, 4)) {
-    drawWindow(context, area);
+  // A bright subway car cuts across the skyline and makes long clean strokes rewarding.
+  context.fillStyle = "#f2c94e"; roundedRectangle(context, 145, 510, 910, 135, 22); context.fill();
+  context.fillStyle = "#173b43"; context.fillRect(170, 532, 860, 70);
+  for (let x = 192; x < 990; x += 92) {
+    context.fillStyle = "#8fd0d1"; context.fillRect(x, 545, 60, 44);
+    context.fillStyle = "#f7e8b0"; context.beginPath(); context.arc(x + 30, 574, 12, Math.PI, 0); context.fill();
   }
+  context.fillStyle = "#d94d48"; context.beginPath(); context.arc(188, 625, 11, 0, Math.PI * 2); context.fill();
+  context.font = "900 20px Arial, sans-serif"; context.fillStyle = "#173b43"; context.fillText("CHELSEA LOCAL", 600, 630);
 
-  context.fillStyle = "#153530";
-  context.fillRect(445, 425, 310, 32);
-  context.fillStyle = "#e4c367";
-  context.fillRect(458, 435, 284, 45);
-  context.fillStyle = "#f8f2df";
-  context.font = "900 19px Arial, sans-serif";
-  context.fillText("WASH CREW CHECK-IN", WALL_WIDTH / 2, 464);
-
-  context.fillStyle = "#153530";
-  context.fillRect(463, 480, 274, 240);
-  const door = context.createLinearGradient(480, 500, 710, 690);
-  door.addColorStop(0, "#416f6a");
-  door.addColorStop(1, "#294f4b");
-  context.fillStyle = door;
-  context.fillRect(480, 497, 240, 223);
-  context.fillStyle = "#d8bd73";
-  context.beginPath();
-  context.arc(686, 610, 9, 0, Math.PI * 2);
-  context.fill();
-
-  context.fillStyle = "#d1b789";
-  context.fillRect(0, WALL_HEIGHT - 26, WALL_WIDTH, 26);
-  context.fillStyle = "#153530";
-  context.fillRect(0, WALL_HEIGHT - 32, WALL_WIDTH, 7);
+  context.strokeStyle = "#f8e8b0"; context.lineWidth = 9; context.strokeRect(18, 18, WALL_WIDTH - 36, WALL_HEIGHT - 36);
+  context.strokeStyle = "#e66f55"; context.lineWidth = 5; context.strokeRect(32, 32, WALL_WIDTH - 64, WALL_HEIGHT - 64);
 }
 
 function drawDirt(context: CanvasRenderingContext2D, state: WashState) {
@@ -258,25 +187,15 @@ function drawDirt(context: CanvasRenderingContext2D, state: WashState) {
       continue;
     }
 
-    const colors = [
-      "rgb(46 70 50 / 48%)",
-      "rgb(77 75 47 / 45%)",
-      "rgb(46 58 47 / 38%)",
-    ];
+    const colors = ["#4a4940", "#5a4d3d", "#3e4841"];
     context.save();
     context.globalAlpha = Math.max(0.08, strength);
     context.fillStyle = colors[cell.tone];
-    context.beginPath();
-    context.ellipse(
-      cell.x,
-      cell.y,
-      cell.size,
-      cell.size * 0.72,
-      (cell.id % 7) * 0.17,
-      0,
-      Math.PI * 2,
-    );
-    context.fill();
+    context.fillRect(cell.x - CELL_SIZE / 2, cell.y - CELL_SIZE / 2, CELL_SIZE + 1, CELL_SIZE + 1);
+    if (strength > .72 && cell.id % 11 === 0) {
+      context.fillStyle = "rgb(28 40 34 / 35%)";
+      context.beginPath(); context.arc(cell.x + 5, cell.y - 3, cell.size * .55, 0, Math.PI * 2); context.fill();
+    }
     context.restore();
   }
 }
@@ -518,7 +437,7 @@ export function PressureWashingGame({
         if (state.dirt.size === 0) {
           state.status = "finished";
           state.spraying = false;
-          state.message = "Every last patch is clean. Facade restored.";
+          state.message = "Every last patch is clean. Chelsea's mural is back.";
         } else if (state.timeLeft <= 0) {
           state.message = "Overtime — keep washing until the whole facade shines.";
         }
@@ -594,12 +513,12 @@ export function PressureWashingGame({
         Chelsea
       </button>
 
-      <section className="pressure-work-area" aria-label="Dirty brick facade">
+      <section className="pressure-work-area" aria-label="Grime-covered Chelsea mural">
         <canvas
           ref={canvasRef}
           width={WALL_WIDTH}
           height={WALL_HEIGHT}
-          aria-label="Pressure wash the dirty Lettuce and Company facade"
+          aria-label="Pressure wash the grime to reveal the Turtle City mural"
         />
         <div
           className="pressure-worker"
@@ -616,11 +535,11 @@ export function PressureWashingGame({
 
       {hud.status === "ready" ? (
         <section className="pressure-start-card">
-          <p>Chelsea job</p>
-          <h1>Pressure Wash</h1>
+          <p>Chelsea mural rescue</p>
+          <h1>Reveal the city</h1>
           <span>
-            Hold the mouse button and sweep across the grime. Wash every dirty
-            patch—the job ends only when the building reaches 100%.
+            A forgotten community mural is buried under years of city grime.
+            Wash it clean to uncover the skyline, subway, and hidden turtles.
           </span>
           <small>Arrow keys or WASD aim · Space sprays · overtime never cuts you off</small>
           <button type="button" onClick={beginShift}>
