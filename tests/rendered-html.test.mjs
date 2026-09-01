@@ -175,6 +175,21 @@ test("the map has focus interactions without game dependencies", async () => {
   assert.doesNotMatch(packageJson, /phaser|drizzle/i);
 });
 
+test("keeps the Shell balance visible throughout gameplay", async () => {
+  const [map, styles] = await Promise.all([
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(map, /data-testid="shell-wallet"/);
+  assert.match(map, /aria-live="polite"/);
+  assert.match(map, /shells\.toLocaleString\(\)/);
+  assert.match(map, /🐚/);
+  assert.match(styles, /\.shell-wallet \{ position: fixed;/);
+  assert.match(styles, /top: 18px; right: 150px;/);
+  assert.match(styles, /\.shell-wallet-balance/);
+});
+
 test("the subway map is directly available underground", async () => {
   const [map, styles] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
