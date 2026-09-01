@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useHockeyMultiplayer } from "@/lib/multiplayer/useHockeyMultiplayer";
 import type { HockeyMatchState } from "@/lib/multiplayer/hockeySchema";
+import { useGameReward } from "./GameEconomy";
 
 type HockeyGameProps = {
   onExit: () => void;
@@ -646,6 +647,8 @@ export function HockeyGame({
     modeRef.current = mode;
     multiplayerRef.current = multiplayer;
   }, [mode, multiplayer]);
+  const localOnlinePlayer = multiplayer.match.players.find((player) => player.sessionId === multiplayer.sessionId);
+  useGameReward("hockey", (mode !== "multiplayer" && hud.status === "finished" && hud.home > hud.away) || (mode === "multiplayer" && multiplayer.match.phase === "finished" && localOnlinePlayer?.team === multiplayer.match.winner));
 
   function publishHud(game: MatchState) {
     setHud({

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useGameReward } from "./GameEconomy";
 
 type PressureWashingGameProps = {
   onExit: () => void;
@@ -491,6 +492,7 @@ export function PressureWashingGame({
 
   const completed =
     hud.status === "finished" && hud.cleanedPercent >= CLEAN_TARGET;
+  useGameReward("pressure-washing", completed);
 
   return (
     <main className="pressure-stage" data-testid="pressure-washing-game">

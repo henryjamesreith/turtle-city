@@ -7,6 +7,7 @@ import type { Group } from "three";
 import type { TurtleVariant } from "@/lib/turtles";
 import { useDeliveryMultiplayer, type DeliveryPlayer } from "@/lib/multiplayer/useDeliveryMultiplayer";
 import { TurtleBillboard } from "./world3d/TurtleBillboard";
+import { useGameReward } from "./GameEconomy";
 
 type ShellExpressGameProps = {
   onExit: () => void;
@@ -49,7 +50,9 @@ function createRouteView(state: RouteState): RouteView {
 }
 
 function formatTime(seconds: number) {
-  return `0:${String(Math.max(0, Math.ceil(seconds))).padStart(2, "0")}`;
+  const safeSeconds = Math.max(0, Math.ceil(seconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  return `${minutes}:${String(safeSeconds % 60).padStart(2, "0")}`;
 }
 
 function DeliveryBoard({ cargo }: { cargo: number }) {
@@ -61,8 +64,8 @@ function DeliveryBoard({ cargo }: { cargo: number }) {
 }
 
 function DeliveryItem({ type }: { type: RouteItemType }) {
-  if (type === "package") return <group><mesh position={[0, 0.42, 0]} castShadow><boxGeometry args={[0.78, 0.78, 0.78]} /><meshStandardMaterial color="#e5be4e" /></mesh><mesh position={[0, 0.42, 0.4]}><boxGeometry args={[0.13, 0.8, 0.03]} /><meshBasicMaterial color="#f7e8bc" /></mesh></group>;
-  if (type === "dropoff") return <group><mesh position={[0, 0.035, 0]} rotation-x={-Math.PI / 2}><ringGeometry args={[0.72, 1.05, 32]} /><meshBasicMaterial color="#71c38a" /></mesh><Html center position={[0, 0.3, 0]} distanceFactor={13}><strong className="delivery-drop-label">DROP</strong></Html></group>;
+  if (type === "package") return <group><mesh position={[0, 0.5, 0]} castShadow><boxGeometry args={[0.95, 0.95, 0.95]} /><meshStandardMaterial color="#f2c94c" emissive="#6d5310" emissiveIntensity={0.28} /></mesh><mesh position={[0, 0.5, 0.49]}><boxGeometry args={[0.15, 0.97, 0.03]} /><meshBasicMaterial color="#fff1bd" /></mesh><Html center position={[0, 1.35, 0]} distanceFactor={12}><strong className="delivery-item-label is-pickup">PICK UP</strong></Html></group>;
+  if (type === "dropoff") return <group><mesh position={[0, 0.035, 0]} rotation-x={-Math.PI / 2}><ringGeometry args={[0.75, 1.28, 32]} /><meshBasicMaterial color="#75e69b" transparent opacity={0.92} /></mesh><mesh position={[0, 0.02, 0]} rotation-x={-Math.PI / 2}><circleGeometry args={[0.72, 32]} /><meshBasicMaterial color="#194f41" transparent opacity={0.5} /></mesh><Html center position={[0, 0.65, 0]} distanceFactor={12}><strong className="delivery-item-label is-dropoff">DELIVER HERE</strong></Html></group>;
   if (type === "cab") return <group><mesh position={[0, 0.55, 0]} castShadow><boxGeometry args={[1.55, 0.72, 2.4]} /><meshStandardMaterial color="#e5bd4a" /></mesh><mesh position={[0, 1.05, -0.15]} castShadow><boxGeometry args={[1.25, 0.52, 1.15]} /><meshStandardMaterial color="#477275" /></mesh></group>;
   if (type === "barrier") return <group>{[-0.6, 0.6].map((x) => <mesh key={x} position={[x, 0.55, 0]}><boxGeometry args={[0.14, 1.1, 0.18]} /><meshStandardMaterial color="#f2ead0" /></mesh>)}<mesh position={[0, 0.83, 0]} rotation-z={-0.08}><boxGeometry args={[1.65, 0.38, 0.2]} /><meshStandardMaterial color="#d75d4f" /></mesh></group>;
   return <group>{[[0, 0], [0.28, 0.32], [-0.25, 0.55]].map(([x, y], index) => <mesh key={index} position={[x, 0.35 + y, 0]}><sphereGeometry args={[0.38 - index * 0.05, 12, 8]} /><meshStandardMaterial color="#edf0df" opacity={0.58} transparent /></mesh>)}</group>;
@@ -106,10 +109,10 @@ export function ShellExpressGame({ onExit, turtleName, turtleVariant }: ShellExp
     function clearInput() { pressed.clear(); }
     function update(time: number) {
       const state = stateRef.current; const elapsed = Math.min((time - previousTime) / 1000, 0.05); previousTime = time; state.elapsed += elapsed; state.spawnCooldown -= elapsed;
-      const isBoosting = pressed.has("boost"); state.distance = Math.min(ROUTE_LENGTH, state.distance + (isBoosting ? 108 : 76) * elapsed);
+      const isBoosting = pressed.has("boost"); state.distance = Math.min(ROUTE_LENGTH, state.distance + (isBoosting ? 150 : 105) * elapsed);
       if (state.spawnCooldown <= 0) { const id = state.nextItemId; const type = routeSequence[id % routeSequence.length]; state.items.push({ id, lane: (id * 2 + Math.floor(id / 3)) % 3, type, y: -12 }); state.nextItemId += 1; state.spawnCooldown = type === "dropoff" ? 0.82 : 0.58; }
       const remainingItems: RouteItem[] = [];
-      for (const item of state.items) { item.y += (isBoosting ? 49 : 37) * elapsed; const hit = item.lane === state.lane && item.y >= 72 && item.y <= 90; if (hit && item.type === "package") { state.cargo = Math.min(3, state.cargo + 1); state.message = state.cargo === 3 ? "Cargo box full" : "Parcel secured"; } else if (hit && item.type === "dropoff") { if (state.cargo > 0) { state.delivered += state.cargo; state.message = `${state.cargo} delivered`; state.cargo = 0; } else state.message = "No parcels to drop"; } else if (hit && (item.type === "barrier" || item.type === "cab" || item.type === "steam")) { state.lives -= 1; state.message = "Route slowed down"; } else if (item.y <= 108) remainingItems.push(item); }
+      for (const item of state.items) { item.y += (isBoosting ? 68 : 52) * elapsed; const hit = item.lane === state.lane && item.y >= 70 && item.y <= 92; if (hit && item.type === "package") { state.cargo = Math.min(3, state.cargo + 1); state.message = state.cargo === 3 ? "Cargo box full" : "Parcel secured"; } else if (hit && item.type === "dropoff") { if (state.cargo > 0) { state.delivered += state.cargo; state.message = `${state.cargo} delivered`; state.cargo = 0; } else state.message = "No parcels to drop"; } else if (hit && (item.type === "barrier" || item.type === "cab" || item.type === "steam")) { state.lives -= 1; state.message = "Route slowed down"; } else if (item.y <= 108) remainingItems.push(item); }
       state.items = remainingItems;
       if (state.lives <= 0 || state.elapsed >= ROUTE_TIME || state.distance >= ROUTE_LENGTH) { state.status = "finished"; setView(createRouteView(state)); return; }
       if (time - lastViewUpdate >= 32) { setView(createRouteView(state)); state.message = ""; lastViewUpdate = time; }
@@ -138,14 +141,22 @@ export function ShellExpressGame({ onExit, turtleName, turtleVariant }: ShellExp
   const multiplayerPlayer = multiplayerPlayers.find((player) => player.sessionId === multiplayerSessionId);
   const multiplayerItems: RouteItem[] = multiplayerCourseItems.map((item) => ({ id: item.id, lane: item.lane, type: item.type, y: 82 - (item.distance - (multiplayerPlayer?.distance ?? 0)) * 0.1 })).filter((item) => item.y > -12 && item.y < 108);
   const displayView: RouteView = mode === "multiplayer" ? { cargo: multiplayerPlayer?.cargo ?? 0, delivered: multiplayerPlayer?.delivered ?? 0, distance: multiplayerPlayer?.distance ?? 0, elapsed: multiplayer.match.elapsed, items: multiplayerItems, lane: multiplayerPlayer?.lane ?? 1, lives: multiplayerPlayer?.lives ?? 3, message: "", status: multiplayerPhase === "finished" ? "finished" : multiplayerPhase === "playing" ? "playing" : "ready" } : view;
+  const timeLeft = mode === "multiplayer" ? multiplayer.match.timeLeft : ROUTE_TIME - displayView.elapsed;
+  const routeIsPlaying = displayView.status === "playing";
+  const isUrgent = routeIsPlaying && timeLeft <= 15;
+  const nextAction = displayView.cargo > 0
+    ? `Deliver ${displayView.cargo} parcel${displayView.cargo === 1 ? "" : "s"} in a green zone`
+    : "Pick up a yellow parcel";
   const success = displayView.delivered >= DELIVERY_TARGET;
-  return <main className="shell-express-stage" data-testid="shell-express-game" tabIndex={-1}>
+  useGameReward("shell-express", displayView.status === "finished" && success);
+  return <main className={`shell-express-stage${isUrgent ? " is-urgent" : ""}`} data-testid="shell-express-game" tabIndex={-1}>
     <div className="shell-express-canvas" aria-label="3D downtown delivery route"><Canvas camera={{ fov: 47, position: [0, 6.4, 13.5] }} dpr={[1, 1.5]} shadows="basic" gl={{ antialias: true, powerPreference: "high-performance" }}><Suspense fallback={null}><DeliveryWorld players={mode === "multiplayer" ? multiplayerPlayers : undefined} sessionId={multiplayerSessionId} view={displayView} turtleName={turtleName} turtleVariant={turtleVariant} /></Suspense></Canvas></div>
     <header className="shell-express-title"><p>FiDi Courier Dispatch</p><h1>Shell Express</h1></header><button type="button" className="fidi-game-exit" onClick={() => { multiplayer.disconnect(); onExit(); }}><span aria-hidden="true">&larr;</span>FiDi</button>
-    <section className="shell-express-hud" aria-label="Delivery route status"><div><small>Time</small><strong>{formatTime(mode === "multiplayer" ? multiplayer.match.timeLeft : ROUTE_TIME - displayView.elapsed)}</strong></div><div><small>Delivered</small><strong>{displayView.delivered} / {DELIVERY_TARGET}</strong></div><div><small>Cargo</small><strong>{displayView.cargo} / 3</strong></div><div><small>Helmets</small><strong>{displayView.lives} / 3</strong></div></section>
+    <section className="shell-express-hud" aria-label="Delivery route status"><div className="shell-express-clock"><small>{isUrgent ? "Hurry!" : "Time"}</small><strong>{formatTime(timeLeft)}</strong></div><div><small>Delivered</small><strong>{displayView.delivered} / {DELIVERY_TARGET}</strong></div><div><small>On board</small><strong>{displayView.cargo} / 3</strong></div><div><small>Helmets</small><strong>{displayView.lives} / 3</strong></div></section>
+    {routeIsPlaying ? <aside className={`delivery-objective${displayView.cargo > 0 ? " has-cargo" : ""}`} aria-live="polite"><small>Do this now</small><strong>{nextAction}</strong><span>{displayView.cargo > 0 ? "Aim for the glowing green circle" : "Aim for the glowing yellow box"}</span></aside> : null}
     <div className="shell-express-progress" aria-hidden="true"><span style={{ width: `${Math.min(100, displayView.distance / ROUTE_LENGTH * 100)}%` }} /></div>
     {displayView.message ? <strong className="shell-express-message" role="status">{displayView.message}</strong> : null}
-    {mode === "choose" ? <section className="fidi-game-overlay"><p>Downtown route 01</p><h2>Deliver against the clock</h2><span>Switch lanes with A/D or the arrow keys. Collect parcels, cross green drop zones, and hold W, Up, or Space to move faster.</span><div><button type="button" onClick={startRoute}>Solo delivery</button><button type="button" onClick={() => { setMode("multiplayer"); void multiplayer.connect(); }}>Multiplayer</button></div></section> : null}
+    {mode === "choose" ? <section className="fidi-game-overlay delivery-intro"><p>60-second delivery rush</p><h2>Pick up. Drop off. Move!</h2><div className="delivery-how-to"><span><b>1</b><strong>Grab yellow parcels</strong><small>Move into their lane to load them automatically.</small></span><span><b>2</b><strong>Find a green circle</strong><small>Ride through it to deliver everything on board.</small></span><span><b>3</b><strong>Deliver 6 before time runs out</strong><small>Avoid traffic. Hold W, ↑, or Space to boost.</small></span></div><small className="delivery-steer-hint">A / D or ← / → switches lanes</small><div><button type="button" onClick={startRoute}>Start 60-second rush</button><button type="button" onClick={() => { setMode("multiplayer"); void multiplayer.connect(); }}>Multiplayer</button></div></section> : null}
     {mode === "solo" && view.status === "finished" ? <section className="fidi-game-overlay is-finished"><p>{success ? "Route complete" : "Dispatch closed"}</p><h2>{view.delivered} parcels delivered</h2><span>{success ? "Every package made it through the downtown rush." : "Dispatch needed six deliveries. Take the next route cleaner and faster."}</span><div><button type="button" onClick={startRoute}>Run it again</button><button type="button" onClick={onExit}>Return to FiDi</button></div></section> : null}
     {mode === "multiplayer" && (multiplayer.status === "connecting" || multiplayer.status === "offline") ? <section className="fidi-game-overlay"><p>Online dispatch</p><h2>{multiplayer.status === "connecting" ? "Joining route…" : "Server unavailable"}</h2><span>The multiplayer server may need a moment to wake up.</span><div>{multiplayer.status === "offline" ? <button type="button" onClick={() => void multiplayer.connect()}>Try again</button> : null}<button type="button" onClick={() => { multiplayer.disconnect(); setMode("choose"); }}>Back</button></div></section> : null}
     {mode === "multiplayer" && multiplayer.status === "live" && multiplayerPhase === "lobby" ? <section className="fidi-game-overlay delivery-lobby"><p>Online dispatch</p><h2>Courier lineup</h2><span>At least two couriers must join and ready up.</span><div className="delivery-lobby-roster">{multiplayerPlayers.map((player) => <div key={player.sessionId}><strong>{player.name}</strong><small>{player.ready ? "Ready" : "Waiting"}</small></div>)}</div><button type="button" onClick={multiplayer.ready}>Ready up</button></section> : null}

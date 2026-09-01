@@ -313,6 +313,27 @@ export async function purchaseApartmentUpgrade(itemKey: string) {
   return { shells, upgrades };
 }
 
+export async function awardGameWin(activityKey: string, runId: string) {
+  const client = getSupabaseBrowserClient();
+  if (!client) throw new Error("Supabase is not configured.");
+  const { data, error } = await client.rpc("award_game_win", {
+    p_activity_key: activityKey,
+    p_run_id: runId,
+  });
+  if (error) throw error;
+  return Number(data);
+}
+
+export async function upgradeApartment() {
+  const client = getSupabaseBrowserClient();
+  if (!client) throw new Error("Supabase is not configured.");
+  const { data, error } = await client.rpc("upgrade_apartment", {});
+  if (error) throw error;
+  const result = data?.[0];
+  if (!result) throw new Error("The apartment upgrade could not be completed.");
+  return { shells: Number(result.shells), tier: Number(result.tier) };
+}
+
 export async function saveTurtleProfile(input: {
   appearance: TurtleAppearance;
   personality?: string;

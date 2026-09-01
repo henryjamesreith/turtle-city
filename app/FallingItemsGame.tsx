@@ -4,6 +4,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Suspense, useEffect, useRef, useState } from "react";
 import type { Group } from "three";
 import type { TurtleVariant } from "@/lib/turtles";
+import { useGameReward } from "./GameEconomy";
 import { TurtleBillboard } from "./world3d/TurtleBillboard";
 
 type FallingItemsGameProps = { onExit: () => void; turtleName: string; turtleVariant: TurtleVariant };
@@ -46,6 +47,7 @@ function ConstructionWorld({ view, turtleName, turtleVariant }: { view: Challeng
 
 export function FallingItemsGame({ onExit, turtleName, turtleVariant }: FallingItemsGameProps) {
   const stateRef = useRef<ChallengeState>(createChallengeState()); const [view, setView] = useState<ChallengeView>(() => createChallengeView(createChallengeState())); const [countdown, setCountdown] = useState(3);
+  useGameReward("falling-items", view.status === "finished" && view.lives > 0);
   function startChallenge() { const nextState = createChallengeState("countdown"); stateRef.current = nextState; setView(createChallengeView(nextState)); setCountdown(3); }
   function movePlayer(direction: -1 | 1) { const state = stateRef.current; if (state.status !== "playing") return; state.playerLane = Math.min(2, Math.max(0, state.playerLane + direction)); setView(createChallengeView(state)); }
   useEffect(() => { if (view.status !== "countdown") return; const timer = window.setInterval(() => setCountdown((value) => { if (value > 1) return value - 1; window.clearInterval(timer); stateRef.current.status = "playing"; setView(createChallengeView(stateRef.current)); return 0; }), 700); return () => window.clearInterval(timer); }, [view.status]);
