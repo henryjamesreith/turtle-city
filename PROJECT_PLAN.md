@@ -72,8 +72,10 @@ Bushwick.
   shift.
 - FiDi is an explorable harbor-side business district with One Shell Plaza,
   Fulton Street station, and the Shell Express delivery dispatch.
-- Central Park, Chelsea, FiDi, Midtown, and West Village have separate multiplayer
-  rooms. Up to 20 authenticated turtles in the same outdoor district can see one
+- East Village / LES is an explorable downtown district with Delancey Street
+  station and the East River Works excavator shift.
+- Central Park, Chelsea, East Village / LES, FiDi, Midtown, and West Village
+  have separate multiplayer rooms. Up to 20 authenticated turtles in the same outdoor district can see one
   another's names, appearances, positions, and facing direction. Movement uses
   district-specific server validation and is smoothed in the browser.
 - The playable 1 line connects Central Park, Midtown, Chelsea, West Village,
@@ -83,8 +85,8 @@ Bushwick.
 - The city map shows the 1 line and its stations but is view-only. Subway travel
   happens entirely through the platform and train ride rather than a destination
   picker.
-- Central Park, Chelsea, FiDi, Midtown, and West Village use continuous movement. Collision
-  boundaries are intentionally deferred.
+- Central Park, Chelsea, East Village / LES, FiDi, Midtown, and West Village use
+  continuous movement. Collision boundaries are intentionally deferred.
 - The turtle currently uses one static character image with no walking
   animation.
 - Supabase restores the turtle profile and last stable location. Profiles,
@@ -98,9 +100,9 @@ Bushwick.
   goalie.
 - **Snow shoveling:** 90-second shift. Push collected snow off the path and
   clear at least 72%.
-- **Pressure washing:** 75-second Chelsea shift. Hold the mouse button and sweep
-  across the facade, or aim with WASD/arrows and spray with Space. Clean at
-  least 85%.
+- **Pressure washing:** 90-second Chelsea shift. Hold the mouse button and sweep
+  across the facade, or aim with WASD/arrows and spray with Space. The 90-second
+  clock is a pace target; overtime continues until the entire facade is clean.
 - **Hudson bike race:** Change lanes with W/S or the arrow keys, hold Space to
   sprint, avoid obstacles, and race two riders to the Greenway finish.
 - **Cellar Note rhythm set:** Enter the West Village jazz club and play a
@@ -112,9 +114,12 @@ Bushwick.
   litter before the 60-second shift ends.
 - **Shell Express:** Change lanes through FiDi traffic, collect parcels, cross
   delivery zones, and complete at least six deliveries before dispatch closes.
+- **Dig This!:** Drive the East River Works excavator, line up its bucket, and
+  clear at least five debris piles before the 45-second shift ends.
 
 All activity scores and results are session-only and reset when the activity
-closes.
+closes. New players receive 300 Shells and can currently install warm lighting,
+fresh walls, and a comfy bed in Apartment 4B through secure database purchases.
 
 ## Later product systems
 
@@ -164,17 +169,18 @@ small interfaces so mobile and desktop-store versions remain possible later.
 4. **Subway system — ongoing:** playable 1 local with direction-aware platforms,
    sequential station rides, route displays, and station exits is complete; add
    the 2/3 express and future 4/5/6, L, and F/M corridors as districts open.
-5. **More neighborhoods — ongoing:** Midtown and FiDi are complete; the East
-   Village / LES remains next.
+5. **More neighborhoods — ongoing:** Midtown, FiDi, and East Village / LES are
+   complete; expand the subway network before opening the next district.
 6. **More games — ongoing:** Midtown adds falling-object and trash-pickup
    activities, and FiDi adds Shell Express; continue adding games alongside
    neighborhood development.
 7. **Minimal outdoor multiplayer — complete:** authenticated shared presence
-   and synchronized movement cover Central Park, Chelsea, FiDi, Midtown, and
-   West Village.
+   and synchronized movement cover Central Park, Chelsea, East Village / LES,
+   FiDi, Midtown, and West Village.
    Keep interiors and activities private until their multiplayer rules exist.
-8. **Store and apartment upgrades:** add Shells, inventory, turtle cosmetics,
-   furniture, apartment improvements, and paid items.
+8. **Store and apartment upgrades — ongoing:** the Shell wallet and first three
+   Apartment 4B improvements are playable; next add activity rewards, turtle
+   cosmetics, furniture placement, and paid items.
 9. **Player-created games:** build an original underground creator hub with a
    sidebar chat interface where players can design and publish mini-games.
    Players can browse trending games, invite friends, and issue challenges.

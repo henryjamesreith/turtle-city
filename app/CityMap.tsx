@@ -10,6 +10,7 @@ import {
 import { BikeRaceGame } from "./BikeRaceGame";
 import { ChelseaDistrict3D } from "./ChelseaDistrict3D";
 import { FallingItemsGame } from "./FallingItemsGame";
+import { ExcavatorGame } from "./ExcavatorGame";
 import { HockeyGame } from "./HockeyGame";
 import { JazzClub } from "./JazzClub";
 import {
@@ -19,6 +20,7 @@ import {
 } from "./InteriorScenes3D";
 import {
   CentralParkDistrict3D,
+  EastVillageLesDistrict3D,
   FidiDistrict3D,
   MidtownDistrict3D,
   WestVillageDistrict3D,
@@ -39,6 +41,7 @@ import {
   hasCompletedOnboarding,
   loadPlayerSnapshot,
   onPlayerPasswordRecovery,
+  purchaseApartmentUpgrade,
   saveLastLocation,
   saveTurtleProfile,
   sendPlayerPasswordReset,
@@ -77,6 +80,8 @@ type Screen =
   | "chelsea"
   | "city"
   | "central-park"
+  | "east-village-les"
+  | "excavator"
   | "falling-items"
   | "fidi"
   | "hockey"
@@ -98,6 +103,7 @@ type MidtownSpawn =
   | "subway"
   | "trash-pickup";
 type FidiSpawn = "delivery" | "harbor" | "subway";
+type EastVillageSpawn = "construction" | "neighborhood" | "subway";
 type WestVillageSpawn =
   | "jazz-club"
   | "neighborhood"
@@ -156,6 +162,7 @@ function isPersistedScreen(screen: Screen): screen is PersistedLocation {
     screen === "apartment" ||
     screen === "chelsea" ||
     screen === "central-park" ||
+    screen === "east-village-les" ||
     screen === "fidi" ||
     screen === "midtown" ||
     screen === "west-village"
@@ -237,6 +244,8 @@ export function CityMap() {
   const [turtleName, setTurtleName] = useState("");
   const [turtlePersonality, setTurtlePersonality] = useState("");
   const [hasSkateboard, setHasSkateboard] = useState(false);
+  const [shells, setShells] = useState(0);
+  const [apartmentUpgrades, setApartmentUpgrades] = useState<string[]>([]);
   const [turtleAppearance, setTurtleAppearance] =
     useState<TurtleAppearance>(defaultTurtleAppearance);
   const [subwayOrigin, setSubwayOrigin] =
@@ -249,6 +258,7 @@ export function CityMap() {
   const [midtownSpawn, setMidtownSpawn] =
     useState<MidtownSpawn>("plaza");
   const [fidiSpawn, setFidiSpawn] = useState<FidiSpawn>("harbor");
+  const [eastVillageSpawn, setEastVillageSpawn] = useState<EastVillageSpawn>("neighborhood");
   const [westVillageSpawn, setWestVillageSpawn] =
     useState<WestVillageSpawn>("neighborhood");
   const [selectedId, setSelectedId] = useState<District["id"] | null>(null);
@@ -258,6 +268,7 @@ export function CityMap() {
     "apartment",
     "central-park",
     "chelsea",
+    "east-village-les",
     "fidi",
     "midtown",
     "subway-platform",
@@ -294,6 +305,8 @@ export function CityMap() {
       setMidtownSpawn("subway");
     } else if (destination === "fidi") {
       setFidiSpawn("subway");
+    } else if (destination === "east-village-les") {
+      setEastVillageSpawn("subway");
     } else {
       setWestVillageSpawn("subway");
     }
@@ -318,6 +331,11 @@ export function CityMap() {
     setPlayerIsAnonymous(snapshot.isAnonymous);
     const ownsSkateboard = snapshot.inventory.some((item) => item.item_key === "chelsea-skateboard");
     setHasSkateboard(ownsSkateboard);
+    setShells(snapshot.wallet.shells);
+    const savedUpgrades = snapshot.apartment.upgrades;
+    setApartmentUpgrades(savedUpgrades && typeof savedUpgrades === "object" && !Array.isArray(savedUpgrades)
+      ? Object.keys(savedUpgrades).filter((key) => savedUpgrades[key] === true)
+      : []);
     applyTurtleAppearance(appearance);
 
     return hasTurtle;
@@ -330,6 +348,8 @@ export function CityMap() {
     setTurtleName("");
     setTurtlePersonality("");
     setHasSkateboard(false);
+    setShells(0);
+    setApartmentUpgrades([]);
     setTurtleAppearance(defaultTurtleAppearance);
     applyTurtleAppearance(defaultTurtleAppearance);
     setSelectedId(null);
@@ -448,6 +468,9 @@ export function CityMap() {
         } else if (screen === "shell-express") {
           setFidiSpawn("delivery");
           setScreen("fidi");
+        } else if (screen === "excavator") {
+          setEastVillageSpawn("construction");
+          setScreen("east-village-les");
         } else if (screen === "pressure-washing") {
           setChelseaSpawn("pressure-washing");
           setScreen("chelsea");
@@ -809,6 +832,18 @@ export function CityMap() {
     );
   }
 
+  if (screen === "excavator") {
+    return withGameChrome(
+      <ExcavatorGame
+        turtleName={turtleName}
+        onExit={() => {
+          setEastVillageSpawn("construction");
+          setScreen("east-village-les");
+        }}
+      />
+    );
+  }
+
   if (screen === "bike-race") {
     return withGameChrome(
       <BikeRaceGame
@@ -843,11 +878,18 @@ export function CityMap() {
     return withGameChrome(
       <ChelseaApartment3D
         hasSkateboard={hasSkateboard}
+        shells={shells}
+        upgrades={apartmentUpgrades}
         turtleName={turtleName}
         turtleVariant={turtleAppearance.variant}
         onExitToChelsea={() => {
           setChelseaSpawn("apartment");
           setScreen("chelsea");
+        }}
+        onPurchaseUpgrade={async (itemKey) => {
+          const result = await purchaseApartmentUpgrade(itemKey);
+          setShells(result.shells);
+          setApartmentUpgrades(result.upgrades);
         }}
       />
     );
@@ -914,6 +956,19 @@ export function CityMap() {
         spawn={fidiSpawn}
         onEnterDelivery={() => setScreen("shell-express")}
         onEnterSubway={() => enterSubway("fidi")}
+      />
+    );
+  }
+
+  if (screen === "east-village-les") {
+    return withGameChrome(
+      <EastVillageLesDistrict3D
+        hasSkateboard={hasSkateboard}
+        turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
+        spawn={eastVillageSpawn}
+        onEnterExcavator={() => setScreen("excavator")}
+        onEnterSubway={() => enterSubway("east-village-les")}
       />
     );
   }

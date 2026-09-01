@@ -284,6 +284,18 @@ type PlayerControllerProps = {
 };
 
 function PlayerController(props: PlayerControllerProps) {
+  const {
+    hasSkateboard,
+    onClaimSkateboard,
+    onInteractionChange,
+    onEnterApartment,
+    onEnterPressureWashing,
+    onEnterSubway,
+    sendMovement,
+    spawn,
+    turtleName,
+    turtleVariant,
+  } = props;
   const playerRef = useRef<THREE.Group>(null);
   const visualRef = useRef<THREE.Group>(null);
   const keys = useRef(new Set<string>());
@@ -295,9 +307,8 @@ function PlayerController(props: PlayerControllerProps) {
   const lastNetworkUpdate = useRef(0);
   const facing = useRef<"left" | "right">("right");
   const velocity = useRef(new THREE.Vector3());
-  const [riding, setRiding] = useState(props.hasSkateboard);
+  const [riding, setRiding] = useState(hasSkateboard);
   const { camera, gl } = useThree();
-  const { onEnterApartment, onEnterPressureWashing, onEnterSubway } = props;
 
   useEffect(() => {
     function keyDown(event: KeyboardEvent) {
@@ -305,13 +316,13 @@ function PlayerController(props: PlayerControllerProps) {
       if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) {
         event.preventDefault();
         keys.current.add(key);
-      } else if (key === "r" && props.hasSkateboard && !event.repeat) {
+      } else if (key === "r" && hasSkateboard && !event.repeat) {
         setRiding((current) => !current);
       } else if (key === "enter" && !event.repeat) {
         if (activeInteraction.current === "apartment") onEnterApartment();
         if (activeInteraction.current === "pressure-washing") onEnterPressureWashing();
         if (activeInteraction.current === "subway") onEnterSubway();
-        if (activeInteraction.current === "skate-shop" && !props.hasSkateboard) void props.onClaimSkateboard();
+        if (activeInteraction.current === "skate-shop" && !hasSkateboard) void onClaimSkateboard();
       }
     }
     function keyUp(event: KeyboardEvent) { keys.current.delete(event.key.toLowerCase()); }
@@ -348,7 +359,7 @@ function PlayerController(props: PlayerControllerProps) {
       gl.domElement.removeEventListener("pointerup", pointerUp);
       gl.domElement.removeEventListener("wheel", wheel);
     };
-  }, [gl, onEnterApartment, onEnterPressureWashing, onEnterSubway, props.hasSkateboard, props.onClaimSkateboard]);
+  }, [gl, hasSkateboard, onClaimSkateboard, onEnterApartment, onEnterPressureWashing, onEnterSubway]);
 
   useFrame((state, delta) => {
     const player = playerRef.current;
@@ -382,7 +393,7 @@ function PlayerController(props: PlayerControllerProps) {
       .sort((a, b) => a.distance - b.distance)[0]?.interaction.id ?? null;
     if (closest !== activeInteraction.current) {
       activeInteraction.current = closest;
-      props.onInteractionChange(closest);
+      onInteractionChange(closest);
     }
 
     updateCharacterMotion(visual, state.clock.elapsedTime, velocity.current.length(), delta);
@@ -393,17 +404,17 @@ function PlayerController(props: PlayerControllerProps) {
     camera.lookAt(target);
 
     if (state.clock.elapsedTime * 1000 - lastNetworkUpdate.current >= 65) {
-      props.sendMovement({ facing: facing.current, riding, x: toNetworkX(player.position.x), y: toNetworkY(player.position.z) });
+      sendMovement({ facing: facing.current, riding, x: toNetworkX(player.position.x), y: toNetworkY(player.position.z) });
       lastNetworkUpdate.current = state.clock.elapsedTime * 1000;
     }
   });
 
   return (
-    <group ref={playerRef} position={spawnPositions[props.spawn]}>
+    <group ref={playerRef} position={spawnPositions[spawn]}>
       <group ref={visualRef}>
         {riding ? <Skateboard /> : null}
         <group position-y={riding ? 0.43 : 0}>
-          <TurtleBillboard name={props.turtleName} variant={props.turtleVariant} />
+          <TurtleBillboard name={turtleName} variant={turtleVariant} />
         </group>
       </group>
     </group>
@@ -442,10 +453,10 @@ function RemotePlayers({
         else refs.current.delete(player.sessionId);
       }}
     >
-      <group name="remote-skateboard" visible={remoteTargetsRef.current.get(player.sessionId)?.riding ?? false}>
+      <group name="remote-skateboard" visible={false}>
         <Skateboard />
       </group>
-      <group name="remote-turtle" position-y={remoteTargetsRef.current.get(player.sessionId)?.riding ? 0.43 : 0}>
+      <group name="remote-turtle">
         <TurtleBillboard
           name={player.turtleName}
           scale={0.84}

@@ -152,6 +152,10 @@ export class ChelseaRoom extends DistrictRoom {
   protected readonly districtId = "chelsea" as const;
 }
 
+export class EastVillageLesRoom extends DistrictRoom {
+  protected readonly districtId = "east-village-les" as const;
+}
+
 export class FidiRoom extends DistrictRoom {
   protected readonly districtId = "fidi" as const;
 }

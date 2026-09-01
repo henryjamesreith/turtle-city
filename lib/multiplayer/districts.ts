@@ -1,6 +1,7 @@
 export type MultiplayerDistrictId =
   | "central-park"
   | "chelsea"
+  | "east-village-les"
   | "fidi"
   | "midtown"
   | "west-village";
@@ -57,6 +58,17 @@ export const districtMultiplayerConfigs: Record<
       apartment: { x: 0.62, y: 0.72 },
       "pressure-washing": { x: 0.28, y: 0.72 },
       subway: { x: 0.86, y: 0.72 },
+    },
+  },
+  "east-village-les": {
+    bounds: { maximumX: 0.965, maximumY: 0.9, minimumX: 0.035, minimumY: 0.57 },
+    label: "East Village / LES",
+    maximumMovementPerSecond: { x: 0.22, y: 0.75 },
+    roomName: "east_village_les",
+    spawns: {
+      construction: { x: 0.72, y: 0.73 },
+      neighborhood: { x: 0.5, y: 0.73 },
+      subway: { x: 0.12, y: 0.73 },
     },
   },
   fidi: {

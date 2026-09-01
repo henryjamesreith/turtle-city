@@ -1,6 +1,7 @@
 export type TransitDistrict =
   | "central-park"
   | "chelsea"
+  | "east-village-les"
   | "fidi"
   | "midtown"
   | "west-village";
@@ -28,6 +29,7 @@ export const oneLineStops: readonly SubwayRouteStop[] = [
   { id: "midtown-times-square", name: "Times Square", neighborhood: "Midtown", district: "midtown" },
   { id: "chelsea-23", name: "West 23 Street", neighborhood: "Chelsea", district: "chelsea" },
   { id: "village-west-4", name: "West 4 Street", neighborhood: "West Village", district: "west-village" },
+  { id: "les-delancey", name: "Delancey Street", neighborhood: "East Village / LES", district: "east-village-les" },
   { id: "tribeca-chambers", name: "Chambers Street", neighborhood: "Tribeca" },
   { id: "fidi-fulton", name: "Fulton Street", neighborhood: "Financial District", district: "fidi" },
 ];
@@ -54,6 +56,14 @@ export const subwayStations: Record<TransitDistrict, SubwayStation> = {
     id: "village-west-4",
     name: "West 4 Street",
     neighborhood: "West Village",
+    platformDirection: "Uptown & Downtown",
+    terminus: "Central Park",
+  },
+  "east-village-les": {
+    district: "east-village-les",
+    id: "les-delancey",
+    name: "Delancey Street",
+    neighborhood: "East Village / LES",
     platformDirection: "Uptown & Downtown",
     terminus: "Central Park",
   },

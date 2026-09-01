@@ -10,6 +10,7 @@ export type PersistedLocation =
   | "apartment"
   | "chelsea"
   | "central-park"
+  | "east-village-les"
   | "fidi"
   | "midtown"
   | "west-village";
@@ -44,6 +45,7 @@ function isPersistedLocation(value: string): value is PersistedLocation {
     value === "apartment" ||
     value === "chelsea" ||
     value === "central-park" ||
+    value === "east-village-les" ||
     value === "fidi" ||
     value === "midtown" ||
     value === "west-village"
@@ -259,6 +261,7 @@ export async function saveLastLocation(location: PersistedLocation) {
 
   const lastDistrict =
     location === "central-park" ||
+    location === "east-village-les" ||
     location === "fidi" ||
     location === "midtown" ||
     location === "west-village"
@@ -294,6 +297,20 @@ export async function claimFreeSkateboard() {
 
   // Claiming an already-owned free board is a successful no-op.
   if (error && error.code !== "23505") throw error;
+}
+
+export async function purchaseApartmentUpgrade(itemKey: string) {
+  const client = getSupabaseBrowserClient();
+  if (!client) throw new Error("Supabase is not configured.");
+  const { data, error } = await client.rpc("purchase_apartment_upgrade", { requested_item_key: itemKey });
+  if (error) throw error;
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("The upgrade purchase returned an invalid result.");
+  const shells = typeof data.shells === "number" ? data.shells : Number(data.shells);
+  if (!Number.isSafeInteger(shells) || shells < 0) throw new Error("The upgrade purchase returned an invalid balance.");
+  const upgrades = data.upgrades && typeof data.upgrades === "object" && !Array.isArray(data.upgrades)
+    ? Object.keys(data.upgrades).filter((key) => data.upgrades && typeof data.upgrades === "object" && !Array.isArray(data.upgrades) && data.upgrades[key] === true)
+    : [];
+  return { shells, upgrades };
 }
 
 export async function saveTurtleProfile(input: {

@@ -1,8 +1,8 @@
 # Turtle City
 
 Turtle City is a New York-inspired social world inhabited by turtles. The
-current prototype includes five explorable districts, Apartment 4B, the
-subway, eight activities, and shared multiplayer presence throughout every
+current prototype includes six explorable districts, Apartment 4B, the
+subway, nine activities, and shared multiplayer presence throughout every
 outdoor district.
 
 See [PROJECT_PLAN.md](./PROJECT_PLAN.md) for the current product documentation.
@@ -62,8 +62,8 @@ Configure the production Site URL and redirect URLs before deploying.
 
 ## Multiplayer
 
-Central Park, Chelsea, FiDi, Midtown, and West Village each use a separate
-authenticated Colyseus room with a maximum of 20 turtles. The server verifies
+Central Park, Chelsea, East Village / LES, FiDi, Midtown, and West Village each
+use a separate authenticated Colyseus room with a maximum of 20 turtles. The server verifies
 the Supabase access token, loads the turtle name and appearance through the
 player's row-level security policy, and applies district-specific movement
 bounds before synchronizing it. Entering an interior or activity leaves the

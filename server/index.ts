@@ -4,6 +4,7 @@ import type { NextFunction, Request, Response } from "express";
 import {
   CentralParkRoom,
   ChelseaRoom,
+  EastVillageLesRoom,
   FidiRoom,
   MidtownRoom,
   WestVillageRoom,
@@ -24,6 +25,7 @@ const gameServer = defineServer({
     bike_race: defineRoom(BikeRaceRoom),
     delivery: defineRoom(DeliveryRoom),
     chelsea: defineRoom(ChelseaRoom),
+    east_village_les: defineRoom(EastVillageLesRoom),
     fidi: defineRoom(FidiRoom),
     hockey: defineRoom(HockeyRoom),
     midtown: defineRoom(MidtownRoom),
@@ -55,6 +57,7 @@ const gameServer = defineServer({
         districts: [
           "central-park",
           "chelsea",
+          "east-village-les",
           "fidi",
           "midtown",
           "west-village",

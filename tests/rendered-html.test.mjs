@@ -437,6 +437,36 @@ test("FiDi connects the harbor, subway, multiplayer, and delivery route", async 
   assert.match(styles, /\.delivery-drop-label/);
 });
 
+test("East Village connects its district, excavator shift, persistence, and apartment economy", async () => {
+  const [map, districts, excavator, multiplayer, persistence, locationMigration, storeMigration, apartment] = await Promise.all([
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/OtherDistricts3D.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ExcavatorGame.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/multiplayer/districts.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/persistence/playerPersistence.ts", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260831000000_east_village_location.sql", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260831010000_apartment_upgrade_store.sql", import.meta.url), "utf8"),
+    readFile(new URL("../app/InteriorScenes3D.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(map, /<EastVillageLesDistrict3D/);
+  assert.match(map, /screen === "excavator"/);
+  assert.match(districts, /districtId="east-village-les"/);
+  assert.match(districts, /East River Works/);
+  assert.match(excavator, /data-testid="excavator-game"/);
+  assert.match(excavator, /const ROCKS/);
+  assert.match(multiplayer, /roomName: "east_village_les"/);
+  assert.match(persistence, /purchaseApartmentUpgrade/);
+  assert.match(locationMigration, /'east-village-les'/);
+  assert.match(storeMigration, /purchase_apartment_upgrade/);
+  assert.match(storeMigration, /security definer/);
+  assert.match(storeMigration, /revoke all on function public\.purchase_apartment_upgrade\(text\) from public/);
+  assert.match(storeMigration, /grant execute on function public\.purchase_apartment_upgrade\(text\) to authenticated/);
+  assert.match(persistence, /Number\.isSafeInteger\(shells\)/);
+  assert.match(apartment, /Warm Lighting/);
+  assert.match(apartment, /Fresh Walls/);
+  assert.match(apartment, /Comfy Bed/);
+});
+
 test("outdoor districts have authenticated shared multiplayer presence", async () => {
   const [
     park,
@@ -643,9 +673,11 @@ test("Chelsea pressure washing clears a facade in a session-only shift", async (
   assert.match(district, /Chelsea Wash Crew/);
   assert.match(district, /Pressure wash Lettuce/);
   assert.match(pressureWashing, /data-testid="pressure-washing-game"/);
-  assert.match(pressureWashing, /const SHIFT_LENGTH = 75/);
-  assert.match(pressureWashing, /const CLEAN_TARGET = 85/);
-  assert.match(pressureWashing, /const SPRAY_RADIUS = 68/);
+  assert.match(pressureWashing, /const SHIFT_LENGTH = 90/);
+  assert.match(pressureWashing, /const CLEAN_TARGET = 100/);
+  assert.match(pressureWashing, /const SPRAY_RADIUS = 74/);
+  assert.match(pressureWashing, /state\.dirt\.size === 0/);
+  assert.match(pressureWashing, /Overtime — keep washing/);
   assert.match(pressureWashing, /washAtAim/);
   assert.match(pressureWashing, /pointerdown/);
   assert.match(pressureWashing, /event\.code === "Space"/);

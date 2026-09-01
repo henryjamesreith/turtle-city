@@ -3875,6 +3875,7 @@ button {
   height: 100%;
   background: #7fc4c7;
   transition: width 160ms ease-out;
+  box-shadow: 0 0 12px rgb(127 196 199 / 70%);
 }
 
 .pressure-timer {
@@ -3893,6 +3894,7 @@ button {
 
 .pressure-timer strong {
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .pressure-exit {

@@ -19,7 +19,8 @@ type DirtCell = {
 
 type WashState = {
   status: ShiftStatus;
-  dirt: Set<number>;
+  dirt: Map<number, number>;
+  splashes: Array<{ x: number; y: number; life: number }>;
   aimX: number;
   aimY: number;
   spraying: boolean;
@@ -37,10 +38,10 @@ type WashHud = {
 
 const WALL_WIDTH = 1200;
 const WALL_HEIGHT = 720;
-const SHIFT_LENGTH = 75;
-const CLEAN_TARGET = 85;
-const SPRAY_RADIUS = 68;
-const CELL_SIZE = 18;
+const SHIFT_LENGTH = 90;
+const CLEAN_TARGET = 100;
+const SPRAY_RADIUS = 74;
+const CELL_SIZE = 15;
 
 const movementKeys = new Set([
   "ArrowUp",
@@ -105,7 +106,8 @@ for (let y = 62; y < WALL_HEIGHT - 34; y += CELL_SIZE) {
 function createWashState(status: ShiftStatus = "ready"): WashState {
   return {
     status,
-    dirt: new Set(dirtCells.map((cell) => cell.id)),
+    dirt: new Map(dirtCells.map((cell) => [cell.id, 1])),
+    splashes: [],
     aimX: WALL_WIDTH * 0.5,
     aimY: WALL_HEIGHT * 0.42,
     spraying: false,
@@ -116,7 +118,9 @@ function createWashState(status: ShiftStatus = "ready"): WashState {
 }
 
 function cleanedPercent(state: WashState) {
-  return Math.round((1 - state.dirt.size / dirtCells.length) * 100);
+  let remaining = 0;
+  state.dirt.forEach((strength) => { remaining += strength; });
+  return Math.min(100, Math.floor((1 - remaining / dirtCells.length) * 100));
 }
 
 function formatTime(seconds: number) {
@@ -249,7 +253,8 @@ function drawFacade(context: CanvasRenderingContext2D) {
 
 function drawDirt(context: CanvasRenderingContext2D, state: WashState) {
   for (const cell of dirtCells) {
-    if (!state.dirt.has(cell.id)) {
+    const strength = state.dirt.get(cell.id);
+    if (strength === undefined) {
       continue;
     }
 
@@ -258,6 +263,8 @@ function drawDirt(context: CanvasRenderingContext2D, state: WashState) {
       "rgb(77 75 47 / 45%)",
       "rgb(46 58 47 / 38%)",
     ];
+    context.save();
+    context.globalAlpha = Math.max(0.08, strength);
     context.fillStyle = colors[cell.tone];
     context.beginPath();
     context.ellipse(
@@ -270,6 +277,17 @@ function drawDirt(context: CanvasRenderingContext2D, state: WashState) {
       Math.PI * 2,
     );
     context.fill();
+    context.restore();
+  }
+}
+
+function drawSplashes(context: CanvasRenderingContext2D, state: WashState) {
+  for (const splash of state.splashes) {
+    context.strokeStyle = `rgb(234 255 255 / ${splash.life * 70}%)`;
+    context.lineWidth = 3;
+    context.beginPath();
+    context.arc(splash.x, splash.y, (1 - splash.life) * 24 + 5, 0, Math.PI * 2);
+    context.stroke();
   }
 }
 
@@ -349,14 +367,24 @@ function drawSpray(context: CanvasRenderingContext2D, state: WashState) {
   context.stroke();
 }
 
-function washAtAim(state: WashState) {
+function washAtAim(state: WashState, elapsed: number) {
   const radiusSquared = SPRAY_RADIUS * SPRAY_RADIUS;
-  for (const cellId of state.dirt) {
+  for (const [cellId, strength] of state.dirt) {
     const cell = dirtCells[cellId];
     const horizontal = cell.x - state.aimX;
     const vertical = cell.y - state.aimY;
-    if (horizontal * horizontal + vertical * vertical <= radiusSquared) {
-      state.dirt.delete(cellId);
+    const distanceSquared = horizontal * horizontal + vertical * vertical;
+    if (distanceSquared <= radiusSquared) {
+      const falloff = 1 - Math.sqrt(distanceSquared) / SPRAY_RADIUS;
+      const nextStrength = strength - elapsed * (2.8 + falloff * 7.2);
+      if (nextStrength > 0.015) {
+        state.dirt.set(cellId, nextStrength);
+      } else {
+        state.dirt.delete(cellId);
+        if (state.splashes.length < 24 && cellId % 3 === 0) {
+          state.splashes.push({ x: cell.x, y: cell.y, life: 1 });
+        }
+      }
     }
   }
 }
@@ -475,8 +503,11 @@ export function PressureWashingGame({
         );
 
         if (state.spraying) {
-          washAtAim(state);
+          washAtAim(state, elapsed);
         }
+
+        state.splashes.forEach((splash) => { splash.life -= elapsed * 2.6; });
+        state.splashes = state.splashes.filter((splash) => splash.life > 0);
 
         state.timeLeft = Math.max(
           0,
@@ -484,14 +515,12 @@ export function PressureWashingGame({
         );
         const percent = cleanedPercent(state);
 
-        if (percent >= CLEAN_TARGET) {
+        if (state.dirt.size === 0) {
           state.status = "finished";
           state.spraying = false;
-          state.message = "Facade restored. Nice work.";
+          state.message = "Every last patch is clean. Facade restored.";
         } else if (state.timeLeft <= 0) {
-          state.status = "finished";
-          state.spraying = false;
-          state.message = "Shift over. Give the wall another pass.";
+          state.message = "Overtime — keep washing until the whole facade shines.";
         }
 
         if (time - lastHudUpdate > 90 || state.status === "finished") {
@@ -509,6 +538,7 @@ export function PressureWashingGame({
         context.clearRect(0, 0, WALL_WIDTH, WALL_HEIGHT);
         drawFacade(context);
         drawDirt(context, state);
+        drawSplashes(context, state);
         if (state.spraying && state.status === "playing") {
           drawWashedEdge(context, state);
         }
@@ -554,8 +584,8 @@ export function PressureWashingGame({
           <span style={{ width: `${hud.cleanedPercent}%` }} />
         </div>
         <div className="pressure-timer">
-          <small>Shift</small>
-          <strong>{formatTime(hud.timeLeft)}</strong>
+          <small>{hud.timeLeft <= 0 && hud.status === "playing" ? "Overtime" : "Shift"}</small>
+          <strong>{hud.timeLeft <= 0 && hud.status === "playing" ? "KEEP GOING" : formatTime(hud.timeLeft)}</strong>
         </div>
       </header>
 
@@ -589,10 +619,10 @@ export function PressureWashingGame({
           <p>Chelsea job</p>
           <h1>Pressure Wash</h1>
           <span>
-            Hold the mouse button and sweep across the grime. Clean 85% before
-            the shift ends.
+            Hold the mouse button and sweep across the grime. Wash every dirty
+            patch—the job ends only when the building reaches 100%.
           </span>
-          <small>Arrow keys or WASD aim · Space sprays</small>
+          <small>Arrow keys or WASD aim · Space sprays · overtime never cuts you off</small>
           <button type="button" onClick={beginShift}>
             Start washing
           </button>

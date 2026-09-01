@@ -17,7 +17,7 @@ import { useDistrictMultiplayer } from "@/lib/multiplayer/useDistrictMultiplayer
 import { districtMultiplayerConfigs, type MultiplayerDistrictId } from "@/lib/multiplayer/districts";
 import { isTurtleVariant, type TurtleVariant } from "@/lib/turtles";
 
-type DistrictTheme = "fidi" | "midtown" | "park" | "village";
+type DistrictTheme = "east-village" | "fidi" | "midtown" | "park" | "village";
 type WorldPoint = readonly [number, number];
 type DistrictAction = {
   button: string;
@@ -305,7 +305,7 @@ function WestVillageScenery({ actions, nearby }: { actions: DistrictAction[]; ne
 function DistrictScenery({ actions, nearby, theme }: { actions: DistrictAction[]; nearby: string | null; theme: DistrictTheme }) {
   if (theme === "park") return <><WinterPark actions={actions} nearby={nearby} />{actions.filter((action) => action.type === "subway").map((action) => <SubwayEntrance key={action.id} nearby={nearby === action.id} position={action.position} stationName={action.label} />)}</>;
   if (theme === "village") return <WestVillageScenery actions={actions} nearby={nearby} />;
-  const palette = theme === "midtown" ? ["#495a68", "#76547c", "#465f63"] : theme === "fidi" ? ["#667579", "#8d8170", "#53696d"] : ["#9a654e", "#bc9169", "#6d7c72"];
+  const palette = theme === "midtown" ? ["#495a68", "#76547c", "#465f63"] : theme === "fidi" ? ["#667579", "#8d8170", "#53696d"] : theme === "east-village" ? ["#9b6049", "#d0a464", "#65786d"] : ["#9a654e", "#bc9169", "#6d7c72"];
   return <group>
     <StreetBase color={theme === "midtown" ? "#252b32" : "#34393b"} />
     <BlockBuilding x={-22} z={-14} width={15} height={theme === "midtown" ? 27 : 17} color={palette[0]} />
@@ -313,6 +313,7 @@ function DistrictScenery({ actions, nearby, theme }: { actions: DistrictAction[]
     <BlockBuilding x={15} z={-14} width={21} height={theme === "midtown" ? 31 : 22} color={palette[2]} />
     {theme === "midtown" ? <><Html center position={[-5, 8, -10.7]} distanceFactor={25}><span className="outdoor3d-neon is-midtown">TURTLE SQUARE</span></Html><mesh position={[11, 0.35, -7.3]}><boxGeometry args={[3, 0.7, 1.2]} /><meshStandardMaterial color="#338a57" /></mesh></> : null}
     {theme === "fidi" ? <><mesh position={[0, 0.05, 11.7]}><boxGeometry args={[66, 0.1, 3.8]} /><meshStandardMaterial color="#4a8fa3" /></mesh>{[-26,-18,-10,-2,6,14,22,30].map((x) => <mesh key={x} position={[x,.65,10.2]}><cylinderGeometry args={[.08,.1,1.3,8]} /><meshStandardMaterial color="#304d50" /></mesh>)}<Html center position={[13, 2, -10.7]} distanceFactor={16}><span className="outdoor3d-neon is-fidi">ONE SHELL PLAZA</span></Html></> : null}
+    {theme === "east-village" ? <><mesh position={[13,.08,-6.7]}><boxGeometry args={[10,.16,5]} /><meshStandardMaterial color="#9a7652" /></mesh>{[9,13,17].map((x) => <mesh key={x} position={[x,.65,-6.5]}><boxGeometry args={[.2,1.3,.2]} /><meshStandardMaterial color="#e9b73f" /></mesh>)}<group position={[14,1.1,-7]} rotation-z={-.25}><mesh><boxGeometry args={[4.6,.35,.4]} /><meshStandardMaterial color="#e7aa28" /></mesh><mesh position={[2.1,-.8,0]}><boxGeometry args={[.3,1.8,.35]} /><meshStandardMaterial color="#57462f" /></mesh></group><Html center position={[13,2.4,-7]} distanceFactor={14}><span className="outdoor3d-activity-sign">EAST RIVER WORKS</span></Html></> : null}
     {actions.filter((action) => action.type === "subway").map((action) => <SubwayEntrance key={action.id} nearby={nearby === action.id} position={action.position} stationName={action.label} />)}
   </group>;
 }

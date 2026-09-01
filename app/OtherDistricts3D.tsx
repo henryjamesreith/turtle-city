@@ -59,6 +59,22 @@ export function FidiDistrict3D({
   ]} />;
 }
 
+export function EastVillageLesDistrict3D({
+  onEnterExcavator,
+  onEnterSubway,
+  spawn,
+  ...player
+}: SharedProps & {
+  onEnterExcavator: () => void;
+  onEnterSubway: () => void;
+  spawn: "construction" | "neighborhood" | "subway";
+}) {
+  return <OutdoorDistrict3D {...player} districtId="east-village-les" title="East Village / LES" theme="east-village" spawn={spawn} spawnPositions={{ construction: [13, -4], neighborhood: [0, 0], subway: [-23, 5] }} actions={[
+    { id: "construction", label: "East River Works", detail: "Take the controls and clear the construction site.", button: "Start excavating", onEnter: onEnterExcavator, position: [13, -7], type: "activity" },
+    { id: "subway", label: "Delancey Street", detail: "Enter the Turtle City subway.", button: "Enter station", onEnter: onEnterSubway, position: [-23, 8], type: "subway" },
+  ]} />;
+}
+
 export function CentralParkDistrict3D({
   onEnterHockey,
   onEnterShoveling,
