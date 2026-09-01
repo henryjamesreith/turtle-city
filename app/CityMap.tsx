@@ -29,6 +29,7 @@ import { PressureWashingGame } from "./PressureWashingGame";
 import { RailRushGame } from "./RailRushGame";
 import { RhythmGame } from "./RhythmGame";
 import { ShellExpressGame } from "./ShellExpressGame";
+import { ShellAndRollShop } from "./ShellAndRollShop";
 import { SnowShovelingGame } from "./SnowShovelingGame";
 import { TurtleAuth } from "./TurtleAuth";
 import { TurtleOnboarding } from "./TurtleOnboarding";
@@ -45,6 +46,7 @@ import {
   loadPlayerSnapshot,
   onPlayerPasswordRecovery,
   purchaseApartmentUpgrade,
+  purchaseShopItem,
   saveLastLocation,
   saveTurtleProfile,
   upgradeApartment,
@@ -95,6 +97,7 @@ type Screen =
   | "rail-rush"
   | "rhythm-game"
   | "shell-express"
+  | "shell-and-roll"
   | "snow-shoveling"
   | "subway-platform"
   | "subway-train"
@@ -249,6 +252,7 @@ export function CityMap() {
   const [turtleName, setTurtleName] = useState("");
   const [turtlePersonality, setTurtlePersonality] = useState("");
   const [hasSkateboard, setHasSkateboard] = useState(false);
+  const [ownedItemKeys, setOwnedItemKeys] = useState<string[]>([]);
   const [shells, setShells] = useState(0);
   const [apartmentUpgrades, setApartmentUpgrades] = useState<string[]>([]);
   const [apartmentTier, setApartmentTier] = useState(0);
@@ -338,6 +342,7 @@ export function CityMap() {
     setPlayerIsAnonymous(snapshot.isAnonymous);
     const ownsSkateboard = snapshot.inventory.some((item) => item.item_key === "chelsea-skateboard");
     setHasSkateboard(ownsSkateboard);
+    setOwnedItemKeys(snapshot.inventory.map((item) => item.item_key));
     setShells(Number(snapshot.wallet.shells));
     const savedUpgrades = snapshot.apartment.upgrades;
     setApartmentUpgrades(savedUpgrades && typeof savedUpgrades === "object" && !Array.isArray(savedUpgrades)
@@ -356,6 +361,7 @@ export function CityMap() {
     setTurtleName("");
     setTurtlePersonality("");
     setHasSkateboard(false);
+    setOwnedItemKeys([]);
     setShells(0);
     setApartmentUpgrades([]);
     setApartmentTier(0);
@@ -482,6 +488,9 @@ export function CityMap() {
           setScreen("east-village-les");
         } else if (screen === "pressure-washing") {
           setChelseaSpawn("pressure-washing");
+          setScreen("chelsea");
+        } else if (screen === "shell-and-roll") {
+          setChelseaSpawn("subway");
           setScreen("chelsea");
         } else if (screen === "bike-race") {
           setWestVillageSpawn("waterfront");
@@ -656,7 +665,7 @@ export function CityMap() {
         aria-live="polite"
         title="Your Shell balance"
       >
-        <span className="shell-wallet-icon" aria-hidden="true">🐚</span>
+        <span className="shell-wallet-icon" aria-hidden="true"><i /><b /></span>
         <span className="shell-wallet-balance">
           <strong>{shells.toLocaleString()}</strong>
           <small>Shells</small>
@@ -950,6 +959,31 @@ export function CityMap() {
     );
   }
 
+  if (screen === "shell-and-roll") {
+    return withGameChrome(
+      <ShellAndRollShop
+        shells={shells}
+        ownedItems={ownedItemKeys}
+        turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
+        onExit={() => {
+          setChelseaSpawn("subway");
+          setScreen("chelsea");
+        }}
+        onClaimStarter={async () => {
+          await claimFreeSkateboard();
+          setHasSkateboard(true);
+          setOwnedItemKeys((items) => items.includes("chelsea-skateboard") ? items : [...items, "chelsea-skateboard"]);
+        }}
+        onPurchase={async (itemKey) => {
+          const result = await purchaseShopItem(itemKey);
+          setShells(result.shells);
+          setOwnedItemKeys((items) => items.includes(result.itemKey) ? items : [...items, result.itemKey]);
+        }}
+      />
+    );
+  }
+
   if (screen === "chelsea") {
     return withGameChrome(
       <ChelseaDistrict3D
@@ -959,11 +993,8 @@ export function CityMap() {
         spawn={chelseaSpawn}
         onEnterApartment={() => setScreen("apartment")}
         onEnterPressureWashing={() => setScreen("pressure-washing")}
+        onEnterSkateShop={() => setScreen("shell-and-roll")}
         onEnterSubway={() => enterSubway("chelsea")}
-        onClaimSkateboard={async () => {
-          await claimFreeSkateboard();
-          setHasSkateboard(true);
-        }}
       />
     );
   }

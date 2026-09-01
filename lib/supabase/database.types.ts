@@ -211,6 +211,10 @@ export type Database = {
         Args: { requested_item_key: string };
         Returns: Json;
       };
+      purchase_shop_item: {
+        Args: { requested_item_key: string };
+        Returns: Json;
+      };
       award_game_win: { Args: { p_activity_key: string; p_run_id: string }; Returns: number };
       upgrade_apartment: { Args: Record<string, never>; Returns: { shells: number; tier: number }[] };
     };

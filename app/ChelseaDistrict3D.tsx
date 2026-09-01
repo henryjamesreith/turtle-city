@@ -22,12 +22,12 @@ type InteractionId = ChelseaSpawn | "skate-shop";
 type ChelseaDistrict3DProps = {
   onEnterApartment: () => void;
   onEnterPressureWashing: () => void;
+  onEnterSkateShop: () => void;
   onEnterSubway: () => void;
   spawn: ChelseaSpawn;
   turtleName: string;
   turtleVariant: TurtleVariant;
   hasSkateboard: boolean;
-  onClaimSkateboard: () => Promise<void>;
 };
 
 const WORLD_HALF_WIDTH = 30;
@@ -272,10 +272,10 @@ function InteractionMarkers({ nearby }: { nearby: InteractionId | null }) {
 
 type PlayerControllerProps = {
   hasSkateboard: boolean;
-  onClaimSkateboard: () => Promise<void>;
   onInteractionChange: (interaction: InteractionId | null) => void;
   onEnterApartment: () => void;
   onEnterPressureWashing: () => void;
+  onEnterSkateShop: () => void;
   onEnterSubway: () => void;
   sendMovement: (movement: { facing: "left" | "right"; riding?: boolean; x: number; y: number }) => void;
   spawn: ChelseaSpawn;
@@ -286,10 +286,10 @@ type PlayerControllerProps = {
 function PlayerController(props: PlayerControllerProps) {
   const {
     hasSkateboard,
-    onClaimSkateboard,
     onInteractionChange,
     onEnterApartment,
     onEnterPressureWashing,
+    onEnterSkateShop,
     onEnterSubway,
     sendMovement,
     spawn,
@@ -322,7 +322,7 @@ function PlayerController(props: PlayerControllerProps) {
         if (activeInteraction.current === "apartment") onEnterApartment();
         if (activeInteraction.current === "pressure-washing") onEnterPressureWashing();
         if (activeInteraction.current === "subway") onEnterSubway();
-        if (activeInteraction.current === "skate-shop" && !hasSkateboard) void onClaimSkateboard();
+        if (activeInteraction.current === "skate-shop") onEnterSkateShop();
       }
     }
     function keyUp(event: KeyboardEvent) { keys.current.delete(event.key.toLowerCase()); }
@@ -359,7 +359,7 @@ function PlayerController(props: PlayerControllerProps) {
       gl.domElement.removeEventListener("pointerup", pointerUp);
       gl.domElement.removeEventListener("wheel", wheel);
     };
-  }, [gl, hasSkateboard, onClaimSkateboard, onEnterApartment, onEnterPressureWashing, onEnterSubway]);
+  }, [gl, hasSkateboard, onEnterApartment, onEnterPressureWashing, onEnterSkateShop, onEnterSubway]);
 
   useFrame((state, delta) => {
     const player = playerRef.current;
@@ -518,9 +518,7 @@ export function ChelseaDistrict3D(props: ChelseaDistrict3DProps) {
       : nearby === "subway"
         ? { title: "West 23 Street", detail: "Enter the Turtle City subway.", action: props.onEnterSubway, button: "Enter station" }
         : nearby === "skate-shop"
-          ? props.hasSkateboard
-            ? { title: "Shell & Roll", detail: "Your skateboard is ready. Press R to ride or walk.", action: () => undefined, button: "Owned" }
-            : { title: "Shell & Roll", detail: "Starter skateboard · on the house", action: props.onClaimSkateboard, button: "Pick up free" }
+          ? { title: "Shell & Roll", detail: "Skateboards, helmets, and street gear inside.", action: props.onEnterSkateShop, button: "Enter shop" }
         : null;
 
   return (

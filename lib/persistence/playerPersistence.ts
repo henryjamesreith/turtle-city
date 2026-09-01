@@ -313,6 +313,18 @@ export async function purchaseApartmentUpgrade(itemKey: string) {
   return { shells, upgrades };
 }
 
+export async function purchaseShopItem(itemKey: string) {
+  const client = getSupabaseBrowserClient();
+  if (!client) throw new Error("Supabase is not configured.");
+  const { data, error } = await client.rpc("purchase_shop_item", { requested_item_key: itemKey });
+  if (error) throw error;
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("The shop returned an invalid purchase result.");
+  const shells = typeof data.shells === "number" ? data.shells : Number(data.shells);
+  const itemKeyResult = typeof data.item_key === "string" ? data.item_key : "";
+  if (!Number.isSafeInteger(shells) || shells < 0 || !itemKeyResult) throw new Error("The shop returned an invalid purchase result.");
+  return { shells, itemKey: itemKeyResult };
+}
+
 export async function awardGameWin(activityKey: string, runId: string) {
   const client = getSupabaseBrowserClient();
   if (!client) throw new Error("Supabase is not configured.");

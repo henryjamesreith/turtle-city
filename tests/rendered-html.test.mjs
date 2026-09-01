@@ -184,10 +184,40 @@ test("keeps the Shell balance visible throughout gameplay", async () => {
   assert.match(map, /data-testid="shell-wallet"/);
   assert.match(map, /aria-live="polite"/);
   assert.match(map, /shells\.toLocaleString\(\)/);
-  assert.match(map, /🐚/);
+  assert.doesNotMatch(map, /🐚/);
   assert.match(styles, /\.shell-wallet \{ position: fixed;/);
   assert.match(styles, /top: 18px; right: 150px;/);
+  assert.match(styles, /\.shell-wallet-icon i/);
   assert.match(styles, /\.shell-wallet-balance/);
+});
+
+test("Shell & Roll is an enterable shop with persistent shelf purchases", async () => {
+  const [map, district, shop, persistence, types, migration, styles] = await Promise.all([
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ChelseaDistrict3D.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/ShellAndRollShop.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/persistence/playerPersistence.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/supabase/database.types.ts", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260901000000_shell_and_roll_shop.sql", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(map, /screen === "shell-and-roll"/);
+  assert.match(map, /<ShellAndRollShop/);
+  assert.match(map, /purchaseShopItem/);
+  assert.match(district, /onEnterSkateShop/);
+  assert.match(district, /button: "Enter shop"/);
+  assert.match(shop, /data-testid="shell-and-roll-shop"/);
+  assert.match(shop, /aria-label="Shop shelves"/);
+  assert.match(shop, /Starter Board/);
+  assert.match(shop, /Street-Safe Helmet/);
+  assert.match(shop, /Night Line Deck/);
+  assert.match(persistence, /purchase_shop_item/);
+  assert.match(types, /purchase_shop_item/);
+  assert.match(migration, /security definer/);
+  assert.match(migration, /revoke all on function public\.purchase_shop_item\(text\) from public/);
+  assert.match(styles, /\.shop-shelf-panel/);
+  assert.match(styles, /\.shop-product/);
 });
 
 test("the subway map is directly available underground", async () => {
