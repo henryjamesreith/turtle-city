@@ -136,11 +136,11 @@ function InteriorWalker({
   return <group ref={player} position={[start[0], 0, start[1]]}><group ref={visual}>{riding ? <Skateboard /> : null}<group position-y={riding ? 0.43 : 0}><TurtleBillboard name={name} scale={0.82} variant={variant} /></group></group></group>;
 }
 
-function ApartmentRoom({ hasSkateboard, nearDoor, onNearDoor, onExit, turtleName, turtleVariant }: { hasSkateboard: boolean; nearDoor: boolean; onNearDoor: (near: boolean) => void; onExit: () => void; turtleName: string; turtleVariant: TurtleVariant }) {
+function ApartmentRoom({ apartmentTier, hasSkateboard, nearDoor, onNearDoor, onExit, turtleName, turtleVariant }: { apartmentTier: number; hasSkateboard: boolean; nearDoor: boolean; onNearDoor: (near: boolean) => void; onExit: () => void; turtleName: string; turtleVariant: TurtleVariant }) {
   return <>
     <color attach="background" args={["#c8b99f"]} /><ambientLight intensity={1.25} /><directionalLight castShadow position={[5, 10, 7]} intensity={2} shadow-mapSize={[1024, 1024]} />
-    <mesh position={[0, -0.13, 0]} receiveShadow><boxGeometry args={[18, 0.26, 13]} /><meshStandardMaterial color="#7c654f" roughness={0.96} /></mesh>
-    <mesh position={[0, 4, -6.4]} receiveShadow><boxGeometry args={[18, 8, 0.28]} /><meshStandardMaterial color="#c6b28e" roughness={0.94} /></mesh>
+    <mesh position={[0, -0.13, 0]} receiveShadow><boxGeometry args={[18, 0.26, 13]} /><meshStandardMaterial color={apartmentTier >= 2 ? "#b88855" : "#7c654f"} roughness={0.96} /></mesh>
+    <mesh position={[0, 4, -6.4]} receiveShadow><boxGeometry args={[18, 8, 0.28]} /><meshStandardMaterial color={apartmentTier >= 1 ? "#e5d8bd" : "#c6b28e"} roughness={0.94} /></mesh>
     <mesh position={[-8.9, 4, 0]} receiveShadow><boxGeometry args={[0.28, 8, 13]} /><meshStandardMaterial color="#aa987d" /></mesh>
     {/* Door 4B */}<group position={[-6.7, 0, -6.12]}><mesh position-y={2}><boxGeometry args={[2.7, 4, 0.32]} /><meshStandardMaterial color="#315345" emissive={nearDoor ? "#315a3e" : "#000"} emissiveIntensity={0.6} /></mesh><mesh position={[-0.85, 2, 0.22]}><sphereGeometry args={[0.1, 12, 8]} /><meshStandardMaterial color="#f0c86c" metalness={0.6} /></mesh><Html center position={[0, 3.25, 0.24]} distanceFactor={11}><span className="interior3d-sign">4B · STREET</span></Html></group>
     {/* Window */}<group position={[4.7, 3.4, -6.15]}><mesh><boxGeometry args={[4.4, 3.7, 0.22]} /><meshStandardMaterial color="#486567" /></mesh><mesh position-z={0.14}><planeGeometry args={[3.8, 3.1]} /><meshBasicMaterial color="#8eb9c4" /></mesh></group>
@@ -148,18 +148,24 @@ function ApartmentRoom({ hasSkateboard, nearDoor, onNearDoor, onExit, turtleName
     {/* Kitchen */}<group position={[-5.4, 0, 2.8]}><mesh position-y={1}><boxGeometry args={[4.8, 2, 1.8]} /><meshStandardMaterial color="#7d7668" /></mesh><mesh position={[0, 2.12, 0]}><boxGeometry args={[5, 0.22, 2]} /><meshStandardMaterial color="#aaa28f" /></mesh><mesh position={[0.7, 2.26, 0]}><boxGeometry args={[1.35, 0.08, 1]} /><meshStandardMaterial color="#596b6c" /></mesh></group>
     {/* Crates, radiator, bare bulb */}<mesh position={[-1.5, 0.65, 4.1]} castShadow><boxGeometry args={[1.7, 1.3, 1.7]} /><meshStandardMaterial color="#8e633e" /></mesh><group position={[7.5, 0.7, -5.7]}>{[-0.6,-0.3,0,0.3,0.6].map((x) => <mesh key={x} position-x={x}><boxGeometry args={[0.2,1.4,0.32]} /><meshStandardMaterial color="#797b73" /></mesh>)}</group><pointLight position={[0, 6.3, 0]} color="#ffd98b" intensity={22} distance={18} /><mesh position={[0, 6.1, 0]}><sphereGeometry args={[0.22, 12, 9]} /><meshStandardMaterial color="#ffe7ad" emissive="#f0a941" emissiveIntensity={2} /></mesh>
     <mesh position={[-6.7, 0.08, -4.8]} rotation-x={-Math.PI/2}><ringGeometry args={[0.9,1.08,32]} /><meshBasicMaterial color={nearDoor ? "#fff0a0" : "#72bd82"} transparent opacity={0.75} /></mesh>
+    {apartmentTier >= 1 ? <group position={[-1.4,.5,3.8]}><mesh castShadow><cylinderGeometry args={[.48,.6,1,10]} /><meshStandardMaterial color="#c4944f" /></mesh><mesh position-y={1.25}><sphereGeometry args={[.8,10,7]} /><meshStandardMaterial color="#5f8b55" /></mesh></group> : null}
+    {apartmentTier >= 2 ? <group position={[0,.45,-5.9]}><mesh><boxGeometry args={[4.5,.9,.5]} /><meshStandardMaterial color="#315345" /></mesh><mesh position={[0,.75,.1]}><boxGeometry args={[3.4,.75,.18]} /><meshStandardMaterial color="#d7b85e" /></mesh></group> : null}
+    {apartmentTier >= 3 ? <group position={[-1,0,0]}><mesh position-y={.32}><cylinderGeometry args={[1.8,1.8,.18,32]} /><meshStandardMaterial color="#c9604d" /></mesh><pointLight position={[0,4,0]} color="#ffd88b" intensity={15} distance={9} /></group> : null}
     <InteriorWalker hasSkateboard={hasSkateboard} actionPosition={[-6.7,-4.8]} bounds={{minX:-7.5,maxX:7.5,minZ:-5,maxZ:5}} colliders={[{minX:2,maxX:7.8,minZ:1,maxZ:4.7},{minX:-7.8,maxX:-2.8,minZ:1.65,maxZ:4},{minX:-2.5,maxX:-.5,minZ:3.1,maxZ:5}]} name={turtleName} onEnter={onExit} onNearChange={onNearDoor} start={[0,2]} variant={turtleVariant} />
   </>;
 }
 
-export function ChelseaApartment3D({ hasSkateboard, onExitToChelsea, turtleName, turtleVariant }: { hasSkateboard: boolean; onExitToChelsea: () => void; turtleName: string; turtleVariant: TurtleVariant }) {
+export function ChelseaApartment3D({ apartmentTier, hasSkateboard, onExitToChelsea, onUpgrade, shells, turtleName, turtleVariant }: { apartmentTier: number; hasSkateboard: boolean; onExitToChelsea: () => void; onUpgrade: () => Promise<void>; shells: number; turtleName: string; turtleVariant: TurtleVariant }) {
   const [nearDoor, setNearDoor] = useState(false);
-  return <main className="interior3d-stage" data-testid="chelsea-apartment-3d"><Canvas camera={{fov:48,near:.1,far:80,position:[8,9,14]}} dpr={[1,1.5]} shadows="basic"><Suspense fallback={null}><ApartmentRoom hasSkateboard={hasSkateboard} nearDoor={nearDoor} onNearDoor={setNearDoor} onExit={onExitToChelsea} turtleName={turtleName} turtleVariant={turtleVariant} /></Suspense></Canvas><header className="interior3d-title"><p>Chelsea · Apartment 4B</p><h1>Your apartment</h1><span>Starter condition · needs work</span></header><aside className="interior3d-controls">WASD to move{hasSkateboard ? " · R to ride / walk" : ""} · Enter near the door</aside>{nearDoor ? <aside className="interior3d-prompt"><div><strong>Apartment 4B</strong><small>Go outside to Chelsea.</small></div><button type="button" onClick={onExitToChelsea}>Go outside</button></aside> : null}<InteriorStyles /></main>;
+  const [upgradeError, setUpgradeError] = useState(""); const [upgrading, setUpgrading] = useState(false); const costs = [50,125,250]; const cost = costs[apartmentTier]; const labels = ["Starter", "Freshened up", "Renovated", "Dream apartment"];
+  async function buyUpgrade() { setUpgrading(true); setUpgradeError(""); try { await onUpgrade(); } catch { setUpgradeError("You need more shells for this renovation."); } finally { setUpgrading(false); } }
+  return <main className="interior3d-stage" data-testid="chelsea-apartment-3d"><Canvas camera={{fov:48,near:.1,far:80,position:[8,9,14]}} dpr={[1,1.5]} shadows="basic"><Suspense fallback={null}><ApartmentRoom apartmentTier={apartmentTier} hasSkateboard={hasSkateboard} nearDoor={nearDoor} onNearDoor={setNearDoor} onExit={onExitToChelsea} turtleName={turtleName} turtleVariant={turtleVariant} /></Suspense></Canvas><header className="interior3d-title"><p>Chelsea · Apartment 4B</p><h1>Your apartment</h1><span>Tier {apartmentTier} · {labels[apartmentTier] ?? labels[3]}</span></header><aside className="apartment-upgrade-card"><small>Apartment renovations</small><strong>{apartmentTier >= 3 ? "Fully upgraded" : `Next upgrade · ${cost} shells`}</strong><span>{apartmentTier === 0 ? "Fresh paint and a houseplant" : apartmentTier === 1 ? "Hardwood floors and new furniture" : apartmentTier === 2 ? "Designer lighting and a statement rug" : "Apartment 4B has never looked better."}</span>{upgradeError ? <em role="alert">{upgradeError}</em> : null}{apartmentTier < 3 ? <button type="button" disabled={upgrading || shells < cost} onClick={() => void buyUpgrade()}>{upgrading ? "Renovating…" : shells < cost ? `Need ${cost - shells} more` : `Upgrade for ${cost}`}</button> : null}</aside><aside className="interior3d-controls">WASD to move{hasSkateboard ? " · R to ride / walk" : ""} · Enter near the door</aside>{nearDoor ? <aside className="interior3d-prompt"><div><strong>Apartment 4B</strong><small>Go outside to Chelsea.</small></div><button type="button" onClick={onExitToChelsea}>Go outside</button></aside> : null}<InteriorStyles /></main>;
 }
 
 const FIRST_ARRIVAL_TIME = 1; const ARRIVAL_END = 2; const BOARDING_END = 9; const CYCLE_END = 11;
 const TRAIN_TRAVEL_TIME = 2000;
 const TRAIN_DOOR_TIME = 5000;
+const TRAIN_TURNAROUND_TIME = 60000;
 
 function PlatformTrainModel({ direction }: { direction: SubwayDirection }) {
   const platformSide = direction === "downtown" ? 1 : -1;
@@ -239,12 +245,104 @@ function TrainMotionCues({ doorsOpen }: { doorsOpen: boolean }) {
   return <group ref={car}><group position={[0,3.05,-3.83]}>{[-7.1,-4.8,4.8,7.1].map((x) => <group key={x} position-x={x}><mesh><planeGeometry args={[1.82,1.72]} /><meshBasicMaterial color="#394947" /></mesh><mesh position-z={.012}><planeGeometry args={[1.65,1.55]} /><meshStandardMaterial color={doorsOpen ? "#24434b" : "#10242d"} emissive={doorsOpen ? "#315d63" : "#173947"} emissiveIntensity={doorsOpen ? .72 : .8} roughness={.28} metalness={.12} /></mesh></group>)}<group ref={tunnelLights}>{[-12,-8,-4,0,4,8,12].map((x) => <mesh key={x} position={[x,0,.03]} visible={!doorsOpen}><planeGeometry args={[.13,1.4]} /><meshBasicMaterial color="#f8e4a4" /></mesh>)}</group></group><group position={[0,2.2,-3.88]}><mesh ref={leftDoor} position={[-.86,0,0]}><boxGeometry args={[1.65,4.25,.12]} /><meshStandardMaterial color="#778382" metalness={.35} /></mesh><mesh ref={rightDoor} position={[.86,0,0]}><boxGeometry args={[1.65,4.25,.12]} /><meshStandardMaterial color="#778382" metalness={.35} /></mesh></group></group>;
 }
 
+type SubwayTurtlePassengerProps = {
+  accent: string;
+  shell: string;
+  skin: string;
+  weirdness: number;
+};
+
+function SubwayTurtlePassenger({ accent, shell, skin, weirdness }: SubwayTurtlePassengerProps) {
+  const eyeColor = weirdness > .7 ? "#ffcc58" : "#e7d9a5";
+  return <group scale={[.82 + weirdness * .1, .82 - weirdness * .06, .82]} rotation-z={(weirdness - .5) * .12}>
+    {/* A compact, deliberately angular commuter built from the same low-poly primitives as the car. */}
+    <mesh position={[0, .82, -.18]} scale={[.72, .88, .38]} castShadow>
+      <sphereGeometry args={[1, 9, 7]} />
+      <meshStandardMaterial color={shell} roughness={.88} flatShading />
+    </mesh>
+    <mesh position={[0, .82, .17]} scale={[.54, .69, .27]} castShadow>
+      <sphereGeometry args={[1, 9, 7]} />
+      <meshStandardMaterial color={accent} roughness={.82} flatShading />
+    </mesh>
+    {([[-.22,.72],[.22,.72],[-.2,.98],[.2,.98]] as const).map(([x,y]) => <mesh key={`${x}-${y}`} position={[x,y,.445]} scale={[.13,.1,.035]}>
+      <sphereGeometry args={[1, 7, 5]} />
+      <meshStandardMaterial color="#6d713f" roughness={.9} flatShading />
+    </mesh>)}
+    <mesh position={[.04 * weirdness, 1.57 + weirdness * .08, .08]} scale={[.53 + weirdness * .08, .46 - weirdness * .05, .48]} castShadow>
+      <sphereGeometry args={[1, 9, 7]} />
+      <meshStandardMaterial color={skin} roughness={.9} flatShading />
+    </mesh>
+    <mesh position={[0, 1.53, .45]} scale={[.43, .24, .3]} castShadow>
+      <sphereGeometry args={[1, 8, 6]} />
+      <meshStandardMaterial color={skin} roughness={.9} flatShading />
+    </mesh>
+    {[-.22,.22].map((x) => <group key={x} position={[x,1.74,.43]}>
+      <mesh scale={[.105 + weirdness * .025,.1 - weirdness * .02,.055]}><sphereGeometry args={[1,8,6]} /><meshStandardMaterial color={eyeColor} emissive={weirdness > .7 ? "#5d2400" : "#000000"} emissiveIntensity={weirdness > .7 ? .45 : 0} flatShading /></mesh>
+      <mesh position={[x < 0 ? .025 : -.025,-.015,.055]} scale={[.045,.055,.025]}><sphereGeometry args={[1,7,5]} /><meshBasicMaterial color="#14231c" /></mesh>
+      <mesh position={[0,.105,.04]} rotation-z={x < 0 ? -.48 - weirdness * .18 : .48 + weirdness * .18}><boxGeometry args={[.27,.07,.06]} /><meshStandardMaterial color="#17291c" roughness={1} /></mesh>
+    </group>)}
+    <mesh position={[0,1.43,.73]} rotation-x={.12}><boxGeometry args={[.32,.045,.05]} /><meshBasicMaterial color="#172018" /></mesh>
+    {[-.48,.48].map((x) => <mesh key={x} position={[x,.98,-.38]} rotation-z={x < 0 ? -.45 : .45} rotation-x={-.28} castShadow>
+      <coneGeometry args={[.13,.38,5]} /><meshStandardMaterial color={shell} roughness={.96} flatShading />
+    </mesh>)}
+    {/* Folded arms make the passengers read as closed-off without adding violence. */}
+    <mesh position={[-.32,.93,.45]} rotation-z={-1.05} rotation-x={.18} castShadow><capsuleGeometry args={[.115,.55,4,7]} /><meshStandardMaterial color={skin} roughness={.9} flatShading /></mesh>
+    <mesh position={[.32,.93,.48]} rotation-z={1.05} rotation-x={-.18} castShadow><capsuleGeometry args={[.115,.55,4,7]} /><meshStandardMaterial color={skin} roughness={.9} flatShading /></mesh>
+    {[-.27,.27].map((x) => <group key={x} position={[x,.25,.15]}>
+      <mesh rotation-x={-.28} castShadow><capsuleGeometry args={[.15,.48,4,7]} /><meshStandardMaterial color={skin} roughness={.92} flatShading /></mesh>
+      <mesh position={[0,-.37,.17]} scale={[.23,.12,.32]} castShadow><sphereGeometry args={[1,8,5]} /><meshStandardMaterial color={skin} roughness={.92} flatShading /></mesh>
+    </group>)}
+  </group>;
+}
+
+function SubwayTurtlePassengers() {
+  const passengers = [
+    { position: [-8, 1.58, -2.72] as const, rotation: -.12, skin: "#536c3d", shell: "#283b29", accent: "#a69849", weirdness: .35 },
+    { position: [-4, 1.58, 2.72] as const, rotation: Math.PI + .14, skin: "#727a43", shell: "#3b3028", accent: "#b4984f", weirdness: .82 },
+    { position: [4, 1.58, -2.72] as const, rotation: -.18, skin: "#426753", shell: "#233b35", accent: "#99974b", weirdness: 1 },
+    { position: [8, 1.58, 2.72] as const, rotation: Math.PI + .08, skin: "#5e6639", shell: "#3c3024", accent: "#b0a15a", weirdness: .62 },
+  ];
+  return <>{passengers.map((passenger, index) => <group key={index} position={passenger.position} rotation-y={passenger.rotation}>
+    <SubwayTurtlePassenger accent={passenger.accent} shell={passenger.shell} skin={passenger.skin} weirdness={passenger.weirdness} />
+  </group>)}</>;
+}
+
+function SubwayPassengerMess() {
+  return <group>
+    {/* Familiar game-world transit nuisances: cluttered seats, trash, a leak, and too much noise. */}
+    <group position={[-6.9,.18,-1.9]} rotation-y={-.3}>
+      <mesh castShadow><cylinderGeometry args={[.18,.13,.42,8]} /><meshStandardMaterial color="#efe2bc" roughness={.85} /></mesh>
+      <mesh position-y={.22}><cylinderGeometry args={[.21,.21,.035,8]} /><meshStandardMaterial color="#b93f35" /></mesh>
+    </group>
+    <mesh position={[-2.4,.018,.95]} rotation-x={-Math.PI/2} scale={[1.4,.65,1]}>
+      <circleGeometry args={[.7,18]} /><meshStandardMaterial color="#40584f" roughness={.28} metalness={.05} transparent opacity={.72} />
+    </mesh>
+    <group position={[5.1,1.66,-3.05]} rotation-y={-.15}>
+      <mesh castShadow><boxGeometry args={[1.15,.22,.9]} /><meshStandardMaterial color="#99703a" roughness={.95} /></mesh>
+      <mesh position-y={.13}><boxGeometry args={[1.1,.04,.85]} /><meshStandardMaterial color="#bd8b45" /></mesh>
+    </group>
+    <group position={[7.1,1.75,3.03]}>
+      <mesh castShadow><boxGeometry args={[.82,.72,.34]} /><meshStandardMaterial color="#252c2b" roughness={.8} /></mesh>
+      {[-.24,.24].map((x) => <mesh key={x} position={[x,0,.2]}><circleGeometry args={[.18,12]} /><meshStandardMaterial color="#101716" /></mesh>)}
+      <mesh position={[0,.24,.2]}><boxGeometry args={[.25,.08,.03]} /><meshBasicMaterial color="#cc4d3e" /></mesh>
+    </group>
+    {[0,.22,.44].map((height) => <mesh key={height} position={[7.1,2.28 + height,3.03]} rotation-z={height === .22 ? .18 : -.12}>
+      <torusGeometry args={[.32 + height * .4,.025,6,16,Math.PI]} /><meshBasicMaterial color="#d9a94b" transparent opacity={.65 - height * .55} /></mesh>
+    )}
+    <group position={[-8.9,1.77,3.1]} rotation-y={Math.PI}>
+      <mesh rotation-z={-.3} castShadow><boxGeometry args={[1.05,.78,.55]} /><meshStandardMaterial color="#40362f" roughness={.92} /></mesh>
+      <mesh position={[.18,.48,0]} rotation-z={-.45}><torusGeometry args={[.28,.06,7,14,Math.PI]} /><meshStandardMaterial color="#312922" /></mesh>
+    </group>
+  </group>;
+}
+
 function TrainCar({ doorsOpen, name, variant }: { doorsOpen: boolean; name: string; variant: TurtleVariant }) {
-  return <><color attach="background" args={[doorsOpen ? "#c6d0c9" : "#aab6b5"]} /><ambientLight intensity={doorsOpen ? 1.8 : 1.35} /><pointLight position={[0,5,0]} intensity={26} color="#f7f1d7" distance={25} /><mesh position={[0,-.12,0]} receiveShadow><boxGeometry args={[22,.24,8]} /><meshStandardMaterial color="#6c7472" /></mesh><mesh position={[0,3.2,-4]}><boxGeometry args={[22,6.4,.28]} /><meshStandardMaterial color="#d0d4cf" /></mesh><mesh position={[0,3.2,4]}><boxGeometry args={[22,6.4,.28]} /><meshStandardMaterial color="#d0d4cf" /></mesh>{[-8,-4,4,8].map((x) => <group key={x}><mesh position={[x,1,-3.2]}><boxGeometry args={[3,1.2,1.2]} /><meshStandardMaterial color="#d5963d" /></mesh><mesh position={[x,1,3.2]}><boxGeometry args={[3,1.2,1.2]} /><meshStandardMaterial color="#d5963d" /></mesh></group>)}{[-6,0,6].map((x) => <mesh key={x} position={[x,3,0]}><cylinderGeometry args={[.07,.07,6,10]} /><meshStandardMaterial color="#c4c8c2" metalness={.7} /></mesh>)}<TrainMotionCues doorsOpen={doorsOpen} /><InteriorWalker bounds={{minX:-9,maxX:9,minZ:-2.1,maxZ:2.1}} cameraOffset={[5.8,4.8,2.25]} colliders={[-6,0,6].map((x) => ({minX:x-.25,maxX:x+.25,minZ:-.3,maxZ:.3}))} name={name} start={[1.5,0]} variant={variant} /></>;
+  return <><color attach="background" args={[doorsOpen ? "#c6d0c9" : "#aab6b5"]} /><ambientLight intensity={doorsOpen ? 1.8 : 1.35} /><pointLight position={[0,5,0]} intensity={26} color="#f7f1d7" distance={25} /><mesh position={[0,-.12,0]} receiveShadow><boxGeometry args={[22,.24,8]} /><meshStandardMaterial color="#6c7472" /></mesh><mesh position={[0,3.2,-4]}><boxGeometry args={[22,6.4,.28]} /><meshStandardMaterial color="#d0d4cf" /></mesh><mesh position={[0,3.2,4]}><boxGeometry args={[22,6.4,.28]} /><meshStandardMaterial color="#d0d4cf" /></mesh>{[-8,-4,4,8].map((x) => <group key={x}><mesh position={[x,1,-3.2]}><boxGeometry args={[3,1.2,1.2]} /><meshStandardMaterial color="#d5963d" /></mesh><mesh position={[x,1,3.2]}><boxGeometry args={[3,1.2,1.2]} /><meshStandardMaterial color="#d5963d" /></mesh></group>)}<SubwayTurtlePassengers /><SubwayPassengerMess />{[-6,0,6].map((x) => <mesh key={x} position={[x,3,0]}><cylinderGeometry args={[.07,.07,6,10]} /><meshStandardMaterial color="#c4c8c2" metalness={.7} /></mesh>)}<TrainMotionCues doorsOpen={doorsOpen} /><InteriorWalker bounds={{minX:-9,maxX:9,minZ:-2.1,maxZ:2.1}} cameraOffset={[5.8,4.8,2.25]} colliders={[-6,0,6].map((x) => ({minX:x-.25,maxX:x+.25,minZ:-.3,maxZ:.3}))} name={name} start={[1.5,0]} variant={variant} /></>;
 }
 
 export function SubwayTrain3D({ direction, onExitAtStop, origin, turtleName, turtleVariant }: { direction: SubwayDirection; onExitAtStop: (district: TransitDistrict) => void; origin: TransitDistrict; turtleName: string; turtleVariant: TurtleVariant }) {
-  const step = direction === "downtown" ? 1 : -1;
+  const [activeDirection, setActiveDirection] = useState(direction);
+  const step = activeDirection === "downtown" ? 1 : -1;
   const [stopIndex, setStopIndex] = useState(getOneLineStopIndex(origin));
   const [doorsOpen, setDoorsOpen] = useState(false);
   const [secondsRemaining, setSecondsRemaining] = useState(2);
@@ -254,16 +352,16 @@ export function SubwayTrain3D({ direction, onExitAtStop, origin, turtleName, tur
   useEffect(() => {
     const timer = window.setTimeout(() => {
       if (doorsOpen) {
-        if (!atTerminus) {
-          setDoorsOpen(false);
-          setSecondsRemaining(2);
-        }
+        if (atTerminus) setActiveDirection((current) => current === "downtown" ? "uptown" : "downtown");
+        setDoorsOpen(false);
+        setSecondsRemaining(2);
       } else {
         setStopIndex((current) => current + step);
         setDoorsOpen(true);
-        setSecondsRemaining(5);
+        const arrivingAtTerminus = !oneLineStops[stopIndex + step + step];
+        setSecondsRemaining(arrivingAtTerminus ? TRAIN_TURNAROUND_TIME / 1000 : TRAIN_DOOR_TIME / 1000);
       }
-    }, doorsOpen ? TRAIN_DOOR_TIME : TRAIN_TRAVEL_TIME);
+    }, doorsOpen ? (atTerminus ? TRAIN_TURNAROUND_TIME : TRAIN_DOOR_TIME) : TRAIN_TRAVEL_TIME);
     return () => window.clearTimeout(timer);
   }, [atTerminus, doorsOpen, step, stopIndex]);
   useEffect(() => {
@@ -280,7 +378,7 @@ export function SubwayTrain3D({ direction, onExitAtStop, origin, turtleName, tur
     window.addEventListener("keydown", exitWithEnter, { passive: false });
     return () => window.removeEventListener("keydown", exitWithEnter);
   }, [doorsOpen, onExitAtStop, stop.district]);
-  return <main className={`interior3d-stage is-train ${doorsOpen ? "is-stopped" : "is-moving"}`} data-testid="subway-train-3d"><Canvas camera={{fov:52,near:.1,far:80,position:[5.8,5.8,2.25]}} dpr={[1,1.5]} shadows="basic"><Suspense fallback={null}><TrainCar doorsOpen={doorsOpen} name={turtleName} variant={turtleVariant} /></Suspense></Canvas><header className="interior3d-title"><p>1 train · {direction}</p><h1>{doorsOpen ? stop.name : nextStop?.name ?? stop.name}</h1><span>{doorsOpen ? `YOU ARE AT ${stop.neighborhood} · doors close in ${secondsRemaining}s` : `ARRIVING AT ${nextStop?.neighborhood ?? stop.neighborhood} · ${secondsRemaining}s`}</span></header><section className="train-route-card"><header><b>1</b><span><small>{direction} to {getDirectionTerminus(direction).neighborhood}</small><strong>{doorsOpen ? (atTerminus ? "Last stop" : "Doors open") : "Train in motion"}</strong></span></header><ol>{oneLineStops.map((routeStop, index) => <li key={routeStop.id} className={`${index === stopIndex ? "is-current" : ""}${index === stopIndex + step ? " is-next" : ""}`}><i /><span>{routeStop.name}<small>{routeStop.district ? routeStop.neighborhood : `${routeStop.neighborhood} · coming soon`}</small></span></li>)}</ol></section>{doorsOpen ? <aside className="train-stop-banner" role="status"><div><small>NOW AT</small><strong>{stop.name}</strong><span>{stop.neighborhood} · doors close in {secondsRemaining}s · press Enter to exit</span></div>{stop.district ? <button type="button" onClick={() => onExitAtStop(stop.district!)}>Exit train →</button> : <b>Coming soon · stay onboard</b>}</aside> : <aside className="train-next-banner" role="status">Next stop: <strong>{nextStop?.name}</strong></aside>}<InteriorStyles /></main>;
+  return <main className={`interior3d-stage is-train ${doorsOpen ? "is-stopped" : "is-moving"}`} data-testid="subway-train-3d"><Canvas camera={{fov:52,near:.1,far:80,position:[5.8,5.8,2.25]}} dpr={[1,1.5]} shadows="basic"><Suspense fallback={null}><TrainCar doorsOpen={doorsOpen} name={turtleName} variant={turtleVariant} /></Suspense></Canvas><header className="interior3d-title"><p>1 train · {activeDirection}</p><h1>{doorsOpen ? stop.name : nextStop?.name ?? stop.name}</h1><span>{doorsOpen ? atTerminus ? `YOU ARE AT ${stop.neighborhood} · reversing in ${secondsRemaining}s` : `YOU ARE AT ${stop.neighborhood} · doors close in ${secondsRemaining}s` : `ARRIVING AT ${nextStop?.neighborhood ?? stop.neighborhood} · ${secondsRemaining}s`}</span></header><section className="train-route-card"><header><b>1</b><span><small>{activeDirection} to {getDirectionTerminus(activeDirection).neighborhood}</small><strong>{doorsOpen ? (atTerminus ? "Turning around · stay aboard or exit" : "Doors open · exit for this stop") : "Train in motion"}</strong></span></header><ol>{oneLineStops.map((routeStop, index) => <li key={routeStop.id} className={`${index === stopIndex ? "is-current" : ""}${index === stopIndex + step ? " is-next" : ""}`}><i /><span>{routeStop.name}<small>{routeStop.district ? routeStop.neighborhood : `${routeStop.neighborhood} · coming soon`}</small></span></li>)}</ol></section>{doorsOpen ? <aside className="train-stop-banner" role="status"><div><small>{atTerminus ? "TURNAROUND AT" : "NOW AT"}</small><strong>{stop.name}</strong><span>{stop.neighborhood} · {atTerminus ? `reversing in ${secondsRemaining}s` : `doors close in ${secondsRemaining}s`} · press Enter to exit</span></div>{stop.district ? <button type="button" onClick={() => onExitAtStop(stop.district!)}>Exit train →</button> : <b>Coming soon · stay onboard</b>}</aside> : <aside className="train-next-banner" role="status">Next stop: <strong>{nextStop?.name}</strong></aside>}<InteriorStyles /></main>;
 }
 
 function InteriorStyles() {

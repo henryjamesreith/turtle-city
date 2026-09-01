@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useGameReward } from "./GameEconomy";
 
 type RhythmGameProps = {
   onExit: () => void;
@@ -264,6 +265,7 @@ export function RhythmGame({ onExit }: RhythmGameProps) {
       note.time <= view.time + VISIBLE_WINDOW,
   );
   const accuracy = Math.round((view.hits.length / chart.length) * 100);
+  useGameReward("rhythm-game", status === "finished" && accuracy >= 60);
   const multiplier = Math.min(4, 1 + Math.floor(view.combo / 10));
 
   return (

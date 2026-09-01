@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useGameReward } from "./GameEconomy";
 
 type PressureWashingGameProps = {
   onExit: () => void;
@@ -20,26 +21,26 @@ type DirtCell = {
 type WashState = {
   status: ShiftStatus;
   dirt: Set<number>;
+  washProgress: Map<number, number>;
   aimX: number;
   aimY: number;
   spraying: boolean;
   startedAt: number;
-  timeLeft: number;
+  elapsedTime: number;
   message: string;
 };
 
 type WashHud = {
   status: ShiftStatus;
   cleanedPercent: number;
-  timeLeft: number;
+  elapsedTime: number;
   message: string;
 };
 
 const WALL_WIDTH = 1200;
 const WALL_HEIGHT = 720;
-const SHIFT_LENGTH = 75;
-const CLEAN_TARGET = 85;
-const SPRAY_RADIUS = 68;
+const WASH_SECONDS_PER_CELL = 0.65;
+const SPRAY_RADIUS = 54;
 const CELL_SIZE = 18;
 
 const movementKeys = new Set([
@@ -106,17 +107,21 @@ function createWashState(status: ShiftStatus = "ready"): WashState {
   return {
     status,
     dirt: new Set(dirtCells.map((cell) => cell.id)),
+    washProgress: new Map(),
     aimX: WALL_WIDTH * 0.5,
     aimY: WALL_HEIGHT * 0.42,
     spraying: false,
     startedAt: 0,
-    timeLeft: SHIFT_LENGTH,
+    elapsedTime: 0,
     message: "",
   };
 }
 
 function cleanedPercent(state: WashState) {
-  return Math.round((1 - state.dirt.size / dirtCells.length) * 100);
+  if (state.dirt.size === 0) {
+    return 100;
+  }
+  return Math.floor((1 - state.dirt.size / dirtCells.length) * 100);
 }
 
 function formatTime(seconds: number) {
@@ -349,14 +354,20 @@ function drawSpray(context: CanvasRenderingContext2D, state: WashState) {
   context.stroke();
 }
 
-function washAtAim(state: WashState) {
+function washAtAim(state: WashState, elapsed: number) {
   const radiusSquared = SPRAY_RADIUS * SPRAY_RADIUS;
   for (const cellId of state.dirt) {
     const cell = dirtCells[cellId];
     const horizontal = cell.x - state.aimX;
     const vertical = cell.y - state.aimY;
     if (horizontal * horizontal + vertical * vertical <= radiusSquared) {
-      state.dirt.delete(cellId);
+      const progress = (state.washProgress.get(cellId) ?? 0) + elapsed;
+      if (progress >= WASH_SECONDS_PER_CELL) {
+        state.dirt.delete(cellId);
+        state.washProgress.delete(cellId);
+      } else {
+        state.washProgress.set(cellId, progress);
+      }
     }
   }
 }
@@ -370,7 +381,7 @@ export function PressureWashingGame({
   const [hud, setHud] = useState<WashHud>({
     status: "ready",
     cleanedPercent: 0,
-    timeLeft: SHIFT_LENGTH,
+    elapsedTime: 0,
     message: "",
   });
 
@@ -381,7 +392,7 @@ export function PressureWashingGame({
     setHud({
       status: "playing",
       cleanedPercent: 0,
-      timeLeft: SHIFT_LENGTH,
+      elapsedTime: 0,
       message: "",
     });
   }
@@ -475,23 +486,16 @@ export function PressureWashingGame({
         );
 
         if (state.spraying) {
-          washAtAim(state);
+          washAtAim(state, elapsed);
         }
 
-        state.timeLeft = Math.max(
-          0,
-          SHIFT_LENGTH - (time - state.startedAt) / 1000,
-        );
+        state.elapsedTime = (time - state.startedAt) / 1000;
         const percent = cleanedPercent(state);
 
-        if (percent >= CLEAN_TARGET) {
+        if (state.dirt.size === 0) {
           state.status = "finished";
           state.spraying = false;
           state.message = "Facade restored. Nice work.";
-        } else if (state.timeLeft <= 0) {
-          state.status = "finished";
-          state.spraying = false;
-          state.message = "Shift over. Give the wall another pass.";
         }
 
         if (time - lastHudUpdate > 90 || state.status === "finished") {
@@ -499,7 +503,7 @@ export function PressureWashingGame({
           setHud({
             status: state.status,
             cleanedPercent: percent,
-            timeLeft: state.timeLeft,
+            elapsedTime: state.elapsedTime,
             message: state.message,
           });
         }
@@ -540,8 +544,8 @@ export function PressureWashingGame({
     };
   }, []);
 
-  const completed =
-    hud.status === "finished" && hud.cleanedPercent >= CLEAN_TARGET;
+  const completed = hud.status === "finished" && hud.cleanedPercent === 100;
+  useGameReward("pressure-washing", completed);
 
   return (
     <main className="pressure-stage" data-testid="pressure-washing-game">
@@ -554,8 +558,8 @@ export function PressureWashingGame({
           <span style={{ width: `${hud.cleanedPercent}%` }} />
         </div>
         <div className="pressure-timer">
-          <small>Shift</small>
-          <strong>{formatTime(hud.timeLeft)}</strong>
+          <small>Time</small>
+          <strong>{formatTime(hud.elapsedTime)}</strong>
         </div>
       </header>
 
@@ -589,8 +593,8 @@ export function PressureWashingGame({
           <p>Chelsea job</p>
           <h1>Pressure Wash</h1>
           <span>
-            Hold the mouse button and sweep across the grime. Clean 85% before
-            the shift ends.
+            Hold the mouse button and keep the spray on each patch until it
+            clears. Wash the entire facade to reach 100%.
           </span>
           <small>Arrow keys or WASD aim · Space sprays</small>
           <button type="button" onClick={beginShift}>

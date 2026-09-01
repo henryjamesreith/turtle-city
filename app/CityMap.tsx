@@ -24,15 +24,18 @@ import {
   WestVillageDistrict3D,
 } from "./OtherDistricts3D";
 import { PressureWashingGame } from "./PressureWashingGame";
+import { RailRushGame } from "./RailRushGame";
 import { RhythmGame } from "./RhythmGame";
 import { ShellExpressGame } from "./ShellExpressGame";
 import { SnowShovelingGame } from "./SnowShovelingGame";
 import { TurtleAuth } from "./TurtleAuth";
 import { TurtleOnboarding } from "./TurtleOnboarding";
 import { TrashPickupGame } from "./TrashPickupGame";
+import { GameEconomyContext, type GameActivity } from "./GameEconomy";
 import { SkateboardOwnershipContext } from "./world3d/Skateboard";
 import {
   defaultTurtleAppearance,
+  awardGameWin,
   claimFreeSkateboard,
   getPersistedLocation,
   getTurtleAppearance,
@@ -41,6 +44,7 @@ import {
   onPlayerPasswordRecovery,
   saveLastLocation,
   saveTurtleProfile,
+  upgradeApartment,
   sendPlayerPasswordReset,
   signInPlayer,
   signOutPlayer,
@@ -83,6 +87,7 @@ type Screen =
   | "jazz-club"
   | "midtown"
   | "pressure-washing"
+  | "rail-rush"
   | "rhythm-game"
   | "shell-express"
   | "snow-shoveling"
@@ -97,7 +102,7 @@ type MidtownSpawn =
   | "plaza"
   | "subway"
   | "trash-pickup";
-type FidiSpawn = "delivery" | "harbor" | "subway";
+type FidiSpawn = "delivery" | "harbor" | "rail-rush" | "subway";
 type WestVillageSpawn =
   | "jazz-club"
   | "neighborhood"
@@ -237,6 +242,9 @@ export function CityMap() {
   const [turtleName, setTurtleName] = useState("");
   const [turtlePersonality, setTurtlePersonality] = useState("");
   const [hasSkateboard, setHasSkateboard] = useState(false);
+  const [shells, setShells] = useState(0);
+  const [apartmentTier, setApartmentTier] = useState(0);
+  const [economyMessage, setEconomyMessage] = useState("");
   const [turtleAppearance, setTurtleAppearance] =
     useState<TurtleAppearance>(defaultTurtleAppearance);
   const [subwayOrigin, setSubwayOrigin] =
@@ -318,6 +326,8 @@ export function CityMap() {
     setPlayerIsAnonymous(snapshot.isAnonymous);
     const ownsSkateboard = snapshot.inventory.some((item) => item.item_key === "chelsea-skateboard");
     setHasSkateboard(ownsSkateboard);
+    setShells(Number(snapshot.wallet.shells));
+    setApartmentTier(snapshot.apartment.tier);
     applyTurtleAppearance(appearance);
 
     return hasTurtle;
@@ -330,6 +340,8 @@ export function CityMap() {
     setTurtleName("");
     setTurtlePersonality("");
     setHasSkateboard(false);
+    setShells(0);
+    setApartmentTier(0);
     setTurtleAppearance(defaultTurtleAppearance);
     applyTurtleAppearance(defaultTurtleAppearance);
     setSelectedId(null);
@@ -445,8 +457,8 @@ export function CityMap() {
             screen === "falling-items" ? "falling-items" : "trash-pickup",
           );
           setScreen("midtown");
-        } else if (screen === "shell-express") {
-          setFidiSpawn("delivery");
+        } else if (screen === "shell-express" || screen === "rail-rush") {
+          setFidiSpawn(screen === "shell-express" ? "delivery" : "rail-rush");
           setScreen("fidi");
         } else if (screen === "pressure-washing") {
           setChelseaSpawn("pressure-washing");
@@ -605,8 +617,20 @@ export function CityMap() {
   }
 
   const withGameChrome = (content: ReactNode) => (
+    <GameEconomyContext.Provider value={async (activity: GameActivity) => {
+      try {
+        const balance = await awardGameWin(activity, crypto.randomUUID());
+        setShells(balance);
+        setEconomyMessage("Win bonus deposited!");
+        window.setTimeout(() => setEconomyMessage(""), 2600);
+      } catch (error) {
+        console.warn("Turtle City could not award the game prize.", error);
+      }
+    }}>
     <SkateboardOwnershipContext.Provider value={hasSkateboard}>
       {content}
+      <aside className="shell-wallet" aria-label={`${shells} shells`}><span aria-hidden="true">◉</span><strong>{shells.toLocaleString()}</strong><small>shells</small></aside>
+      {economyMessage ? <aside className="economy-toast" role="status">+ Win bonus · {economyMessage}</aside> : null}
       {screen !== "city" ? (
         <button
           type="button"
@@ -703,6 +727,7 @@ export function CityMap() {
       ) : null}
       {showsMobileMovement ? <MobileMovementControls /> : null}
     </SkateboardOwnershipContext.Provider>
+    </GameEconomyContext.Provider>
   );
 
   if (screen === "subway-platform") {
@@ -809,6 +834,19 @@ export function CityMap() {
     );
   }
 
+  if (screen === "rail-rush") {
+    return withGameChrome(
+      <RailRushGame
+        turtleName={turtleName}
+        turtleVariant={turtleAppearance.variant}
+        onExit={() => {
+          setFidiSpawn("rail-rush");
+          setScreen("fidi");
+        }}
+      />
+    );
+  }
+
   if (screen === "bike-race") {
     return withGameChrome(
       <BikeRaceGame
@@ -842,9 +880,16 @@ export function CityMap() {
   if (screen === "apartment") {
     return withGameChrome(
       <ChelseaApartment3D
+        apartmentTier={apartmentTier}
         hasSkateboard={hasSkateboard}
+        shells={shells}
         turtleName={turtleName}
         turtleVariant={turtleAppearance.variant}
+        onUpgrade={async () => {
+          const result = await upgradeApartment();
+          setShells(result.shells);
+          setApartmentTier(result.tier);
+        }}
         onExitToChelsea={() => {
           setChelseaSpawn("apartment");
           setScreen("chelsea");
@@ -913,6 +958,7 @@ export function CityMap() {
         turtleVariant={turtleAppearance.variant}
         spawn={fidiSpawn}
         onEnterDelivery={() => setScreen("shell-express")}
+        onEnterRailRush={() => setScreen("rail-rush")}
         onEnterSubway={() => enterSubway("fidi")}
       />
     );

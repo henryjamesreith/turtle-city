@@ -7,6 +7,7 @@ import type { Group } from "three";
 import type { TurtleVariant } from "@/lib/turtles";
 import { useBikeRaceMultiplayer, type BikeRacePlayer } from "@/lib/multiplayer/useBikeRaceMultiplayer";
 import { TurtleBillboard } from "./world3d/TurtleBillboard";
+import { useGameReward } from "./GameEconomy";
 
 type BikeRaceGameProps = { onExit: () => void; turtleName: string; turtleVariant: TurtleVariant };
 type RaceStatus = "ready" | "racing" | "finished";
@@ -135,6 +136,7 @@ export function BikeRaceGame({ onExit, turtleName, turtleVariant }: BikeRaceGame
   }, [mode, multiplayerPhase, multiplayerSessionId, sendRaceInput]);
 
   const multiplayerPlayer = multiplayer.match.players.find((player) => player.sessionId === multiplayer.sessionId);
+  useGameReward("bike-race", (mode === "solo" && status === "finished" && finishPlace === 1) || (mode === "multiplayer" && multiplayer.match.phase === "finished" && multiplayerPlayer?.place === 1));
   const displayView: RaceView = mode === "multiplayer" ? { boost: multiplayerPlayer?.boost ?? 100, distance: multiplayerPlayer?.distance ?? 0, elapsed: multiplayer.match.elapsed, lane: multiplayerPlayer?.lane ?? 1, message: "", opponents: [0, 0] } : view;
   const playerProgress = Math.min(100, (displayView.distance / COURSE_LENGTH) * 100);
   return <main className="bike-race-stage" data-testid="bike-race-game">

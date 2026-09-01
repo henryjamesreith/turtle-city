@@ -45,16 +45,19 @@ export function MidtownDistrict3D({
 
 export function FidiDistrict3D({
   onEnterDelivery,
+  onEnterRailRush,
   onEnterSubway,
   spawn,
   ...player
 }: SharedProps & {
   onEnterDelivery: () => void;
+  onEnterRailRush: () => void;
   onEnterSubway: () => void;
-  spawn: "delivery" | "harbor" | "subway";
+  spawn: "delivery" | "harbor" | "rail-rush" | "subway";
 }) {
-  return <OutdoorDistrict3D {...player} districtId="fidi" title="FiDi" theme="fidi" spawn={spawn} spawnPositions={{ delivery: [13, -4], harbor: [22, 7], subway: [-22, 5] }} actions={[
-    { id: "delivery", label: "Shell Express", detail: "Pick up a harbor delivery route.", button: "Start deliveries", onEnter: onEnterDelivery, position: [13, -7], type: "activity" },
+  return <OutdoorDistrict3D {...player} districtId="fidi" title="FiDi" theme="fidi" spawn={spawn} spawnPositions={{ delivery: [10, -4], harbor: [22, 7], "rail-rush": [17, -4], subway: [-22, 5] }} actions={[
+    { id: "delivery", label: "Shell Express", detail: "Pick up a harbor delivery route.", button: "Start deliveries", onEnter: onEnterDelivery, position: [10, -7], type: "activity" },
+    { id: "rail-rush", label: "Rail Rush", detail: "Dash across the downtown tracks.", button: "Start running", onEnter: onEnterRailRush, position: [17, -7], type: "activity" },
     { id: "subway", label: "Fulton Street", detail: "Enter the Turtle City subway.", button: "Enter station", onEnter: onEnterSubway, position: [-22, 8], type: "subway" },
   ]} />;
 }
