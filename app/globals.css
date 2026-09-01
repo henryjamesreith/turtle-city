@@ -11804,14 +11804,7 @@ html[data-turtle-variant="rosie"] {
 .shell-wallet strong { font-variant-numeric: tabular-nums; font-size: 17px; }
 .shell-wallet small { margin-top: 3px; color: #dce8d8; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
 .economy-toast { position: fixed; z-index: 220; top: 78px; left: 50%; padding: 12px 18px; border-radius: 14px; background: #f1c95d; box-shadow: 0 8px 26px rgb(0 0 0 / 24%); color: #17352f; font-weight: 900; transform: translateX(-50%); }
-.apartment-upgrade-card { position: absolute; z-index: 12; top: 128px; right: 22px; display: flex; width: min(290px, calc(100vw - 44px)); flex-direction: column; gap: 8px; padding: 17px; border: 1px solid rgb(255 255 255 / 30%); border-radius: 18px; background: rgb(24 52 46 / 91%); box-shadow: 0 12px 30px rgb(0 0 0 / 24%); color: white; }
-.apartment-upgrade-card small { color: #e4c05e; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
-.apartment-upgrade-card strong { font-size: 19px; }
-.apartment-upgrade-card span { color: #d8e3dc; line-height: 1.35; }
-.apartment-upgrade-card em { color: #ffd0c8; font-size: 12px; font-style: normal; font-weight: 800; }
-.apartment-upgrade-card button { margin-top: 3px; padding: 11px 14px; border: 0; border-radius: 11px; background: #e8bd57; color: #17352f; font-weight: 900; }
-.apartment-upgrade-card button:disabled { cursor: not-allowed; opacity: .55; }
-@media (max-width: 767px) { .shell-wallet { top: 70px; right: 12px; min-width: 0; padding: 8px 11px 8px 8px; } .shell-wallet small { display: none; } .shell-wallet-icon { flex-basis: 27px; width: 27px; height: 24px; } .apartment-upgrade-card { top: auto; right: 12px; bottom: 174px; left: 12px; width: auto; padding: 13px; } }
+@media (max-width: 767px) { .shell-wallet { top: 70px; right: 12px; min-width: 0; padding: 8px 11px 8px 8px; } .shell-wallet small { display: none; } .shell-wallet-icon { flex-basis: 27px; width: 27px; height: 24px; } }
 
 .shell-shop { position: relative; width: 100vw; height: 100vh; overflow: hidden; color: #fff8dd; background: #183c35; font-family: var(--font-body), system-ui, sans-serif; }
 .shell-shop canvas { display: block; }

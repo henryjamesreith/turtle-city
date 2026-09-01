@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useGameReward } from "./GameEconomy";
 
 type Phase = "ready" | "playing" | "finished";
 const ROCKS = [12, 24, 38, 51, 65, 78, 89];
@@ -48,6 +49,7 @@ export function ExcavatorGame({ onExit, turtleName }: { onExit: () => void; turt
   }, [phase]);
 
   const success = cleared.length >= 5;
+  useGameReward("excavator", phase === "finished" && success);
 
   return <main className="excavator-game" data-testid="excavator-game">
     <header><p>East River Works · LES</p><h1>Dig This!</h1><span>Operator: {turtleName}</span></header>

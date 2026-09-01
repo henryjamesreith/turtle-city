@@ -36,7 +36,7 @@ interiors, transit, and activities can use separate fixed-camera scenes.
 | Central Park | Permanently winter | Pond hockey, snow shoveling; sledding later, Chess with old man |
 | Chelsea | Starter apartment and west-side blocks | Pressure washing; cooking @ gregs papaya, doorman game, news stand for puzzles |
 | Midtown | Times Square and Empire State-inspired skyline | Falling-object dodge game, trash pickup |
-| FiDi | One Shell Plaza and the harbor edge | Shell Express delivery run; tycoon progression later |
+| FiDi | One Shell Plaza and the harbor edge | Shell Express delivery run, Rail Rush; tycoon progression later |
 | West Village | Jazz cellar and waterfront | Hudson bike race; music activity later |
 | East Village / LES | East River construction area | Excavator |
 
@@ -115,12 +115,16 @@ Bushwick.
   litter before the 60-second shift ends.
 - **Shell Express:** Change lanes through FiDi traffic, collect parcels, cross
   delivery zones, and complete at least six deliveries before dispatch closes.
+- **Rail Rush:** Skate the downtown tracks, dodge barriers, and collect at
+  least ten Shells before the run ends.
 - **Dig This!:** Drive the East River Works excavator, line up its bucket, and
   clear at least five debris piles before the 45-second shift ends.
 
-All activity scores and results are session-only and reset when the activity
-closes. New players receive 300 Shells and can currently install warm lighting,
-fresh walls, and a comfy bed in Apartment 4B through secure database purchases.
+Winning activity results persist and award Shells through a protected database
+function. Rewards have a five-minute per-activity cooldown and a daily cap of
+eight paid wins. New players receive 300 Shells and can install warm lighting,
+fresh walls, and a comfy bed in Apartment 4B through the itemized improvement
+store. Shell & Roll in Chelsea sells persistent skate gear from its shelves.
 
 ## Later product systems
 
@@ -151,9 +155,9 @@ Supabase
   PostgreSQL, authentication, storage, friends, inventory, apartments, and chat
 ```
 
-Backend services are deferred while the world structure, activities, and game
-feel are still being developed. When multiplayer and purchases are added, the
-server must validate movement, rewards, inventory changes, and entitlements.
+Backend services validate multiplayer movement, reward limits, inventory
+purchases, and apartment entitlements. Individual game outcomes still originate
+from the client and will need authoritative validation for competitive play.
 
 Keep platform-specific input, storage, authentication, and payments behind
 small interfaces so mobile and desktop-store versions remain possible later.
@@ -179,9 +183,9 @@ small interfaces so mobile and desktop-store versions remain possible later.
    and synchronized movement cover Central Park, Chelsea, East Village / LES,
    FiDi, Midtown, and West Village.
    Keep interiors and activities private until their multiplayer rules exist.
-8. **Store and apartment upgrades — ongoing:** the Shell wallet and first three
-   Apartment 4B improvements are playable; next add activity rewards, turtle
-   cosmetics, furniture placement, and paid items.
+8. **Store and apartment upgrades — ongoing:** the Shell wallet, activity
+   rewards, Shell & Roll gear shop, and three itemized Apartment 4B improvements
+   are playable; next add visible equipped cosmetics and furniture placement.
 9. **Player-created games:** build an original underground creator hub with a
    sidebar chat interface where players can design and publish mini-games.
    Players can browse trending games, invite friends, and issue challenges.

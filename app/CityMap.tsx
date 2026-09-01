@@ -49,7 +49,6 @@ import {
   purchaseShopItem,
   saveLastLocation,
   saveTurtleProfile,
-  upgradeApartment,
   sendPlayerPasswordReset,
   signInPlayer,
   signOutPlayer,
@@ -648,9 +647,9 @@ export function CityMap() {
   const withGameChrome = (content: ReactNode) => (
     <GameEconomyContext.Provider value={async (activity: GameActivity) => {
       try {
-        const balance = await awardGameWin(activity, crypto.randomUUID());
-        setShells(balance);
-        setEconomyMessage("Win bonus deposited!");
+        const result = await awardGameWin(activity, crypto.randomUUID());
+        setShells(result.shells);
+        setEconomyMessage(result.awarded ? "Win bonus deposited!" : "Reward cooldown active");
         window.setTimeout(() => setEconomyMessage(""), 2600);
       } catch (error) {
         console.warn("Turtle City could not award the game prize.", error);
@@ -671,7 +670,7 @@ export function CityMap() {
           <small>Shells</small>
         </span>
       </aside>
-      {economyMessage ? <aside className="economy-toast" role="status">+ Win bonus · {economyMessage}</aside> : null}
+      {economyMessage ? <aside className="economy-toast" role="status">{economyMessage}</aside> : null}
       {screen !== "city" ? (
         <button
           type="button"
@@ -940,11 +939,6 @@ export function CityMap() {
         upgrades={apartmentUpgrades}
         turtleName={turtleName}
         turtleVariant={turtleAppearance.variant}
-        onUpgrade={async () => {
-          const result = await upgradeApartment();
-          setShells(result.shells);
-          setApartmentTier(result.tier);
-        }}
         onExitToChelsea={() => {
           setChelseaSpawn("apartment");
           setScreen("chelsea");

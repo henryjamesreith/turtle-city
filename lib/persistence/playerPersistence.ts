@@ -333,17 +333,10 @@ export async function awardGameWin(activityKey: string, runId: string) {
     p_run_id: runId,
   });
   if (error) throw error;
-  return Number(data);
-}
-
-export async function upgradeApartment() {
-  const client = getSupabaseBrowserClient();
-  if (!client) throw new Error("Supabase is not configured.");
-  const { data, error } = await client.rpc("upgrade_apartment", {});
-  if (error) throw error;
-  const result = data?.[0];
-  if (!result) throw new Error("The apartment upgrade could not be completed.");
-  return { shells: Number(result.shells), tier: Number(result.tier) };
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("The reward service returned an invalid result.");
+  const shells = typeof data.shells === "number" ? data.shells : Number(data.shells);
+  if (!Number.isSafeInteger(shells) || shells < 0) throw new Error("The reward service returned an invalid balance.");
+  return { awarded: data.awarded === true, shells };
 }
 
 export async function saveTurtleProfile(input: {

@@ -11,7 +11,8 @@ export type GameActivity =
   | "shell-express"
   | "rail-rush"
   | "bike-race"
-  | "rhythm-game";
+  | "rhythm-game"
+  | "excavator";
 
 export const GameEconomyContext = createContext<(activity: GameActivity) => void>(() => undefined);
 

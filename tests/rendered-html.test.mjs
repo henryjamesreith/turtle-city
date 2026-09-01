@@ -521,6 +521,7 @@ test("East Village connects its district, excavator shift, persistence, and apar
   assert.match(districts, /East River Works/);
   assert.match(excavator, /data-testid="excavator-game"/);
   assert.match(excavator, /const ROCKS/);
+  assert.match(excavator, /useGameReward\("excavator", phase === "finished" && success\)/);
   assert.match(multiplayer, /roomName: "east_village_les"/);
   assert.match(persistence, /purchaseApartmentUpgrade/);
   assert.match(locationMigration, /'east-village-les'/);
@@ -532,6 +533,34 @@ test("East Village connects its district, excavator shift, persistence, and apar
   assert.match(apartment, /Warm Lighting/);
   assert.match(apartment, /Fresh Walls/);
   assert.match(apartment, /Comfy Bed/);
+  assert.doesNotMatch(apartment, /onUpgrade|Apartment renovations/);
+});
+
+test("game rewards enforce cooldowns, daily limits, and persistent win progress", async () => {
+  const [economy, map, persistence, types, migration, plan] = await Promise.all([
+    readFile(new URL("../app/GameEconomy.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/persistence/playerPersistence.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/supabase/database.types.ts", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260901010000_economy_stabilization.sql", import.meta.url), "utf8"),
+    readFile(new URL("../PROJECT_PLAN.md", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(economy, /\| "excavator"/);
+  assert.match(map, /result\.awarded \? "Win bonus deposited!" : "Reward cooldown active"/);
+  assert.match(persistence, /data\.awarded === true/);
+  assert.match(types, /award_game_win:[\s\S]*Returns: Json/);
+  assert.match(migration, /when 'excavator' then 25/);
+  assert.match(migration, /daily_rewards < 8/);
+  assert.match(migration, /interval '5 minutes'/);
+  assert.match(migration, /insert into public\.activity_progress/);
+  assert.match(migration, /times_played = public\.activity_progress\.times_played \+ 1/);
+  assert.match(migration, /revoke all on function public\.award_game_win\(text, uuid\) from public/);
+  assert.match(migration, /legacy-apartment-tier/);
+  assert.match(migration, /on conflict \(user_id, item_key\) do nothing/);
+  assert.match(migration, /drop function if exists public\.upgrade_apartment\(\)/);
+  assert.match(plan, /five-minute per-activity cooldown/);
+  assert.match(plan, /daily cap of[\s\S]*eight paid wins/);
 });
 
 test("outdoor districts have authenticated shared multiplayer presence", async () => {
