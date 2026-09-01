@@ -186,7 +186,8 @@ test("keeps the Shell balance visible throughout gameplay", async () => {
   assert.match(map, /shells\.toLocaleString\(\)/);
   assert.doesNotMatch(map, /🐚/);
   assert.match(styles, /\.shell-wallet \{ position: fixed;/);
-  assert.match(styles, /top: 18px; right: 150px;/);
+  assert.match(styles, /top: clamp\(18px, 3vh, 34px\); right: 150px;/);
+  assert.match(styles, /height: 40px;/);
   assert.match(styles, /\.shell-wallet-icon i/);
   assert.match(styles, /\.shell-wallet-balance/);
 });

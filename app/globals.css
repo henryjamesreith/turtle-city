@@ -11792,7 +11792,7 @@ html[data-turtle-variant="rosie"] {
   .mobile-dpad { transform: scale(.88); transform-origin: bottom left; }
 }
 
-.shell-wallet { position: fixed; z-index: 142; top: 18px; right: 150px; display: flex; align-items: center; gap: 9px; min-width: 112px; padding: 9px 14px 9px 11px; border: 1px solid rgb(255 255 255 / 34%); border-radius: 999px; background: rgb(20 48 43 / 92%); box-shadow: 0 6px 18px rgb(0 0 0 / 18%); color: #fff5c5; backdrop-filter: blur(9px); }
+.shell-wallet { position: fixed; z-index: 142; top: clamp(18px, 3vh, 34px); right: 150px; display: flex; box-sizing: border-box; min-width: 112px; height: 40px; align-items: center; gap: 9px; padding: 5px 13px 5px 9px; border: 1px solid rgb(255 255 255 / 34%); border-radius: 999px; background: rgb(20 48 43 / 92%); box-shadow: 0 6px 18px rgb(0 0 0 / 18%); color: #fff5c5; backdrop-filter: blur(9px); }
 .shell-wallet-icon { position: relative; display: block; flex: 0 0 30px; width: 30px; height: 26px; }
 .shell-wallet-icon i { position: absolute; inset: 2px 1px; border: 2px solid #543d1c; border-radius: 52% 48% 47% 53%; background: radial-gradient(circle at 50% 50%, #c99d36 0 22%, transparent 23%), conic-gradient(from 30deg, #d7ae48, #8d6a23, #d7ae48, #8d6a23, #d7ae48); box-shadow: inset 0 0 0 3px #e5c361, 0 2px 3px rgb(0 0 0 / 25%); transform: rotate(-5deg); }
 .shell-wallet-icon i::before,
