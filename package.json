@@ -6,7 +6,8 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "next dev",
     "build": "next build && npm run multiplayer:build",
     "start": "next start",
     "test": "npm run build && node --test tests/*.test.mjs",

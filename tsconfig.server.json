@@ -18,6 +18,7 @@
     "lib/multiplayer/hockeySchema.ts",
     "lib/multiplayer/bikeRaceSchema.ts",
     "lib/multiplayer/deliverySchema.ts",
+    "lib/multiplayer/snowBrawlSchema.ts",
     "lib/multiplayer/matchLifecycle.ts",
     "lib/turtles.ts"
   ],

@@ -186,7 +186,8 @@ test("keeps the Shell balance visible throughout gameplay", async () => {
   assert.match(map, /shells\.toLocaleString\(\)/);
   assert.doesNotMatch(map, /🐚/);
   assert.match(styles, /\.shell-wallet \{ position: fixed;/);
-  assert.match(styles, /top: clamp\(18px, 3vh, 34px\); right: 150px;/);
+  assert.match(styles, /top: clamp\(18px, 3vh, 34px\); right: calc\(clamp\(18px, 3vw, 42px\) \+ 132px\);/);
+  assert.match(styles, /\.snow-exit,\n\.jazz-club-exit,[\s\S]*top: calc\(clamp\(18px, 3vh, 34px\) \+ 52px\) !important;/);
   assert.match(styles, /height: 40px;/);
   assert.match(styles, /\.shell-wallet-icon i/);
   assert.match(styles, /\.shell-wallet-balance/);
@@ -339,9 +340,13 @@ test("West Village connects its streets, music venue, and Hudson waterfront", as
   assert.match(bikeRace, /TurtleBillboard/);
   assert.match(bikeRace, /useBikeRaceMultiplayer/);
   assert.match(bikeRace, /Multiplayer/);
-  assert.match(bikeRace, /const COURSE_LENGTH = 6200/);
-  assert.match(bikeRace, /Use W\/S or ↑\/↓ to change lanes/);
-  assert.match(bikeRace, /event\.code === "Space"/);
+  assert.match(bikeRace, /const COURSE_LENGTH = 18000/);
+  assert.match(bikeRace, /CatmullRomCurve3/);
+  assert.match(bikeRace, /A\/D steer/);
+  assert.match(bikeRace, /event\.key\.toLowerCase/);
+  assert.match(bikeRace, /Shell Circuit/);
+  assert.match(bikeRace, /Multiplayer/);
+  assert.match(bikeRace, /kart-minimap/);
   assert.match(bikeRace, /requestAnimationFrame/);
   assert.match(bikeRace, /Return to West Village/);
   assert.match(jazzClub, /data-testid="jazz-club"/);

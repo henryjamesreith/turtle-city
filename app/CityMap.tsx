@@ -32,6 +32,7 @@ import { RhythmGame } from "./RhythmGame";
 import { ShellExpressGame } from "./ShellExpressGame";
 import { ShellAndRollShop } from "./ShellAndRollShop";
 import { SnowShovelingGame } from "./SnowShovelingGame";
+import { SnowBrawlGame } from "./SnowBrawlGame";
 import { TurtleAuth } from "./TurtleAuth";
 import { TurtleOnboarding } from "./TurtleOnboarding";
 import { TrashPickupGame } from "./TrashPickupGame";
@@ -101,11 +102,12 @@ type Screen =
   | "shell-express"
   | "shell-and-roll"
   | "snow-shoveling"
+  | "snow-brawl"
   | "subway-platform"
   | "subway-train"
   | "trash-pickup"
   | "west-village";
-type ParkSpawn = "south-gate" | "frozen-pond" | "snow-crew";
+type ParkSpawn = "south-gate" | "frozen-pond" | "snow-crew" | "snow-brawl";
 type ChelseaSpawn = "apartment" | "pressure-washing" | "subway";
 type MidtownSpawn =
   | "falling-items"
@@ -474,8 +476,8 @@ export function CityMap() {
           if (!logoutLoading) setShowLogoutConfirm(false);
         } else if (showSettings) {
           setShowSettings(false);
-        } else if (screen === "hockey" || screen === "snow-shoveling") {
-          setParkSpawn(screen === "hockey" ? "frozen-pond" : "snow-crew");
+        } else if (screen === "hockey" || screen === "snow-shoveling" || screen === "snow-brawl") {
+          setParkSpawn(screen === "hockey" ? "frozen-pond" : screen === "snow-brawl" ? "snow-brawl" : "snow-crew");
           setScreen("central-park");
         } else if (
           screen === "falling-items" ||
@@ -842,6 +844,10 @@ export function CityMap() {
     );
   }
 
+  if (screen === "snow-brawl") {
+    return withGameChrome(<SnowBrawlGame onExit={() => { setParkSpawn("snow-brawl"); setScreen("central-park"); }} />);
+  }
+
   if (screen === "pressure-washing") {
     return withGameChrome(
       <PressureWashingGame
@@ -1027,6 +1033,7 @@ export function CityMap() {
           setParkSpawn("frozen-pond");
           setScreen("hockey");
         }}
+        onEnterSnowBrawl={() => setScreen("snow-brawl")}
         onEnterShoveling={() => {
           setParkSpawn("snow-crew");
           setScreen("snow-shoveling");

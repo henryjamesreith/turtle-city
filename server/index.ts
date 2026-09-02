@@ -12,13 +12,17 @@ import {
 import { HockeyRoom } from "./HockeyRoom.js";
 import { BikeRaceRoom } from "./BikeRaceRoom.js";
 import { DeliveryRoom } from "./DeliveryRoom.js";
+import { SnowBrawlRoom } from "./SnowBrawlRoom.js";
 
 const webOrigin =
   process.env.TURTLE_CITY_WEB_ORIGIN ?? "http://localhost:3000";
 const port = Number.parseInt(process.env.PORT ?? "2567", 10);
 
 const gameServer = defineServer({
-  devMode: process.env.NODE_ENV !== "production",
+  // Room restoration keeps disconnected player schemas around during watch
+  // restarts, which creates ghost rivals in local matches. Opt in only when
+  // specifically debugging Colyseus room restoration.
+  devMode: process.env.COLYSEUS_DEV_MODE === "true",
   transport: new WebSocketTransport(),
   rooms: {
     central_park: defineRoom(CentralParkRoom),
@@ -28,6 +32,7 @@ const gameServer = defineServer({
     east_village_les: defineRoom(EastVillageLesRoom),
     fidi: defineRoom(FidiRoom),
     hockey: defineRoom(HockeyRoom),
+    snow_brawl: defineRoom(SnowBrawlRoom),
     midtown: defineRoom(MidtownRoom),
     west_village: defineRoom(WestVillageRoom),
   },
@@ -62,7 +67,7 @@ const gameServer = defineServer({
           "midtown",
           "west-village",
         ],
-        games: ["hockey", "bike-race", "delivery"],
+        games: ["hockey", "bike-race", "delivery", "snow-brawl"],
         status: "ok",
       });
     });

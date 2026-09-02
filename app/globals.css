@@ -5238,6 +5238,7 @@ html[data-turtle-variant="rosie"] {
 
 /* Settings owns the first top-right row; scene status and return actions use
    the second row so independently rendered controls never share its space. */
+.snow-exit,
 .jazz-club-exit,
 .rhythm-exit,
 .bike-race-exit,
@@ -7768,6 +7769,33 @@ html[data-turtle-variant="rosie"] {
   background: transparent;
   color: var(--ink);
 }
+
+/* Shell Circuit kart-racing additions */
+.kart-race-stage::after { background: linear-gradient(180deg, rgb(255 255 255 / 2%), rgb(21 50 59 / 10%)); }
+.kart-race-hud { min-width: min(480px, 46vw); border-radius: 14px; background: rgb(248 242 223 / 90%); backdrop-filter: blur(8px); }
+.kart-race-hud > div { min-width: 92px; padding: 8px 13px; }
+.kart-race-hud strong em { font-size: 9px; font-style: normal; text-transform: uppercase; }
+.kart-start-sign { display: block; width: 150px; color: #173238; font-size: 11px; font-weight: 1000; letter-spacing: .1em; text-align: center; }
+.kart-item { position: absolute; z-index: 55; right: 28px; bottom: 28px; display: grid; width: 152px; min-height: 78px; place-content: center; padding: 10px; border: 4px solid #17332f; border-radius: 18px; background: rgb(245 235 203 / 94%); box-shadow: 5px 6px 0 rgb(23 51 47 / 25%); text-align: center; transform: rotate(1deg); }
+.kart-item.has-item { background: #5cdae0; animation: kart-item-pop .35s ease-out; }
+.kart-item small { font-weight: 950; letter-spacing: .12em; }
+.kart-item strong { font-size: 16px; }
+.kart-question { color: white; font-size: 30px; line-height: 1; text-shadow: 2px 2px 0 #185b88; }
+.kart-minimap { position: absolute; z-index: 54; bottom: 24px; left: 24px; width: 142px; height: 142px; padding: 8px; border: 3px solid rgb(23 50 56 / 82%); border-radius: 50%; background: rgb(23 50 56 / 70%); box-shadow: 5px 6px 0 rgb(23 51 47 / 18%); backdrop-filter: blur(5px); }
+.kart-minimap svg { width: 100%; height: 100%; overflow: visible; }
+.kart-minimap path { fill: none; stroke: rgb(248 242 223 / 80%); stroke-linecap: round; stroke-linejoin: round; stroke-width: 7; }
+.kart-minimap circle { stroke: #173238; stroke-width: 1.5; }
+.kart-minimap .rival { fill: #f2c84b; }
+.kart-minimap .player { fill: #ef5f48; stroke: white; stroke-width: 2; }
+.kart-intro { background: rgb(248 242 223 / 94%); backdrop-filter: blur(12px); }
+.kart-control-coach { position: absolute; z-index: 55; bottom: 32px; left: 50%; padding: 10px 16px; border: 3px solid var(--ink); border-radius: 999px; background: rgb(248 242 223 / 92%); box-shadow: 4px 5px 0 rgb(23 51 47 / 18%); font-size: 12px; font-weight: 900; transform: translateX(-50%); }
+.kart-control-coach kbd { display: inline-grid; min-width: 24px; min-height: 24px; place-items: center; border: 2px solid var(--ink); border-radius: 6px; background: white; box-shadow: 0 2px 0 var(--ink); font: inherit; }
+.kart-drift-meter { position: absolute; z-index: 55; bottom: 32px; left: 50%; display: grid; width: 190px; gap: 5px; padding: 9px 12px; border: 3px solid var(--ink); border-radius: 12px; background: rgb(23 50 56 / 82%); color: white; text-align: center; transform: translateX(-50%); }
+.kart-drift-meter small { font-size: 9px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
+.kart-drift-meter span { height: 9px; overflow: hidden; border: 2px solid white; border-radius: 999px; background: rgb(255 255 255 / 18%); }
+.kart-drift-meter i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #4bd9ff, #f4dd5b, #ff755d); }
+@keyframes kart-item-pop { 50% { transform: rotate(-2deg) scale(1.12); } }
+@media (max-width: 720px) { .kart-race-hud { top: 90px; min-width: calc(100vw - 28px); } .kart-race-hud > div { min-width: 0; padding: 7px; } .kart-item { right: 14px; bottom: 14px; width: 126px; } .kart-minimap { bottom: 12px; left: 12px; width: 104px; height: 104px; } }
 
 .village-player,
 .district-remote-player {
@@ -11792,7 +11820,7 @@ html[data-turtle-variant="rosie"] {
   .mobile-dpad { transform: scale(.88); transform-origin: bottom left; }
 }
 
-.shell-wallet { position: fixed; z-index: 142; top: clamp(18px, 3vh, 34px); right: 150px; display: flex; box-sizing: border-box; min-width: 112px; height: 40px; align-items: center; gap: 9px; padding: 5px 13px 5px 9px; border: 1px solid rgb(255 255 255 / 34%); border-radius: 999px; background: rgb(20 48 43 / 92%); box-shadow: 0 6px 18px rgb(0 0 0 / 18%); color: #fff5c5; backdrop-filter: blur(9px); }
+.shell-wallet { position: fixed; z-index: 142; top: clamp(18px, 3vh, 34px); right: calc(clamp(18px, 3vw, 42px) + 132px); display: flex; box-sizing: border-box; min-width: 112px; height: 40px; align-items: center; gap: 9px; padding: 5px 13px 5px 9px; border: 1px solid rgb(255 255 255 / 34%); border-radius: 999px; background: rgb(20 48 43 / 92%); box-shadow: 0 6px 18px rgb(0 0 0 / 18%); color: #fff5c5; backdrop-filter: blur(9px); }
 .shell-wallet-icon { position: relative; display: block; flex: 0 0 30px; width: 30px; height: 26px; }
 .shell-wallet-icon i { position: absolute; inset: 2px 1px; border: 2px solid #543d1c; border-radius: 52% 48% 47% 53%; background: radial-gradient(circle at 50% 50%, #c99d36 0 22%, transparent 23%), conic-gradient(from 30deg, #d7ae48, #8d6a23, #d7ae48, #8d6a23, #d7ae48); box-shadow: inset 0 0 0 3px #e5c361, 0 2px 3px rgb(0 0 0 / 25%); transform: rotate(-5deg); }
 .shell-wallet-icon i::before,
@@ -11930,3 +11958,26 @@ html[data-turtle-variant="rosie"] {
   color: #fff;
   font-weight: 800;
 }
+
+/* Central Park Snow Brawl */
+.snow-brawl { position: relative; width: 100vw; height: 100dvh; overflow: hidden; color: #153b48; background: linear-gradient(#9bd4ec 0 39%, #effaff 39%); font-family: var(--font-body), system-ui, sans-serif; }
+.snow-sky { position: absolute; inset: 0; opacity: .42; background-image: radial-gradient(circle, #fff 0 3px, transparent 4px); background-size: 71px 71px; animation: snowfall 8s linear infinite; }
+@keyframes snowfall { to { background-position: 20px 71px; } }
+.snowline-trees { position: absolute; top: 25%; width: 100%; color: #21594f; font-size: clamp(55px, 8vw, 110px); white-space: nowrap; filter: drop-shadow(0 15px 0 #d8edf2); }
+.snow-brawl-title { position: absolute; z-index: 20; top: 24px; left: 30px; padding: 11px 17px; border-left: 7px solid #e65354; background: #fff9deed; box-shadow: 7px 7px 0 #1b5161; transform: rotate(-1deg); }
+.snow-brawl-title small { color: #387287; font-size: 9px; font-weight: 900; letter-spacing: .15em; }
+.snow-brawl-title h1 { margin: 1px 0 0; color: #163f4d; font-size: clamp(25px, 3vw, 42px); line-height: .9; letter-spacing: -.05em; }
+.snow-exit { position: absolute; z-index: 30; top: 28px; right: 28px; padding: 11px 16px; border: 0; border-radius: 999px; background: #173f4ddd; color: white; font-weight: 900; cursor: pointer; }
+.snow-score { position: absolute; z-index: 22; top: 27px; left: 50%; display: flex; gap: 20px; align-items: center; padding: 10px 18px; border: 3px solid #fff; border-radius: 12px; background: #173f4de8; box-shadow: 0 7px 0 #0c2d37; color: #fff; transform: translateX(-50%); }
+.snow-score b { min-width: 80px; font-size: 16px; }.snow-score .blue { color: #75d4ff; text-align: right; }.snow-score .red { color: #ff8d8d; }.snow-score span { font-size: 24px; font-weight: 1000; }
+.snow-field { position: absolute; z-index: 5; right: 2.5%; bottom: 4%; left: 2.5%; height: 68%; overflow: hidden; border: 7px solid #f8fdff; border-radius: 45% 45% 9% 9% / 12% 12% 5% 5%; background: linear-gradient(165deg, #fafdff, #d9eef6); box-shadow: inset 0 -30px 0 #c3e1eb, 0 15px 45px #27586f55; }
+.snow-divider { position: absolute; z-index: 2; top: 0; bottom: 0; left: 50%; width: 12px; background: repeating-linear-gradient(to bottom, #e75658 0 28px, #fff 28px 56px); box-shadow: 0 0 0 4px #184958; transform: translateX(-50%); }
+.snow-divider span { position: absolute; top: 13px; left: 50%; width: max-content; padding: 5px 11px; background: #184958; color: #fff; font-size: 9px; font-weight: 1000; letter-spacing: .15em; transform: translateX(-50%); }
+.snow-bank { position: absolute; bottom: 5%; width: 10%; height: 9%; border-radius: 50% 50% 30% 30%; background: #fff; box-shadow: inset -9px -8px #d3e8ee; transform: translateX(-50%); }
+.brawler { position: absolute; z-index: 7; display: grid; justify-items: center; width: 70px; transform: translate(-50%, -52%); transition: left .07s linear, top .07s linear; }.brawler img { width: 62px; height: 62px; object-fit: contain; filter: drop-shadow(0 8px 4px #17475744); }.brawler.red img { transform: scaleX(-1); }.brawler strong { margin-top: -4px; padding: 3px 7px; border-radius: 6px; background: #174757dd; color: white; font-size: 9px; white-space: nowrap; }.brawler.is-you strong { background: #e4ad2f; color: #173f4d; }.brawler.is-you::after { content: "▼"; position: absolute; top: -20px; color: #f1bd35; font-size: 18px; animation: you-bob .7s ease-in-out infinite alternate; }.brawler.is-out { opacity: .4; filter: grayscale(1); transform: translate(-50%, -52%) rotate(90deg); }.hearts { height: 14px; color: #e54e52; font-size: 13px; font-weight: 1000; text-shadow: 0 1px white; }
+@keyframes you-bob { to { transform: translateY(5px); } }
+.flying-snowball { position: absolute; z-index: 10; width: 18px; height: 18px; border: 2px solid #acd6e5; border-radius: 50%; background: white; box-shadow: 4px 5px 0 #82b8ca88; transform: translate(-50%, -50%); }.flying-snowball::after { content: ""; position: absolute; top: 5px; width: 35px; height: 5px; background: linear-gradient(90deg, transparent, #fff); transform: translateX(-32px); }.flying-snowball.red::after { transform: translateX(11px) scaleX(-1); }
+.snow-modal { position: absolute; z-index: 50; top: 50%; left: 50%; width: min(570px, calc(100vw - 32px)); padding: 28px 30px; border: 5px solid #fff; border-radius: 24px; background: #fff8ddf7; box-shadow: 12px 12px 0 #174757cc; text-align: center; transform: translate(-50%, -50%) rotate(-.4deg); }.snow-modal small { color: #e24f54; font-weight: 1000; letter-spacing: .18em; }.snow-modal h2 { margin: 7px 0; font-size: clamp(27px, 4vw, 43px); letter-spacing: -.04em; }.snow-modal p { margin: 8px auto; max-width: 470px; color: #53737b; font-weight: 700; line-height: 1.45; }.snow-modal button { margin-top: 15px; padding: 13px 25px; border: 0; border-radius: 10px; background: #e54f54; box-shadow: 0 5px 0 #9d3035; color: white; font-size: 15px; font-weight: 1000; cursor: pointer; }.snow-modal button:disabled { opacity: .6; }.snow-howto { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin: 20px 0 7px; }.snow-howto span { display: grid; gap: 7px; padding: 12px 8px; border: 2px solid #c9e0e6; border-radius: 11px; background: #f8ffff; font-size: 10px; font-weight: 900; }.snow-howto kbd { color: #1d586a; font-size: 14px; }.snow-howto b { color: #e54f54; }.snow-modal .snow-roster { min-height: 18px; margin-top: 15px; font-size: 10px; }
+.snow-countdown { position: absolute; z-index: 45; top: 50%; left: 50%; display: grid; justify-items: center; color: white; text-shadow: 0 6px 0 #174757; transform: translate(-50%, -50%); }.snow-countdown small { font-size: 18px; font-weight: 1000; letter-spacing: .2em; }.snow-countdown strong { font-size: 150px; line-height: .9; }
+.snow-touch { position: absolute; z-index: 35; right: 25px; bottom: 25px; left: 25px; display: none; justify-content: space-between; pointer-events: none; }.snow-touch div { display: grid; grid-template-columns: repeat(2, 50px); }.snow-touch button { width: 50px; height: 50px; border: 2px solid white; background: #174757cc; color: white; font-size: 21px; font-weight: 1000; pointer-events: auto; }.snow-touch .throw { width: 74px; height: 74px; border-radius: 50%; background: #e54f54dd; font-size: 11px; }
+@media (max-width: 760px) { .snow-score { top: 82px; }.snow-brawl-title { top: 12px; left: 12px; }.snow-exit { top: 15px; right: 12px; }.snow-field { height: 65%; }.snow-touch { display: flex; }.snow-howto { grid-template-columns: 1fr; }.snow-howto span { padding: 7px; }.snow-modal { padding: 20px; }.snowline-trees { top: 31%; }.brawler { width: 52px; }.brawler img { width: 48px; height: 48px; } }
