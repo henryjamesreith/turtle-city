@@ -9,7 +9,7 @@
     "dev": "next dev",
     "build": "next build && npm run multiplayer:build",
     "start": "next start",
-    "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "multiplayer:build": "tsc --project tsconfig.server.json",
     "multiplayer:dev": "node --watch --env-file-if-exists=.env.local --env-file-if-exists=.env --import tsx server/index.ts",

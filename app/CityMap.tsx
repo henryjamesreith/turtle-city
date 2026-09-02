@@ -10,6 +10,7 @@ import {
 import { BikeRaceGame } from "./BikeRaceGame";
 import { ChelseaDistrict3D } from "./ChelseaDistrict3D";
 import { FallingItemsGame } from "./FallingItemsGame";
+import { GearEquipmentPanel } from "./GearEquipmentPanel";
 import { ExcavatorGame } from "./ExcavatorGame";
 import { HockeyGame } from "./HockeyGame";
 import { JazzClub } from "./JazzClub";
@@ -36,6 +37,7 @@ import { TurtleOnboarding } from "./TurtleOnboarding";
 import { TrashPickupGame } from "./TrashPickupGame";
 import { GameEconomyContext, type GameActivity } from "./GameEconomy";
 import { SkateboardOwnershipContext } from "./world3d/Skateboard";
+import { EquippedGearContext } from "./world3d/EquippedGear";
 import {
   defaultTurtleAppearance,
   awardGameWin,
@@ -54,6 +56,7 @@ import {
   signOutPlayer,
   signUpPlayer,
   updatePlayerPassword,
+  updateEquippedGear,
   type PlayerSnapshot,
   type PersistedLocation,
   type TurtleAppearance,
@@ -252,6 +255,7 @@ export function CityMap() {
   const [turtlePersonality, setTurtlePersonality] = useState("");
   const [hasSkateboard, setHasSkateboard] = useState(false);
   const [ownedItemKeys, setOwnedItemKeys] = useState<string[]>([]);
+  const [equippedItemKeys, setEquippedItemKeys] = useState<string[]>([]);
   const [shells, setShells] = useState(0);
   const [apartmentUpgrades, setApartmentUpgrades] = useState<string[]>([]);
   const [apartmentTier, setApartmentTier] = useState(0);
@@ -342,6 +346,7 @@ export function CityMap() {
     const ownsSkateboard = snapshot.inventory.some((item) => item.item_key === "chelsea-skateboard");
     setHasSkateboard(ownsSkateboard);
     setOwnedItemKeys(snapshot.inventory.map((item) => item.item_key));
+    setEquippedItemKeys(snapshot.inventory.filter((item) => item.equipped).map((item) => item.item_key));
     setShells(Number(snapshot.wallet.shells));
     const savedUpgrades = snapshot.apartment.upgrades;
     setApartmentUpgrades(savedUpgrades && typeof savedUpgrades === "object" && !Array.isArray(savedUpgrades)
@@ -361,6 +366,7 @@ export function CityMap() {
     setTurtlePersonality("");
     setHasSkateboard(false);
     setOwnedItemKeys([]);
+    setEquippedItemKeys([]);
     setShells(0);
     setApartmentUpgrades([]);
     setApartmentTier(0);
@@ -655,6 +661,10 @@ export function CityMap() {
         console.warn("Turtle City could not award the game prize.", error);
       }
     }}>
+    <EquippedGearContext.Provider value={{
+      deck: equippedItemKeys.includes("shell-and-roll-deck") ? "night-line" : "starter",
+      helmet: equippedItemKeys.includes("shell-and-roll-helmet"),
+    }}>
     <SkateboardOwnershipContext.Provider value={hasSkateboard}>
       {content}
       <aside
@@ -734,6 +744,14 @@ export function CityMap() {
               <div><dt>Esc</dt><dd>Back / close</dd></div>
             </dl>
           </div>
+          <GearEquipmentPanel
+            ownedItems={ownedItemKeys}
+            equippedItems={equippedItemKeys}
+            onSetEquipped={async (itemKey, equipped) => {
+              const nextEquipped = await updateEquippedGear(itemKey, equipped);
+              setEquippedItemKeys(nextEquipped);
+            }}
+          />
           <div className="settings-actions">
             {screen !== "city" ? (
               <button type="button" className="settings-map-action" onClick={openWorldMap}>View city map</button>
@@ -767,6 +785,7 @@ export function CityMap() {
       ) : null}
       {showsMobileMovement ? <MobileMovementControls /> : null}
     </SkateboardOwnershipContext.Provider>
+    </EquippedGearContext.Provider>
     </GameEconomyContext.Provider>
   );
 
@@ -968,11 +987,14 @@ export function CityMap() {
           await claimFreeSkateboard();
           setHasSkateboard(true);
           setOwnedItemKeys((items) => items.includes("chelsea-skateboard") ? items : [...items, "chelsea-skateboard"]);
+          setEquippedItemKeys((items) => items.includes("chelsea-skateboard") ? items : [...items, "chelsea-skateboard"]);
         }}
         onPurchase={async (itemKey) => {
           const result = await purchaseShopItem(itemKey);
           setShells(result.shells);
           setOwnedItemKeys((items) => items.includes(result.itemKey) ? items : [...items, result.itemKey]);
+          const nextEquipped = await updateEquippedGear(result.itemKey, true);
+          setEquippedItemKeys(nextEquipped);
         }}
       />
     );

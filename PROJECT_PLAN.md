@@ -125,6 +125,8 @@ function. Rewards have a five-minute per-activity cooldown and a daily cap of
 eight paid wins. New players receive 300 Shells and can install warm lighting,
 fresh walls, and a comfy bed in Apartment 4B through the itemized improvement
 store. Shell & Roll in Chelsea sells persistent skate gear from its shelves.
+Owned helmets and skateboard decks can be equipped in Settings and appear on
+the player in 3D scenes.
 
 ## Later product systems
 
@@ -185,7 +187,8 @@ small interfaces so mobile and desktop-store versions remain possible later.
    Keep interiors and activities private until their multiplayer rules exist.
 8. **Store and apartment upgrades — ongoing:** the Shell wallet, activity
    rewards, Shell & Roll gear shop, and three itemized Apartment 4B improvements
-   are playable; next add visible equipped cosmetics and furniture placement.
+   are playable; purchased helmets and decks can be visibly equipped. Next add
+   more cosmetics and furniture placement.
 9. **Player-created games:** build an original underground creator hub with a
    sidebar chat interface where players can design and publish mini-games.
    Players can browse trending games, invite friends, and issue challenges.

@@ -325,6 +325,20 @@ export async function purchaseShopItem(itemKey: string) {
   return { shells, itemKey: itemKeyResult };
 }
 
+export async function updateEquippedGear(itemKey: string, equipped: boolean) {
+  const client = getSupabaseBrowserClient();
+  if (!client) throw new Error("Supabase is not configured.");
+  const { data, error } = await client.rpc("set_equipped_gear", {
+    requested_equipped: equipped,
+    requested_item_key: itemKey,
+  });
+  if (error) throw error;
+  if (!Array.isArray(data) || data.some((value) => typeof value !== "string")) {
+    throw new Error("The equipment service returned an invalid result.");
+  }
+  return data.filter((value): value is string => typeof value === "string");
+}
+
 export async function awardGameWin(activityKey: string, runId: string) {
   const client = getSupabaseBrowserClient();
   if (!client) throw new Error("Supabase is not configured.");

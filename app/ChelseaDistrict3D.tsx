@@ -454,12 +454,13 @@ function RemotePlayers({
       }}
     >
       <group name="remote-skateboard" visible={false}>
-        <Skateboard />
+        <Skateboard deck="starter" />
       </group>
       <group name="remote-turtle">
         <TurtleBillboard
           name={player.turtleName}
           scale={0.84}
+          suppressGear
           variant={isTurtleVariant(player.variant) ? player.variant : "clover"}
         />
       </group>

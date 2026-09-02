@@ -325,7 +325,7 @@ function RemotePlayers({ districtId, players, targets }: { districtId: Multiplay
     const smoothing = 1 - Math.exp(-delta * 10); target.currentX += (target.x - target.currentX) * smoothing; target.currentY += (target.y - target.currentY) * smoothing;
     const position = networkToWorld(districtId, target.currentX, target.currentY); group.position.set(position.x, 0, position.z);
   }));
-  return players.map((player) => <group key={player.sessionId} ref={(group) => { if (group) refs.current.set(player.sessionId, group); else refs.current.delete(player.sessionId); }}><TurtleBillboard name={player.turtleName} scale={0.82} variant={isTurtleVariant(player.variant) ? player.variant : "clover"} /></group>);
+  return players.map((player) => <group key={player.sessionId} ref={(group) => { if (group) refs.current.set(player.sessionId, group); else refs.current.delete(player.sessionId); }}><TurtleBillboard name={player.turtleName} scale={0.82} suppressGear variant={isTurtleVariant(player.variant) ? player.variant : "clover"} /></group>);
 }
 
 function Controller({ actions, districtId, hasSkateboard, onNearby, sendMovement, spawn, spawnPositions, theme, turtleName, turtleVariant }: OutdoorDistrict3DProps & { onNearby: (id: string | null) => void; sendMovement: (movement: { facing: "left" | "right"; x: number; y: number }) => void }) {

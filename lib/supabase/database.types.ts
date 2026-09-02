@@ -215,6 +215,10 @@ export type Database = {
         Args: { requested_item_key: string };
         Returns: Json;
       };
+      set_equipped_gear: {
+        Args: { requested_equipped: boolean; requested_item_key: string };
+        Returns: Json;
+      };
       award_game_win: { Args: { p_activity_key: string; p_run_id: string }; Returns: Json };
     };
     Enums: Record<string, never>;
