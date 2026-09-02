@@ -176,9 +176,10 @@ test("the map has focus interactions without game dependencies", async () => {
 });
 
 test("keeps the Shell balance visible throughout gameplay", async () => {
-  const [map, styles] = await Promise.all([
+  const [map, styles, snowBrawlStyles] = await Promise.all([
     readFile(new URL("../app/CityMap.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/SnowBrawlGame.css", import.meta.url), "utf8"),
   ]);
 
   assert.match(map, /data-testid="shell-wallet"/);
@@ -188,6 +189,7 @@ test("keeps the Shell balance visible throughout gameplay", async () => {
   assert.match(styles, /\.shell-wallet \{ position: fixed;/);
   assert.match(styles, /top: clamp\(18px, 3vh, 34px\); right: calc\(clamp\(18px, 3vw, 42px\) \+ 132px\);/);
   assert.match(styles, /\.snow-exit,\n\.jazz-club-exit,[\s\S]*top: calc\(clamp\(18px, 3vh, 34px\) \+ 52px\) !important;/);
+  assert.match(snowBrawlStyles, /\.snow-exit \{[^}]*top: calc\(clamp\(18px, 3vh, 34px\) \+ 52px\) !important;[^}]*right: clamp\(18px, 3vw, 42px\) !important;/);
   assert.match(styles, /height: 40px;/);
   assert.match(styles, /\.shell-wallet-icon i/);
   assert.match(styles, /\.shell-wallet-balance/);
