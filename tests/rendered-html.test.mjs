@@ -923,6 +923,10 @@ test("snow shoveling clears the Snow Crew paths in a session-only shift", async 
   assert.match(shoveling, /InstancedMesh/);
   assert.match(shoveling, /const SHIFT_LENGTH = 90/);
   assert.match(shoveling, /const CLEAR_TARGET = 72/);
+  assert.match(shoveling, /Relaxed · No timer/);
+  assert.match(shoveling, /Timed · 1:30/);
+  assert.match(shoveling, /state\.mode === "timed" && state\.timeLeft <= 0/);
+  assert.match(shoveling, /earn 20 Shells/);
   assert.match(shoveling, /event\.code === "Space"/);
   assert.match(shoveling, /collectSnow/);
   assert.match(shoveling, /dumpShovel/);
@@ -933,6 +937,7 @@ test("snow shoveling clears the Snow Crew paths in a session-only shift", async 
   assert.match(styles, /\.shoveling-stage/);
   assert.match(styles, /\.shoveling-scoreboard/);
   assert.match(styles, /\.shoveling-start-card/);
+  assert.match(styles, /\.shoveling-mode-actions/);
   assert.match(styles, /\.shovel-load/);
   assert.match(styles, /\.shoveling-coach/);
 });

@@ -1976,7 +1976,14 @@ button {
   font-size: 11px;
 }
 
-.shoveling-start-card > button {
+.shoveling-mode-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.shoveling-mode-actions button {
   min-width: 180px;
   padding: 12px 20px;
   border: 3px solid var(--ink);
@@ -1989,8 +1996,12 @@ button {
   font-weight: 900;
 }
 
-.shoveling-start-card > button:hover,
-.shoveling-start-card > button:focus-visible {
+.shoveling-mode-actions button.timed {
+  background: #dbe8d6;
+}
+
+.shoveling-mode-actions button:hover,
+.shoveling-mode-actions button:focus-visible {
   background: #f6d88a;
   transform: translateY(-1px);
 }

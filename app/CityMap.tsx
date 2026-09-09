@@ -661,6 +661,8 @@ export function CityMap() {
         window.setTimeout(() => setEconomyMessage(""), 2600);
       } catch (error) {
         console.warn("Turtle City could not award the game prize.", error);
+        setEconomyMessage("Shell reward failed—please try again");
+        window.setTimeout(() => setEconomyMessage(""), 3200);
       }
     }}>
     <EquippedGearContext.Provider value={{
