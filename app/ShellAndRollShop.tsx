@@ -68,7 +68,7 @@ export function ShellAndRollShop({
   return <main className="shell-shop" data-testid="shell-and-roll-shop">
     <Canvas camera={{ fov: 48, near: .1, far: 80, position: [0, 6.8, 12.5] }} dpr={[1, 1.5]} shadows="basic"><Suspense fallback={null}><ShopRoom turtleName={turtleName} turtleVariant={turtleVariant} /></Suspense></Canvas>
     <header className="shell-shop-title"><p>Chelsea · Shell &amp; Roll</p><h1>Gear shop</h1><span>Pick an item directly from the shelves.</span></header>
-    <button type="button" className="shell-shop-exit" onClick={onExit}>← Back to Chelsea</button>
+    <button type="button" className="shell-shop-exit game-corner-secondary" onClick={onExit}>← Back to Chelsea</button>
     <section className="shop-shelf-panel" aria-label="Shop shelves">
       {products.map((product) => {
         const owned = ownedItems.includes(product.key);

@@ -671,32 +671,34 @@ export function CityMap() {
     }}>
     <SkateboardOwnershipContext.Provider value={hasSkateboard}>
       {content}
-      <aside
-        className="shell-wallet"
-        data-testid="shell-wallet"
-        aria-label={`${shells.toLocaleString()} Shells`}
-        aria-live="polite"
-        title="Your Shell balance"
-      >
-        <span className="shell-wallet-icon" aria-hidden="true"><i /><b /></span>
-        <span className="shell-wallet-balance">
-          <strong>{shells.toLocaleString()}</strong>
-          <small>Shells</small>
-        </span>
-      </aside>
-      {economyMessage ? <aside className="economy-toast" role="status">{economyMessage}</aside> : null}
-      {screen !== "city" ? (
-        <button
-          type="button"
-          className="universal-settings-button"
-          aria-label="Open settings"
-          aria-expanded={showSettings}
-          onClick={() => setShowSettings(true)}
+      <div className="game-chrome-primary" data-testid="game-chrome-primary">
+        <aside
+          className="shell-wallet"
+          data-testid="shell-wallet"
+          aria-label={`${shells.toLocaleString()} Shells`}
+          aria-live="polite"
+          title="Your Shell balance"
         >
-          <span aria-hidden="true">⚙</span>
-          Settings
-        </button>
-      ) : null}
+          <span className="shell-wallet-icon" aria-hidden="true"><i /><b /></span>
+          <span className="shell-wallet-balance">
+            <strong>{shells.toLocaleString()}</strong>
+            <small>Shells</small>
+          </span>
+        </aside>
+        {screen !== "city" ? (
+          <button
+            type="button"
+            className="universal-settings-button"
+            aria-label="Open settings"
+            aria-expanded={showSettings}
+            onClick={() => setShowSettings(true)}
+          >
+            <span aria-hidden="true">⚙</span>
+            Settings
+          </button>
+        ) : null}
+      </div>
+      {economyMessage ? <aside className="economy-toast" role="status">{economyMessage}</aside> : null}
 
       {screen === "subway-platform" || screen === "subway-train" ? (
         <button

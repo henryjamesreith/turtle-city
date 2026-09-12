@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import "./SnowBrawlGame.css";
+import { useGameReward } from "./GameEconomy";
 import { useSnowBrawlMultiplayer } from "@/lib/multiplayer/useSnowBrawlMultiplayer";
 import { getTurtleImage, type TurtleVariant } from "@/lib/turtles";
 
@@ -14,6 +15,7 @@ export function SnowBrawlGame({ onExit }: Props) {
   const { connect, disconnect, match, ready, rematch, sendInput, sessionId, solo, status } = useSnowBrawlMultiplayer();
   const keys = useRef(new Set<string>()); const aim = useRef({ x: 1, y: 0 }); const lastEvent = useRef(0); const [touch, setTouch] = useState({ x: 0, y: 0 }); const [impacts, setImpacts] = useState<Impact[]>([]);
   const me = match.players.find((p) => p.sessionId === sessionId);
+  useGameReward("snow-brawl", match.phase === "finished" && Boolean(me?.team) && me?.team === match.winner);
   const hasRealRival = Boolean(me && match.players.some((p) => p.sessionId !== sessionId && p.userId !== me.userId && p.userId !== "bot"));
   const playerImages = useMemo(() => Object.fromEntries(match.players.map((p) => [p.variant, getTurtleImage(p.variant as TurtleVariant)])), [match.players]);
 
@@ -41,7 +43,7 @@ export function SnowBrawlGame({ onExit }: Props) {
   return <main className="snow-brawl">
     <div className="snow-sky" /><div className="snowline-trees" aria-hidden="true">🌲　🌳　🌲　🌳　🌲　🌳　🌲　🌳</div>
     <header className="snow-brawl-title"><small>CENTRAL PARK • TURTLE CITY</small><h1>SNOW BRAWL</h1></header>
-    <button className="snow-exit" onClick={onExit}>Leave park</button>
+    <button className="snow-exit game-corner-secondary" onClick={onExit}>Leave park</button>
     <section className="snow-score" aria-label="Scoreboard"><b className="blue">BLUE {match.blueScore}</b><span>{Math.ceil(match.timeLeft)}s</span><b className="red">{match.redScore} RED</b></section>
     <div className={`snow-field ${impacts.some((impact) => impact.type === "knockout") ? "has-knockout" : ""}`}>
       <div className="park-lamp left" aria-hidden="true" /><div className="park-lamp right" aria-hidden="true" />
@@ -57,7 +59,7 @@ export function SnowBrawlGame({ onExit }: Props) {
     </div>
     {match.phase === "countdown" && <div className="snow-countdown"><small>READY?</small><strong>{Math.max(1, Math.ceil(match.countdownLeft))}</strong></div>}
     {(match.phase === "lobby" || status !== "live") && <div className="snow-modal"><small>CHOOSE YOUR MATCH</small><h2>{lobbyTitle}</h2><p>Stay on your side of the line. Face a direction and pelt the other team until their hearts are gone.</p><div className="snow-howto"><span><kbd>WASD / ARROWS</kbd> Move & face</span><span><kbd>SPACE</kbd> Throw forward</span><span><b>♥ ♥ ♥</b> Last turtle standing</span></div>{status === "live" && <div className="snow-match-actions"><button disabled={!me || me.ready || match.players.length < 2} onClick={ready}>{me?.ready ? "Ready! Waiting…" : "Play multiplayer"}</button><button className="bot-match" disabled={!me || me.ready || hasRealRival} onClick={solo}>Play against bot</button></div>}{status === "offline" && <button onClick={() => void connect()}>Try again</button>}<p className="snow-roster">{match.players.map((p) => `${p.team === "blue" ? "🔵" : "🔴"} ${p.name}${p.ready ? " ✓" : ""}`).join("  ·  ") || "Connecting…"}</p></div>}
-    {match.phase === "finished" && <div className="snow-modal"><small>FINAL WHISTLE</small><h2>{match.winner === "draw" ? "Snowy draw!" : `${match.winner.toUpperCase()} TEAM WINS!`}</h2><p>The Great Lawn has a new snowball champion.</p><button onClick={rematch}>{me?.ready ? "Waiting for rivals…" : "Rematch"}</button></div>}
+    {match.phase === "finished" && <div className="snow-modal"><small>FINAL WHISTLE</small><h2>{match.winner === "draw" ? "Snowy draw!" : `${match.winner.toUpperCase()} TEAM WINS!`}</h2><p>{me?.team === match.winner ? "Victory! Your 30-Shell reward is on its way." : "The Great Lawn has a new snowball champion."}</p><button onClick={rematch}>{me?.ready ? "Waiting for rivals…" : "Rematch"}</button></div>}
     {match.phase === "playing" && <div className="snow-coach"><span>WASD / arrows to move & face</span><span>Space to throw forward</span></div>}
     <div className="snow-touch" aria-label="Touch controls"><div>{[[0,-1,"↑"],[-1,0,"←"],[0,1,"↓"],[1,0,"→"]].map(([x,y,label]) => <button key={label as string} onPointerDown={() => { setTouch({ x: x as number, y: y as number }); aim.current = { x: x as number, y: y as number }; }} onPointerUp={() => setTouch({ x: 0, y: 0 })} onPointerCancel={() => setTouch({ x: 0, y: 0 })}>{label}</button>)}</div><button className="throw" onClick={() => sendInput(0, 0, true, aim.current.x, aim.current.y)}>THROW</button></div>
   </main>;

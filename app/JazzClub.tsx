@@ -18,7 +18,7 @@ export function JazzClub({
         <h1>Cellar Note</h1>
       </header>
 
-      <button type="button" className="jazz-club-exit" onClick={onExit}>
+      <button type="button" className="jazz-club-exit game-corner-secondary" onClick={onExit}>
         <span aria-hidden="true">←</span>
         Street
       </button>

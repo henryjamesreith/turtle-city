@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef } from "react";
 
 export type GameActivity =
   | "hockey"
+  | "snow-brawl"
   | "snow-shoveling"
   | "pressure-washing"
   | "falling-items"

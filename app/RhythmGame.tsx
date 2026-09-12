@@ -275,7 +275,7 @@ export function RhythmGame({ onExit }: RhythmGameProps) {
         <h1>Shell Shredder</h1>
       </header>
 
-      <button type="button" className="rhythm-exit" onClick={onExit}>
+      <button type="button" className="rhythm-exit game-corner-secondary" onClick={onExit}>
         <span aria-hidden="true">←</span>
         Leave stage
       </button>

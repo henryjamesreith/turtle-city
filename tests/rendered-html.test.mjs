@@ -186,10 +186,12 @@ test("keeps the Shell balance visible throughout gameplay", async () => {
   assert.match(map, /aria-live="polite"/);
   assert.match(map, /shells\.toLocaleString\(\)/);
   assert.doesNotMatch(map, /🐚/);
-  assert.match(styles, /\.shell-wallet \{ position: fixed;/);
-  assert.match(styles, /top: clamp\(18px, 3vh, 34px\); right: calc\(clamp\(18px, 3vw, 42px\) \+ 132px\);/);
-  assert.match(styles, /\.snow-exit,\n\.jazz-club-exit,[\s\S]*top: calc\(clamp\(18px, 3vh, 34px\) \+ 52px\) !important;/);
-  assert.match(snowBrawlStyles, /\.snow-exit \{[^}]*top: calc\(clamp\(18px, 3vh, 34px\) \+ 52px\) !important;[^}]*right: clamp\(18px, 3vw, 42px\) !important;/);
+  assert.match(map, /data-testid="game-chrome-primary"/);
+  assert.match(styles, /\.game-chrome-primary \{[\s\S]*display: flex;[\s\S]*gap: 10px;/);
+  assert.match(styles, /\.shell-wallet \{ position: static;/);
+  assert.doesNotMatch(styles, /right: calc\(clamp\(18px, 3vw, 42px\) \+ 132px\)/);
+  assert.match(styles, /\.game-corner-secondary,[\s\S]*top: calc\(max\(clamp\(18px, 3vh, 34px\), env\(safe-area-inset-top\)\) \+ 52px\) !important;/);
+  assert.match(snowBrawlStyles, /\.snow-exit \{[^}]*top: calc\(max\(clamp\(18px, 3vh, 34px\), env\(safe-area-inset-top\)\) \+ 52px\) !important;[^}]*right: max\(clamp\(18px, 3vw, 42px\), env\(safe-area-inset-right\)\) !important;/);
   assert.match(styles, /height: 40px;/);
   assert.match(styles, /\.shell-wallet-icon i/);
   assert.match(styles, /\.shell-wallet-balance/);
@@ -212,6 +214,7 @@ test("Shell & Roll is an enterable shop with persistent shelf purchases", async 
   assert.match(district, /onEnterSkateShop/);
   assert.match(district, /button: "Enter shop"/);
   assert.match(shop, /data-testid="shell-and-roll-shop"/);
+  assert.match(shop, /className="shell-shop-exit game-corner-secondary"/);
   assert.match(shop, /aria-label="Shop shelves"/);
   assert.match(shop, /Starter Board/);
   assert.match(shop, /Street-Safe Helmet/);
@@ -940,4 +943,19 @@ test("snow shoveling clears the Snow Crew paths in a session-only shift", async 
   assert.match(styles, /\.shoveling-mode-actions/);
   assert.match(styles, /\.shovel-load/);
   assert.match(styles, /\.shoveling-coach/);
+});
+
+test("every playable game has a server-backed Shell reward", async () => {
+  const [economy, migration, snowBrawl] = await Promise.all([
+    readFile(new URL("../app/GameEconomy.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../supabase/migrations/20260908000000_snow_brawl_reward.sql", import.meta.url), "utf8"),
+    readFile(new URL("../app/SnowBrawlGame.tsx", import.meta.url), "utf8"),
+  ]);
+  const activities = ["hockey", "snow-brawl", "snow-shoveling", "pressure-washing", "falling-items", "trash-pickup", "shell-express", "rail-rush", "bike-race", "rhythm-game", "excavator"];
+  for (const activity of activities) {
+    assert.match(economy, new RegExp(`\\| "${activity}"`));
+    assert.match(migration, new RegExp(`when '${activity}' then \\d+`));
+  }
+  assert.match(snowBrawl, /useGameReward\("snow-brawl", match\.phase === "finished"/);
+  assert.match(snowBrawl, /30-Shell reward/);
 });

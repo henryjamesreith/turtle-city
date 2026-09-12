@@ -29,6 +29,7 @@ begin
 
   reward := case p_activity_key
     when 'hockey' then 30
+    when 'snow-brawl' then 30
     when 'snow-shoveling' then 20
     when 'pressure-washing' then 20
     when 'falling-items' then 15

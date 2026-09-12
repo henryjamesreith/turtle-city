@@ -1,6 +1,7 @@
-drop function if exists public.award_game_win(text, uuid);
-
-create function public.award_game_win(p_activity_key text, p_run_id uuid)
+-- Add the previously omitted Snow Brawl prize to the server-authoritative
+-- activity allowlist. The function body otherwise preserves the current
+-- cooldown, daily cap, wallet update, and progress tracking behavior.
+create or replace function public.award_game_win(p_activity_key text, p_run_id uuid)
 returns jsonb
 language plpgsql
 security definer
@@ -82,44 +83,3 @@ $$;
 revoke all on function public.award_game_win(text, uuid) from public;
 revoke all on function public.award_game_win(text, uuid) from anon;
 grant execute on function public.award_game_win(text, uuid) to authenticated;
-
--- Preserve legacy tier purchases by converting them into the itemized upgrades
--- that now form the single apartment progression system.
-insert into public.inventory_items (user_id, item_key, equipped, metadata)
-select a.user_id, legacy.item_key, true, jsonb_build_object('source', 'legacy-apartment-tier')
-from public.apartments a
-cross join lateral (
-  values
-    (1, 'apartment-warm-lights'),
-    (2, 'apartment-fresh-walls'),
-    (3, 'apartment-comfy-bed')
-) as legacy(required_tier, item_key)
-where a.tier >= legacy.required_tier
-on conflict (user_id, item_key) do nothing;
-
-update public.apartments a
-set
-  upgrades = coalesce(a.upgrades, '{}'::jsonb) || coalesce((
-    select jsonb_object_agg(i.item_key, true)
-    from public.inventory_items i
-    where i.user_id = a.user_id
-      and i.item_key in (
-        'apartment-warm-lights',
-        'apartment-fresh-walls',
-        'apartment-comfy-bed'
-      )
-  ), '{}'::jsonb),
-  tier = least(3, (
-    select count(*)::smallint
-    from public.inventory_items i
-    where i.user_id = a.user_id
-      and i.item_key in (
-        'apartment-warm-lights',
-        'apartment-fresh-walls',
-        'apartment-comfy-bed'
-      )
-  ));
-
-revoke all on function public.upgrade_apartment() from public;
-revoke all on function public.upgrade_apartment() from anon;
-drop function if exists public.upgrade_apartment();
